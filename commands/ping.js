@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+var logger = require('./logger');
 
 module.exports = {
     data : new SlashCommandBuilder()
