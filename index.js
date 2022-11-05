@@ -12,7 +12,7 @@ log4j.sconfigure({
   pm2: true,
 });
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("out");
 
 const client = new Client({
     intents: [
