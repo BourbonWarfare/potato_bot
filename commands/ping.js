@@ -6,7 +6,7 @@ module.exports = {
         .setName('ping')
         .setDescription('Pong!'),
     async execute(interaction) {
-        logger.info('[{}] called by [{}]', interaction.option.name, interaction.user.username)
+        logger.info('[{}] called by [{}]', interaction.commandName, interaction.user.username)
         interaction.reply({
             content: 'Pong!',
             ephemeral: false
