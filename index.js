@@ -6,12 +6,13 @@ const { Client, Intents, Collection } = require ('discord.js');
 const mongoose = require('mongoose');
 const log4js = require("log4js");
 
-const logger = log4js.getLogger();
-logger.configure({
+log4j.sconfigure({
   appenders: { out: { type: "stdout" } },
   categories: { default: { appenders: ["out"], level: "info" } },
   pm2: true,
 });
+
+const logger = log4js.getLogger();
 
 const client = new Client({
     intents: [
