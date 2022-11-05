@@ -4,15 +4,8 @@ const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { Client, Intents, Collection } = require ('discord.js');
 const mongoose = require('mongoose');
-const log4js = require("log4js");
 
-log4js.configure({
-  appenders: { out: { type: "stdout" } },
-  categories: { default: { appenders: ["out"], level: "info" } },
-  pm2: true,
-});
-
-const logger = log4js.getLogger("out");
+var logger = require('./logger');
 
 const client = new Client({
     intents: [
