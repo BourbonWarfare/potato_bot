@@ -4,6 +4,14 @@ const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { Client, Intents, Collection } = require ('discord.js');
 const mongoose = require('mongoose');
+const log4js = require("log4js");
+
+const logger = log4js.getLogger();
+logger.configure({
+  appenders: { out: { type: "stdout" } },
+  categories: { default: { appenders: ["out"], level: "info" } },
+  pm2: true,
+});
 
 const client = new Client({
     intents: [
@@ -25,7 +33,7 @@ for (const file of commandFiles) {
 
 
 client.once('ready', () => {
-    console.log("POTATO is Online");
+    logger.info("POTATO is Online");
 
     const CLIENT_ID = client.user.id;
 
@@ -39,15 +47,15 @@ client.once('ready', () => {
                 await rest.put(Routes.applicationCommands(CLIENT_ID), {
                     body: commands
                 });
-                console.log('Successfully registered commands globally.')
+                logger.info('Successfully registered commands globally.')
             } else {
                 await rest.put(Routes.applicationGuildCommands(CLIENT_ID, process.env.GUILD_ID), {
                     body: commands
                 });
-                console.log('Successfully registered commands locally.');
+                logger.info('Successfully registered commands locally.');
             }
         } catch (err) {
-            if (err) console.error(err);
+            if (err) logger.error(err);
         }
     })()
 });
@@ -62,7 +70,7 @@ client.on('interactionCreate', async interaction => {
     try {
         await command.execute(interaction);
     } catch(err) {
-        if (err) console.error(err);
+        if (err) logger.error(err);
 
         await interaction.reply({
             content: 'An error occured while executing that command',
