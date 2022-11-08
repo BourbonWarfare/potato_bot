@@ -1,5 +1,6 @@
 module.exports.randomQuote = async function () {
  
+    const quote;
     const quotes = [
         '"Yer a wizard BadWolf." ― Juujuu',
         '"It is our choices, BadWolf, that show what we truly are, far more than our abilities." — Quiz',
@@ -16,7 +17,7 @@ module.exports.randomQuote = async function () {
     ];
 
     const index = Math.floor(Math.random() * quotes.length);
-    const quote = quotes[index];
+    quote = quotes[index];
 
     return quote;
 };
