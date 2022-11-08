@@ -1,5 +1,6 @@
 module.exports.randomQuote = async function () {
- 
+var logger = require('../logger');
+    
     let quote;
     const quotes = [
         '"Yer a wizard BadWolf." ― Juujuu',
@@ -16,8 +17,10 @@ module.exports.randomQuote = async function () {
         '“Do not pity the dead, BadWolf. Pity the living, and, above all, those who live without love.” ― Quiz'
     ];
 
-    const index = Math.floor(Math.random() * quotes.length);
+    let index = Math.floor(Math.random() * quotes.length);
     quote = quotes[index];
+
+    logger.info('quote = ${quote}');
 
     return quote;
 };
