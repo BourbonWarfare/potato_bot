@@ -13,8 +13,6 @@ const client = new Client({
         Intents.FLAGS.GUILD_MESSAGES],
 })
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
 const commands = [];
 
 client.commands = new Collection();
