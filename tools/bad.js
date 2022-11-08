@@ -16,6 +16,7 @@ module.exports.randomQuote = async function () {
     ];
 
     const index = Math.floor(Math.random() * quotes.length);
+    const quote = quotes[index];
 
-    return quotes[index];
+    return quote;
 };
