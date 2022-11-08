@@ -15,7 +15,7 @@ module.exports.randomQuote = async function () {
         '“Do not pity the dead, BadWolf. Pity the living, and, above all, those who live without love.” ― Quiz'
     ];
 
-    const index = Math.Floor(Math.random() * quotes.length);
+    const index = Math.floor(Math.random() * quotes.length);
 
     return quotes[index];
 };
