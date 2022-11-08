@@ -20,7 +20,7 @@ var logger = require('../logger');
     let index = Math.floor(Math.random() * quotes.length);
     quote = quotes[index];
 
-    logger.info('quote = ${quote}');
+    logger.info(`quote = ${quote}`);
 
     return quote;
 };
