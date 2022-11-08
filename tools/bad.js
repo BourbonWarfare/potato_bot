@@ -22,5 +22,5 @@ var logger = require('../logger');
 
     logger.info(`quote = ${quote}`);
 
-    return quote;
+    return (quote);
 };
