@@ -18,6 +18,7 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 const commands = [];
 
 client.commands = new Collection();
+client.tools = require('./tools/bad.js');
 
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
