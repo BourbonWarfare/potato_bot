@@ -29,10 +29,11 @@ for (const file of commandFiles) {
 	// Set a new item in the Collection with the key as the command name and the value as the exported module
 	if ('data' in command && 'execute' in command) {
 		client.commands.set(command.data.name, command);
+        commands.push(command.data.toJSON());
 	} else {
 		logger.error(`The command at ${filePath} is missing a required "data" or "execute" property.`);
 	}
-}
+};
 
 client.once('ready', () => {
     logger.info("POTATO is Online");
@@ -45,21 +46,20 @@ client.once('ready', () => {
 
     (async () => {
         try {
-            if(process.env.ENV === 'Production') {
-                await rest.put(Routes.applicationCommands(CLIENT_ID), {
-                    body: commands
-                });
-                logger.info('Successfully registered commands globally.')
-            } else {
-                await rest.put(Routes.applicationGuildCommands(CLIENT_ID, process.env.GUILD_ID), {
-                    body: commands
-                });
-                logger.info('Successfully registered commands locally.');
-            }
-        } catch (err) {
-            if (err) logger.error(err);
+            logger.info(`Started refreshing ${commands.length} application (/) commands.`);
+
+            // The put method is used to fully refresh all commands in the guild with the current set
+            const data = await rest.put(
+                Routes.applicationGuildCommands(clientId, guildId),
+                { body: commands },
+            );
+
+            logger.info(`Successfully reloaded ${data.length} application (/) commands.`);
+        } catch (error) {
+            // And of course, make sure you catch and log any errors!
+            logger.error(error);
         }
-    })()
+    })();
 });
 
 client.on('interactionCreate', async interaction => {
