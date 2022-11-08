@@ -5,7 +5,10 @@ const { Routes } = require('discord-api-types/v9');
 const { Client, Intents, Collection } = require ('discord.js');
 const mongoose = require('mongoose');
 
-var logger = require('./logger');
+const logger = require('./logger');
+
+const fs = require('node:fs');
+const path = require('node:path');
 
 const client = new Client({
     intents: [
