@@ -8,7 +8,7 @@ module.exports = {
     async execute(interaction) {
         logger.info('[',interaction.commandName,'] called by [', interaction.user.username, ']');
         interaction.reply({
-            content: 'Upload',
+            content: await client.tools.randomQuote,
             ephemeral: false
         });
     }
