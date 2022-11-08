@@ -3,8 +3,8 @@ var logger = require('../logger');
 
 module.exports = {
     data : new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('Pong!'),
+        .setName('website')
+        .setDescription('Give me a link to the website'),
     async execute(interaction) {
         logger.info('[',interaction.commandName,'] called by [', interaction.user.username, ']');
         interaction.reply({
