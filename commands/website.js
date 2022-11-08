@@ -7,8 +7,9 @@ module.exports = {
         .setDescription('Give me a link to the website'),
     async execute(interaction) {
         logger.info('[',interaction.commandName,'] called by [', interaction.user.username, ']');
+        let str = client.tools.randomQuote;
         interaction.reply({
-            content: await tools.randomQuote,
+            content: str,  
             ephemeral: false
         });
     }

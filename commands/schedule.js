@@ -7,8 +7,9 @@ module.exports = {
         .setDescription('Pong!'),
     async execute(interaction) {
         logger.info('[',interaction.commandName,'] called by [', interaction.user.username, ']');
+        let str = client.tools.randomQuote;
         interaction.reply({
-            content: await client.tools.randomQuote,
+            content: str,  
             ephemeral: false
         });
     }

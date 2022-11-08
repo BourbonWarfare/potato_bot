@@ -2,13 +2,14 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 var logger = require('../logger');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data : new SlashCommandBuilder()
         .setName('upload')
         .setDescription('Use to upload a mission to the mission server and database'),
     async execute(interaction) {
         logger.info('[',interaction.commandName,'] called by [', interaction.user.username, ']');
+        let str = client.tools.randomQuote;
         interaction.reply({
-            content: await client.tools.randomQuote,
+            content: str,  
             ephemeral: false
         });
     }
