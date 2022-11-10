@@ -1,5 +1,6 @@
-module.exports.randomQuote = async function () {
 var logger = require('../logger');
+
+module.exports.randomQuote = async function () {
     
     let quote;
     const quotes = [
@@ -22,5 +23,5 @@ var logger = require('../logger');
 
     logger.info(`quote = ${quote}`);
 
-    return (quote);
+    return quote;
 };
