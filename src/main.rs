@@ -7,7 +7,6 @@ use dotenv::dotenv;
 use std::env;
 
 use serenity::async_trait;
-use serenity::model::application::command::Command;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
@@ -23,10 +22,19 @@ impl EventHandler for Handler {
 
             let content = match command.data.name.as_str() {
                 "ping" => commands::ping::run(&command.data.options),
-                "upload" => commands::upload::run(&command.data.options),
+//                "upload" => commands::upload::run(&command.data.options),
                 "sessiontime" => commands::sessiontime::run(&command.data.options),
-                "quote" => commands::quote::run(&command.data.options),
+//                "quote" => commands::quote::run(&command.data.options),
+                "bwmf" => commands::bwmf::run(&command.data.options),
+                "handbook" => commands::handbook::run(&command.data.options),
+//                "issue" => commands::issue::run(&command.data.options),
+//                "invite" => commands::invite::run(&command.data.options),
                 _ => "not implemented :(".to_string(),
+            };
+
+            let ephemeral = match command.data.name.as_str() {
+                "handbook" => true,
+                _ => false,
             };
 
             if let Err(why) = command
@@ -34,10 +42,12 @@ impl EventHandler for Handler {
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
                         .interaction_response_data(|message| {
-                            message.add_embed(functions::responses::generate_embed(
-                                command.data.name.as_str(),
-                                content,
-                            ))
+                            message
+                                .add_embed(functions::responses::generate_embed(
+                                    command.data.name.as_str(),
+                                    content,
+                                ))
+                                .ephemeral(ephemeral)
                         })
                 })
                 .await
@@ -60,24 +70,19 @@ impl EventHandler for Handler {
         let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
                 .create_application_command(|command| commands::ping::register(command))
-                .create_application_command(|command| commands::upload::register(command))
-                .create_application_command(|command| commands::quote::register(command))
+//                .create_application_command(|command| commands::upload::register(command))
+//                .create_application_command(|command| commands::quote::register(command))
+                .create_application_command(|command| commands::handbook::register(command))
+//                .create_application_command(|command| commands::issue::register(command))
+//                .create_application_command(|command| commands::invite::register(command))
+                .create_application_command(|command| commands::bwmf::register(command))
+                .create_application_command(|command| commands::sessiontime::register(command))
         })
         .await;
 
         info!(
             "I now have the following guild slash commands: {:#?}",
             commands
-        );
-
-        let guild_command = Command::create_global_application_command(&ctx.http, |command| {
-             commands::sessiontime::register(command)
-        })
-        .await;
-
-        info!(
-            "I created the following global slash command: {:#?}",
-            guild_command
         );
     }
 }
