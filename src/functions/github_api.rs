@@ -18,9 +18,15 @@ pub async fn create_issue(
         .send()
         .await?;
 
-    let url = response.url.to_string();
+    let url = response.html_url.to_string();
 
-    info!("GitHub API used to create issue: {}", response.id);
+    info!("GitHub API used to create issue: {}
+            With the title: {}
+            URL: {}",
+        response.id,
+        response.title,
+        response.html_url
+        );
 
     Ok(url)
 }

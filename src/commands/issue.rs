@@ -33,9 +33,9 @@ pub async fn run(
 ) -> Result<(), SerenityError> {
 
     let option = options.get(0);
-    let mut url: String = String::new();
 
-    let content = if let Some(command_data_option) = option {
+    if let Some(command_data_option) = option {
+
         if let Some(CommandDataOptionValue::String(commandname)) = &command_data_option.resolved { 
 
             let mut title_input = CreateInputText::default();
@@ -103,13 +103,33 @@ pub async fn run(
                     }
                     info!("title = {:#?}, description = {:#?}", title, description);
                     
-                    url =  create_issue(
-                        "BAD",
+                    let mut issues_url = String::new();
+                    let mut project = String::new();
+                    match commandname.as_str() {
+                        "potato" => {
+                            project = "POTATO".to_string();
+                            issues_url = "https://github.com/BourbonWarfare/POTATO/issues".to_string();
+                        }
+                        "potbot" => {
+                            project = "potato_bot".to_string();
+                            issues_url = "https://github.com/BourbonWarfare/potato_bot/issues".to_string();
+                        }
+                        "bwmf" => {
+                            project = "bwmf".to_string();
+                            issues_url = "https://github.com/BourbonWarfare/bwmf/issues".to_string();
+                        }
+                        _ => {
+                            error!("Shouldn't get here. Something went wrong'");
+                            project = "POTATO".to_string();
+                            issues_url = "https://github.com/BourbonWarfare/POTATO/issues".to_string();
+                        }
+                    };
+
+                    let url = create_issue(
+                        &project,
                         &title.unwrap().to_string(),
                         &description.unwrap().to_string())
-                    .await
-                    .unwrap();
-
+                    .await;
 
                     match int.create_interaction_response(&ctx.http, |r| {
                         r.kind(InteractionResponseType::DeferredUpdateMessage)
@@ -119,52 +139,41 @@ pub async fn run(
                         Ok(()) => info!("Finished creating issue for {:#?}", &commandname),
                         Err(error) => error!("Failed: {}", error),
                     }
-                    info!("url: {:#?}", url);
+                    
+                    let mut embed = CreateEmbed::default();
+
+                    embed
+                        .title(format!("New issue created in {:#?}", &commandname))
+                        .description(format!("Your new issue can be viewed using the following link
+                            {}
+                            or but clicking the title of this message.
+
+                            All {} issues can be viewed here:
+                            {}
+                            ", &url.as_ref().unwrap(), &commandname, issues_url))
+                        .url(&url.unwrap());
+
+                    if let Err(why) = command
+                        .create_followup_message(&ctx.http, |followup| {
+                            followup
+                                .add_embed(embed)
+                                .ephemeral(false)
+                        })
+                    .await
+                    {
+                        error!("Unable to create message response: {}", why);
+                    }
                 })
                 .collect::<Vec<_>>()
                 .await;
 
-            match commandname.as_str() {
-                "potato" => {
-                    "potato".to_string()
-                }
-                "potbot" => {
-                    "potbot".to_string()
-                }
-                "bwmf" => {
-                    "bwmf".to_string()
-                }
-                _ => {
-                    "fuck".to_string()
-                }
-            }
         } else {
             error!("Failed to resolve a handbook name");
-            "Failed to resolve a handbook name".to_string()
         }
     } else {
         error!("Something went horribly wrong");
-        "Something went horribly wrong".to_string()
     };
-
-    let mut embed = CreateEmbed::default();
-
-    embed
-        .title("TEST")
-        .description("Testing ... still")
-        .url(content);
-
-    if let Err(why) = command
-        .create_followup_message(&ctx.http, |followup| {
-            followup
-                .add_embed(embed)
-                .ephemeral(true)
-        })
-        .await
-    {
-        error!("Unable to create message response: {}", why);
-    }
-    Ok(())   
+    Ok(())
 }
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
