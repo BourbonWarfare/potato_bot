@@ -1,14 +1,27 @@
 use log::error;
 
-use serenity::builder::CreateApplicationCommand;
-use serenity::model::prelude::command::CommandOptionType;
-use serenity::model::prelude::interaction::application_command::{CommandDataOption, CommandDataOptionValue};
+use serenity::{
+    builder::{CreateApplicationCommand, CreateEmbed},
+    model::prelude::command::CommandOptionType,
+    model::prelude::interaction::{
+        application_command::{
+            ApplicationCommandInteraction,
+            CommandDataOption, 
+            CommandDataOptionValue, 
+        },
+        InteractionResponseType},
+    prelude::*
+};
 
-pub fn run(options: &[CommandDataOption]) -> String {
+pub async fn run(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    options: &[CommandDataOption]
+) -> Result<(), SerenityError> {
 
     let option = options.get(0);
 
-    if let Some(command_data_option) = option {
+    let content = if let Some(command_data_option) = option {
         if let Some(CommandDataOptionValue::String(commandname)) = &command_data_option.resolved { 
             match commandname.as_str() {
                 "recruit" => {
@@ -28,7 +41,29 @@ pub fn run(options: &[CommandDataOption]) -> String {
     } else {
         error!("Something went horribly wrong");
         "Something went horribly wrong".to_string()
-    }
+    };
+
+    let mut embed = CreateEmbed::default();
+
+    embed
+        .title("📓 CLICK HERE to open handbook")
+        .description(
+            "Handbooks and other useful information can be found on our website:
+        https://forums.bourbonwarfare.com/index.php",
+        )
+        .url(content);
+
+    command
+        .create_interaction_response(&ctx.http, |response| {
+            response
+                .kind(InteractionResponseType::ChannelMessageWithSource)
+                .interaction_response_data(|message| {
+                    message
+                        .add_embed(embed)
+                        .ephemeral(true)
+                })
+        })
+        .await
 }
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {

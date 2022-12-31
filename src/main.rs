@@ -7,7 +7,7 @@ use dotenv::dotenv;
 use std::env;
 
 use serenity::async_trait;
-use serenity::model::application::interaction::{Interaction, InteractionResponseType};
+use serenity::model::application::interaction::Interaction;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::prelude::*;
@@ -18,42 +18,17 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            info!("Received command interaction: {:#?}", command);
+            info!("Received command interaction: {:#?} from: {:#?}", command.data.name, command.user.name);
 
-            let content = match command.data.name.as_str() {
-                "ping" => commands::ping::run(&command.data.options),
-//                "upload" => commands::upload::run(&command.data.options),
-                "sessiontime" => commands::sessiontime::run(&command.data.options),
-//                "quote" => commands::quote::run(&command.data.options),
-                "bwmf" => commands::bwmf::run(&command.data.options),
-                "handbook" => commands::handbook::run(&command.data.options),
-//                "issue" => commands::issue::run(&command.data.options),
-//                "invite" => commands::invite::run(&command.data.options),
-                _ => "not implemented :(".to_string(),
+            let output: Result<(), SerenityError>= match command.data.name.as_str() {
+                "sessiontime" => commands::sessiontime::run(&ctx, &command, &command.data.options).await,
+                "bwmf" => commands::bwmf::run(&ctx, &command, &command.data.options).await,
+                "handbook" => commands::handbook::run(&ctx, &command, &command.data.options).await,
+                "issue" => commands::issue::run(&ctx, &command, &command.data.options).await,
+                _ => Err(SerenityError::Other("No slash command by that name")),
             };
-
-            let ephemeral = match command.data.name.as_str() {
-                "handbook" => true,
-                _ => false,
-            };
-
-            if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| {
-                            message
-                                .add_embed(functions::responses::generate_embed(
-                                    command.data.name.as_str(),
-                                    content,
-                                ))
-                                .ephemeral(ephemeral)
-                        })
-                })
-                .await
-            {
-                error!("Cannot respond to slash command: {}", why);
-            }
+            info!("Executed command interaction: {:#?}", command.data.name);
+            info!("Returned: {:#?}", output)
         }
     }
 
@@ -69,12 +44,8 @@ impl EventHandler for Handler {
 
         let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
-                .create_application_command(|command| commands::ping::register(command))
-//                .create_application_command(|command| commands::upload::register(command))
-//                .create_application_command(|command| commands::quote::register(command))
                 .create_application_command(|command| commands::handbook::register(command))
-//                .create_application_command(|command| commands::issue::register(command))
-//                .create_application_command(|command| commands::invite::register(command))
+                .create_application_command(|command| commands::issue::register(command))
                 .create_application_command(|command| commands::bwmf::register(command))
                 .create_application_command(|command| commands::sessiontime::register(command))
         })
