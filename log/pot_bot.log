@@ -1,0 +1,197 @@
+2023-01-01 00:34:27 - DEBUG: Building client
+2023-01-01 00:34:28 - INFO: POTBOT-dev is connected!
+2023-01-01 00:34:28 - INFO: I now have the following guild slash commands: Ok(
+    [
+        Command {
+            id: CommandId(
+                1057311999807209612,
+            ),
+            kind: ChatInput,
+            application_id: ApplicationId(
+                1056054853232758814,
+            ),
+            guild_id: Some(
+                GuildId(
+                    174902097580523520,
+                ),
+            ),
+            name: "handbook",
+            name_localized: None,
+            name_localizations: None,
+            description: "Links to our handbooks.",
+            description_localized: None,
+            description_localizations: None,
+            options: [
+                CommandOption {
+                    kind: String,
+                    name: "handbook",
+                    name_localizations: None,
+                    description: "Select which handbook.",
+                    description_localizations: None,
+                    required: true,
+                    choices: [
+                        CommandOptionChoice {
+                            name: "📘 Recruit Handbook 😕",
+                            name_localizations: None,
+                            value: String("recruit"),
+                        },
+                        CommandOptionChoice {
+                            name: "📗 Member Handbook 🔫",
+                            name_localizations: None,
+                            value: String("member"),
+                        },
+                    ],
+                    options: [],
+                    channel_types: [],
+                    min_value: None,
+                    max_value: None,
+                    min_length: None,
+                    max_length: None,
+                    autocomplete: false,
+                },
+            ],
+            default_member_permissions: None,
+            dm_permission: None,
+            default_permission: true,
+            version: CommandVersionId(
+                1057318504426115123,
+            ),
+        },
+        Command {
+            id: CommandId(
+                1058851452170280960,
+            ),
+            kind: ChatInput,
+            application_id: ApplicationId(
+                1056054853232758814,
+            ),
+            guild_id: Some(
+                GuildId(
+                    174902097580523520,
+                ),
+            ),
+            name: "issue",
+            name_localized: None,
+            name_localizations: None,
+            description: "Create a github issue",
+            description_localized: None,
+            description_localizations: None,
+            options: [
+                CommandOption {
+                    kind: String,
+                    name: "issue",
+                    name_localizations: None,
+                    description: "What system does this issue pertain to.",
+                    description_localizations: None,
+                    required: true,
+                    choices: [
+                        CommandOptionChoice {
+                            name: "Issue is with POTATO",
+                            name_localizations: None,
+                            value: String("potato"),
+                        },
+                        CommandOptionChoice {
+                            name: "Issue is with POTBOT",
+                            name_localizations: None,
+                            value: String("potbot"),
+                        },
+                        CommandOptionChoice {
+                            name: "Issue is with bwmf",
+                            name_localizations: None,
+                            value: String("bwmf"),
+                        },
+                    ],
+                    options: [],
+                    channel_types: [],
+                    min_value: None,
+                    max_value: None,
+                    min_length: None,
+                    max_length: None,
+                    autocomplete: false,
+                },
+            ],
+            default_member_permissions: None,
+            dm_permission: None,
+            default_permission: true,
+            version: CommandVersionId(
+                1058851452170280962,
+            ),
+        },
+        Command {
+            id: CommandId(
+                1057311999807209613,
+            ),
+            kind: ChatInput,
+            application_id: ApplicationId(
+                1056054853232758814,
+            ),
+            guild_id: Some(
+                GuildId(
+                    174902097580523520,
+                ),
+            ),
+            name: "bwmf",
+            name_localized: None,
+            name_localizations: None,
+            description: "Download the latest Mission Framework",
+            description_localized: None,
+            description_localizations: None,
+            options: [],
+            default_member_permissions: None,
+            dm_permission: None,
+            default_permission: true,
+            version: CommandVersionId(
+                1057311999807209617,
+            ),
+        },
+        Command {
+            id: CommandId(
+                1058851452170280961,
+            ),
+            kind: ChatInput,
+            application_id: ApplicationId(
+                1056054853232758814,
+            ),
+            guild_id: Some(
+                GuildId(
+                    174902097580523520,
+                ),
+            ),
+            name: "sessiontime",
+            name_localized: None,
+            name_localizations: None,
+            description: "Calculate your local time relative to session time",
+            description_localized: None,
+            description_localizations: None,
+            options: [
+                CommandOption {
+                    kind: Number,
+                    name: "time",
+                    name_localizations: None,
+                    description: "Relative time in hours. Can be negative and/or decimal",
+                    description_localizations: None,
+                    required: false,
+                    choices: [],
+                    options: [],
+                    channel_types: [],
+                    min_value: None,
+                    max_value: None,
+                    min_length: None,
+                    max_length: None,
+                    autocomplete: false,
+                },
+            ],
+            default_member_permissions: None,
+            dm_permission: None,
+            default_permission: true,
+            version: CommandVersionId(
+                1058851452170280963,
+            ),
+        },
+    ],
+)
+2023-01-01 00:34:34 - INFO: Received command interaction: "bwmf" from: "BadWolf"
+2023-01-01 00:34:34 - INFO: Executed command interaction: "bwmf"
+2023-01-01 00:34:34 - INFO: Returned: Ok(
+    (),
+)

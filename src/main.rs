@@ -2,6 +2,7 @@ mod commands;
 mod functions;
 
 use log::{debug, error, info};
+use log4rs;
 
 use dotenv::dotenv;
 use std::env;
@@ -63,7 +64,7 @@ async fn main() {
     // Load env
     dotenv().ok();
     // Enable Logging
-    env_logger::init();
+    log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
     // Configure the client with your Discord bot token in the environment.
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
