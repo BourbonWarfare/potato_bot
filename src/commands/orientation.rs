@@ -83,7 +83,7 @@ pub async fn run(
 
 
         let channel = ChannelId(
-            env::var("MEMBER_CHANNEL")
+            env::var("RECRUITMENT_CHANNEL")
                 .expect("expected a str containing a channel id.")
                 .parse()
                 .expect("Expected a ChannelId integer")
