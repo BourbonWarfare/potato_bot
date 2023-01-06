@@ -41,4 +41,4 @@ pub async fn run(
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command.name("bwmf").description("Download the latest Mission Framework")
-}
+} 

@@ -26,6 +26,7 @@ impl EventHandler for Handler {
                 "bwmf" => commands::bwmf::run(&ctx, &command, &command.data.options).await,
                 "handbook" => commands::handbook::run(&ctx, &command, &command.data.options).await,
                 "issue" => commands::issue::run(&ctx, &command, &command.data.options).await,
+                "orientation" => commands::orientation::run(&ctx, &command, &command.data.options).await,
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -49,6 +50,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| commands::issue::register(command))
                 .create_application_command(|command| commands::bwmf::register(command))
                 .create_application_command(|command| commands::sessiontime::register(command))
+                .create_application_command(|command| commands::orientation::register(command))
         })
         .await;
 

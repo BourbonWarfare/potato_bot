@@ -21,5 +21,6 @@ features = ["model"
     ,"client"
     ,"gateway"
     ,"builder"
+    ,"cache"
     ,"collector"]
 version = "0.11.5" 
