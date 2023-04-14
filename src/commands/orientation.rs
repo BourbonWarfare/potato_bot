@@ -55,7 +55,9 @@ pub async fn run(
                 Make sure that you have set up and tested your mods!
 
                 Details can be found in:
-                https://forums.bourbonwarfare.com/viewtopic.php?t=6877"
+                https://forums.bourbonwarfare.com/viewtopic.php?t=6877
+                
+                Please provide some idea of your availability below."
             );
 
         if let Err(error) = command
@@ -65,7 +67,7 @@ pub async fn run(
                     .interaction_response_data(|message| {
                         message
                             .add_embed(embed)
-                            .ephemeral(true)
+                            .ephemeral(false)
                     })
             })
         .await
