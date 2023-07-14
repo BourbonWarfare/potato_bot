@@ -1,5 +1,5 @@
-pub mod bwmf;
-pub mod handbook;
-pub mod sessiontime;
-pub mod issue;
-pub mod orientation;
+pub mod mission_making;
+pub mod potato;
+pub mod recruitment;
+pub mod session;
+
