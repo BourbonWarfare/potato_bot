@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.23.0", features = ["full"] }
+tokio = { version = "1.29.1", features = ["full"] }
 dotenv = "0.15.0"
-log = "0.4.0"
-env_logger = "0.9.0"
-chrono = "0.4.23"
-octocrab = "0.18.1"
+log = "0.4.19"
+env_logger = "0.10.0"
+chrono = "0.4.26"
+octocrab = "0.26.0"
 log4rs = "1.2.0"
 
 [dependencies.serenity]
@@ -23,4 +23,4 @@ features = ["model"
     ,"builder"
     ,"cache"
     ,"collector"]
-version = "0.11.5" 
+version = "0.11.6" 
