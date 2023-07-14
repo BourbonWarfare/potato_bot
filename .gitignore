@@ -1,4 +1,4 @@
 .env
 /target
 src/commands/inProgress/
-log/
+/log
