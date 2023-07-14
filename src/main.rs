@@ -41,9 +41,9 @@ impl EventHandler for Handler {
                 "orientation" => {
                     recruitment::orientation::run(&ctx, &command, &command.data.options).await
                 }
-                "upload" => {
-                    mission_making::upload::run(&ctx, &command, &command.data.options).await
-                }
+                // "upload" => {
+                //     mission_making::upload::run(&ctx, &command, &command.data.options).await
+                // }
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -68,7 +68,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| potato::issue::register(command))
                 .create_application_command(|command| mission_making::bwmf::register(command))
                 .create_application_command(|command| session::sessiontime::register(command))
-                .create_application_command(|command| mission_making::upload::register(command))
+            // .create_application_command(|command| mission_making::upload::register(command))
         })
         .await;
 
