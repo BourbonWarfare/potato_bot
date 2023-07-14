@@ -1,18 +1,16 @@
-use log::{
-    error,
-    info,
-};
+use log::{error, info};
 
 use serenity::{
     builder::{CreateApplicationCommand, CreateEmbed},
     model::id::ChannelId,
-    model::prelude::{interaction::{
-        application_command::{
-            ApplicationCommandInteraction,
-            CommandDataOption, 
+    model::prelude::{
+        interaction::{
+            application_command::{ApplicationCommandInteraction, CommandDataOption},
+            InteractionResponseType,
         },
-        InteractionResponseType}, RoleId},
-    prelude::*, 
+        RoleId,
+    },
+    prelude::*,
     utils::MessageBuilder,
 };
 
@@ -21,9 +19,8 @@ use std::env;
 pub async fn run(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    _options: &[CommandDataOption]
+    _options: &[CommandDataOption],
 ) -> Result<(), SerenityError> {
-
     let member = command.member.clone();
 
     let orientor_role: u64 = env::var("ORIENTATION_ROLE")
@@ -42,35 +39,33 @@ pub async fn run(
         .parse()
         .expect("Expected a roleId integer");
 
-    if command.user.has_role(&ctx.http, command.guild_id.unwrap(), RoleId(recruit_role)).await.unwrap() {
-
+    if command
+        .user
+        .has_role(&ctx.http, command.guild_id.unwrap(), RoleId(recruit_role))
+        .await
+        .unwrap()
+    {
         // Create the response to go to the recruit
 
         let mut embed = CreateEmbed::default();
 
-        embed
-            .title("📢 Calling an Orientor")
-            .description(
-                "A member will reach out to set up an orientation.
+        embed.title("📢 Calling an Orientor").description(
+            "A member will reach out to set up an orientation.
                 Make sure that you have set up and tested your mods!
 
                 Details can be found in:
                 https://forums.bourbonwarfare.com/viewtopic.php?t=6877
                 
-                Please provide some idea of your availability below."
-            );
+                Please provide some idea of your availability below.",
+        );
 
         if let Err(error) = command
             .create_interaction_response(&ctx.http, |response| {
                 response
                     .kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|message| {
-                        message
-                            .add_embed(embed)
-                            .ephemeral(false)
-                    })
+                    .interaction_response_data(|message| message.add_embed(embed).ephemeral(false))
             })
-        .await
+            .await
         {
             error!("{:#?}", error);
         };
@@ -78,58 +73,62 @@ pub async fn run(
         // sends message to orientor role
 
         let content = MessageBuilder::new()
-            .push("📣 ").role(orientor_role)
+            .push("📣 ")
+            .role(orientor_role)
             .push_line_safe(" a new recruit is looking to get oriented.")
-            .push("Please reach out to ").user(command.user.id).push(" to arrange something.")
+            .push("Please reach out to ")
+            .user(command.user.id)
+            .push(" to arrange something.")
             .build();
-
 
         let channel = ChannelId(
             env::var("RECRUITMENT_CHANNEL")
                 .expect("expected a str containing a channel id.")
                 .parse()
-                .expect("Expected a ChannelId integer")
+                .expect("Expected a ChannelId integer"),
         );
 
         if let Err(error) = channel
-            .send_message(&ctx.http, |message|{
-                message
-                    .content(content)
-            })
-        .await
+            .send_message(&ctx.http, |message| message.content(content))
+            .await
         {
             error!("{:#?}", error);
         };
 
-        match &command.user.has_role(&ctx.http, command.guild_id.unwrap(), RoleId(awaiting_role)).await.unwrap() {
-
+        match &command
+            .user
+            .has_role(&ctx.http, command.guild_id.unwrap(), RoleId(awaiting_role))
+            .await
+            .unwrap()
+        {
             true => {
-                info!("{} Already has the Awaiting orientation role.", command.user.name)
-            },
+                info!(
+                    "{} Already has the Awaiting orientation role.",
+                    command.user.name
+                )
+            }
             false => {
                 member.unwrap().add_role(&ctx.http, awaiting_role).await;
-                info!("Added the Awaiting orientation role to {}", command.user.name)
-            },
+                info!(
+                    "Added the Awaiting orientation role to {}",
+                    command.user.name
+                )
+            }
         };
     } else {
-        
         let mut embed = CreateEmbed::default();
 
         embed
             .title("⚠ You are not a recruit")
             .description("This is only intended for those with the recruit role");
-        
+
         if let Err(error) = command
             .create_interaction_response(&ctx.http, |response| {
                 response
                     .kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|message| {
-                        message
-                            .add_embed(embed)
-                            .ephemeral(true)
-                    })
+                    .interaction_response_data(|message| message.add_embed(embed).ephemeral(true))
             })
-        .await
+            .await
         {
             error!("{:#?}", error);
         };

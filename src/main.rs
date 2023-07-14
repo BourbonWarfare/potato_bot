@@ -13,20 +13,37 @@ use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::prelude::*;
 
+use commands::mission_making;
+use commands::potato;
+use commands::recruitment;
+use commands::session;
+
 struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            info!("Received command interaction: {:#?} from: {:#?}", command.data.name, command.user.name);
+            info!(
+                "Received command interaction: {:#?} from: {:#?}",
+                command.data.name, command.user.name
+            );
 
-            let output: Result<(), SerenityError>= match command.data.name.as_str() {
-                "sessiontime" => commands::sessiontime::run(&ctx, &command, &command.data.options).await,
-                "bwmf" => commands::bwmf::run(&ctx, &command, &command.data.options).await,
-                "handbook" => commands::handbook::run(&ctx, &command, &command.data.options).await,
-                "issue" => commands::issue::run(&ctx, &command, &command.data.options).await,
-                "orientation" => commands::orientation::run(&ctx, &command, &command.data.options).await,
+            let output: Result<(), SerenityError> = match command.data.name.as_str() {
+                "sessiontime" => {
+                    session::sessiontime::run(&ctx, &command, &command.data.options).await
+                }
+                "bwmf" => mission_making::bwmf::run(&ctx, &command, &command.data.options).await,
+                "handbook" => {
+                    recruitment::handbook::run(&ctx, &command, &command.data.options).await
+                }
+                "issue" => potato::issue::run(&ctx, &command, &command.data.options).await,
+                "orientation" => {
+                    recruitment::orientation::run(&ctx, &command, &command.data.options).await
+                }
+                "upload" => {
+                    mission_making::upload::run(&ctx, &command, &command.data.options).await
+                }
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -46,11 +63,12 @@ impl EventHandler for Handler {
 
         let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
-                .create_application_command(|command| commands::handbook::register(command))
-                .create_application_command(|command| commands::issue::register(command))
-                .create_application_command(|command| commands::bwmf::register(command))
-                .create_application_command(|command| commands::sessiontime::register(command))
-                .create_application_command(|command| commands::orientation::register(command))
+                .create_application_command(|command| recruitment::handbook::register(command))
+                .create_application_command(|command| recruitment::orientation::register(command))
+                .create_application_command(|command| potato::issue::register(command))
+                .create_application_command(|command| mission_making::bwmf::register(command))
+                .create_application_command(|command| session::sessiontime::register(command))
+                .create_application_command(|command| mission_making::upload::register(command))
         })
         .await;
 
