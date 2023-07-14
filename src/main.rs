@@ -90,7 +90,9 @@ async fn main() {
 
     // Build our client.
     debug!("Building client");
-    let mut client = Client::builder(token, GatewayIntents::empty())
+    let intents =
+        GatewayIntents::GUILDS | GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
+    let mut client = Client::builder(token, intents)
         .event_handler(Handler)
         .await
         .expect("Error creating client");

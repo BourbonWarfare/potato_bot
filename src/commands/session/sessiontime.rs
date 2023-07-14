@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Utc, Datelike, TimeZone};
+use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
 
 use log::error;
 
@@ -7,16 +7,17 @@ use serenity::{
     model::prelude::command::CommandOptionType,
     model::prelude::interaction::{
         application_command::{
-            ApplicationCommandInteraction,
-            CommandDataOption, 
-            CommandDataOptionValue
+            ApplicationCommandInteraction, CommandDataOption, CommandDataOptionValue,
         },
-        InteractionResponseType},
-    prelude::*
+        InteractionResponseType,
+    },
+    prelude::*,
 };
 
 fn next_session(time: DateTime<Utc>) -> DateTime<Utc> {
-    let session_time_today = Utc.with_ymd_and_hms(time.year(), time.month(), time.day(), 1, 0, 0).unwrap();
+    let session_time_today = Utc
+        .with_ymd_and_hms(time.year(), time.month(), time.day(), 1, 0, 0)
+        .unwrap();
     let weekday_num = time.weekday().num_days_from_monday();
 
     // Check if weekday given is after wednesday
@@ -25,22 +26,18 @@ fn next_session(time: DateTime<Utc>) -> DateTime<Utc> {
             if time > session_time_today {
                 session_time_today + Duration::days(3 - weekday_num as i64)
             } else {
-                session_time_today 
+                session_time_today
             }
         }
-        1 | 2 => {
-            session_time_today + Duration::days(3 - weekday_num as i64)
-        }
+        1 | 2 => session_time_today + Duration::days(3 - weekday_num as i64),
         3 => {
             if time > session_time_today {
                 session_time_today + Duration::days(7 - weekday_num as i64)
             } else {
-                session_time_today 
+                session_time_today
             }
         }
-        4 | 5 | 6 => {
-            session_time_today + Duration::days(7 - weekday_num as i64)
-        }
+        4 | 5 | 6 => session_time_today + Duration::days(7 - weekday_num as i64),
         _ => {
             error!("weekday_num = {} is outside of week", weekday_num);
             session_time_today
@@ -57,36 +54,39 @@ fn relative_time(relative: f64) -> DateTime<Utc> {
 pub async fn run(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    options: &[CommandDataOption]
+    options: &[CommandDataOption],
 ) -> Result<(), SerenityError> {
-
     let option = options.get(0);
     let local: DateTime<Utc> = Utc::now();
     let next_session: DateTime<Utc> = next_session(local);
 
     let content = if let Some(command_data_option) = option {
-        if let Some(CommandDataOptionValue::Number(value)) = command_data_option.resolved { 
+        if let Some(CommandDataOptionValue::Number(value)) = command_data_option.resolved {
             let relative_time = relative_time(value);
-            format!("The requested time relative to session time
-                <t:{}:t> [**{}**] is:
+            format!(
+                "The requested time relative to session time
+<t:{}:t> [**{}**] is:
 
-                **<t:{}:t>**",
+**<t:{}:t>**",
                 next_session.timestamp(),
                 value.to_string(),
-                relative_time.timestamp())
+                relative_time.timestamp()
+            )
         } else {
             error!("Something went horribly wrong");
             "Something went horribly wrong".to_string()
         }
     } else {
-        format!("Next Session will be:
+        format!(
+            "Next Session will be:
 
-        **<t:{0}:F>**
+**<t:{0}:F>**
 
-        *Roughly* <t:{0}:R>
-        ", next_session.timestamp())
+*Roughly* <t:{0}:R>",
+            next_session.timestamp()
+        )
     };
-    
+
     let mut embed = CreateEmbed::default();
 
     embed
@@ -98,11 +98,7 @@ pub async fn run(
         .create_interaction_response(&ctx.http, |response| {
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
-                .interaction_response_data(|message| {
-                    message
-                        .add_embed(embed)
-                        .ephemeral(false)
-                })
+                .interaction_response_data(|message| message.add_embed(embed).ephemeral(false))
         })
         .await
 }
@@ -125,25 +121,25 @@ mod tests {
     use super::*;
     #[test]
     fn session_test() {
-        assert_eq!(next_session(
-                Utc.with_ymd_and_hms(2022,12,18,12,0,0).unwrap()),
-                Utc.with_ymd_and_hms(2022,12,19,1,0,0).unwrap()
-                );
-        assert_eq!(next_session(
-                Utc.with_ymd_and_hms(2022,12,13,12,0,0).unwrap()),
-                Utc.with_ymd_and_hms(2022,12,15,1,0,0).unwrap()
-                );
-        assert_eq!(next_session(
-                Utc.with_ymd_and_hms(2022,12,15,0,10,0).unwrap()),
-                Utc.with_ymd_and_hms(2022,12,15,1,0,0).unwrap()
-                );
-        assert_eq!(next_session(
-                Utc.with_ymd_and_hms(2022,12,15,12,0,0).unwrap()),
-                Utc.with_ymd_and_hms(2022,12,19,1,0,0).unwrap()
-                );
-        assert_eq!(next_session(
-                Utc.with_ymd_and_hms(2022,12,19,0,10,0).unwrap()),
-                Utc.with_ymd_and_hms(2022,12,19,1,0,0).unwrap()
-                );
+        assert_eq!(
+            next_session(Utc.with_ymd_and_hms(2022, 12, 18, 12, 0, 0).unwrap()),
+            Utc.with_ymd_and_hms(2022, 12, 19, 1, 0, 0).unwrap()
+        );
+        assert_eq!(
+            next_session(Utc.with_ymd_and_hms(2022, 12, 13, 12, 0, 0).unwrap()),
+            Utc.with_ymd_and_hms(2022, 12, 15, 1, 0, 0).unwrap()
+        );
+        assert_eq!(
+            next_session(Utc.with_ymd_and_hms(2022, 12, 15, 0, 10, 0).unwrap()),
+            Utc.with_ymd_and_hms(2022, 12, 15, 1, 0, 0).unwrap()
+        );
+        assert_eq!(
+            next_session(Utc.with_ymd_and_hms(2022, 12, 15, 12, 0, 0).unwrap()),
+            Utc.with_ymd_and_hms(2022, 12, 19, 1, 0, 0).unwrap()
+        );
+        assert_eq!(
+            next_session(Utc.with_ymd_and_hms(2022, 12, 19, 0, 10, 0).unwrap()),
+            Utc.with_ymd_and_hms(2022, 12, 19, 1, 0, 0).unwrap()
+        );
     }
 }
