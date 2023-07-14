@@ -1,5 +1,11 @@
 use log::{error, info};
 
+use std::io::Write;
+use std::path::Path;
+
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
+
 use serenity::{
     builder::{CreateApplicationCommand, CreateComponents, CreateEmbed, CreateInputText},
     model::prelude::command::CommandOptionType,
@@ -36,7 +42,14 @@ pub async fn run(
         if let Some(CommandDataOptionValue::Attachment(attachment)) = &command_data_option.resolved
         {
             info!("Attachment: {:?}", attachment);
-            attachment.download().await?;
+            let content = attachment
+                .download()
+                .await
+                .expect("Error downloading file.");
+            let mut file = File::create(&attachment.filename)
+                .await
+                .expect("error creating file");
+            file.write_all(&content).await.expect("error writing file");
         } else {
             error!("Failed to resolve a attachment");
         }
