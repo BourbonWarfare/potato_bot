@@ -1,4 +1,5 @@
 use log::{error, info};
+use std::env;
 
 use std::io::Write;
 use std::path::Path;
@@ -23,11 +24,20 @@ pub async fn run(
     let option_repo = options.get(0);
     let option_attachment = options.get(1);
 
+    let mut path = String::new();
+    let mut embed = CreateEmbed::default();
+
     if let Some(command_data_option) = option_repo {
         if let Some(CommandDataOptionValue::String(commandname)) = &command_data_option.resolved {
             match commandname.as_str() {
-                "main" => {}
-                "alt" => {}
+                "main" => {
+                    path = env::var("MAIN_MISSIONS_REPO_PATH")
+                        .expect("Unable to find MAIN_MISSIONS_REPO_PATH env")
+                }
+                "alt" => {
+                    path = env::var("ALT_MISSIONS_REPO_PATH")
+                        .expect("Unable to find ALT_MISSIONS_REPO_PATH env")
+                }
                 _ => {
                     error!("no repo given")
                 }
@@ -46,10 +56,26 @@ pub async fn run(
                 .download()
                 .await
                 .expect("Error downloading file.");
-            let mut file = File::create(&attachment.filename)
+            let full_path = format!("{}/{}", &path, &attachment.filename);
+            let mut file = File::create(full_path).await.expect("Error creating file");
+            file.write_all(&content).await.expect("Error writing file");
+
+            command
+                .defer(&ctx.http)
                 .await
-                .expect("error creating file");
-            file.write_all(&content).await.expect("error writing file");
+                .expect("Unable to defer interaction");
+
+            embed.title(&attachment.filename);
+
+            command
+                .edit_original_interaction_response(
+                    &ctx.http,
+                    |response| -> &mut serenity::builder::EditInteractionResponse {
+                        response.set_embed(embed)
+                    },
+                )
+                .await
+                .expect("Unable to edit original interaction response");
         } else {
             error!("Failed to resolve a attachment");
         }
