@@ -49,7 +49,7 @@ pub async fn run(
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("upload")
-        .description("Create a github issue")
+        .description("Upload a mission to the game server")
         .create_option(|option| {
             option
                 .name("upload")
