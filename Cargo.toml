@@ -11,7 +11,7 @@ dotenv = "0.15.0"
 log = "0.4.19"
 env_logger = "0.10.0"
 chrono = "0.4.26"
-octocrab = "0.26.0"
+octocrab = "0.29.1"
 log4rs = "1.2.0"
 
 [dependencies.serenity]
