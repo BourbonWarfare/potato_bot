@@ -2,3 +2,6 @@
 /target
 src/commands/inProgress/
 log/
+test/test.pbo
+test
+Cargo.lock

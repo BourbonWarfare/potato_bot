@@ -1,4 +1,5 @@
 mod commands;
+mod events;
 mod functions;
 
 use log::{debug, error, info};
@@ -6,6 +7,7 @@ use log4rs;
 
 use dotenv::dotenv;
 use std::env;
+use std::{mem::MaybeUninit, sync::Arc};
 
 use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
@@ -18,7 +20,32 @@ use commands::potato;
 use commands::recruitment;
 use commands::session;
 
+use axum::{routing::post, Router};
+use std::net::SocketAddr;
+
 struct Handler;
+
+pub struct CacheAndHttp();
+
+static mut SINGLETON: MaybeUninit<Arc<serenity::CacheAndHttp>> = MaybeUninit::uninit();
+
+impl CacheAndHttp {
+    /// Gets a reference to the Bot cache and http
+    ///
+    /// # Panics
+    ///
+    /// Panics if the bot does not exists
+    pub fn get() -> Arc<serenity::CacheAndHttp> {
+        unsafe { SINGLETON.assume_init_ref().clone() }
+    }
+
+    /// Initializes the Bot cache and http
+    pub fn init(bot: Arc<serenity::CacheAndHttp>) {
+        unsafe {
+            SINGLETON = MaybeUninit::new(bot);
+        }
+    }
+}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -94,6 +121,23 @@ async fn main() {
         .event_handler(Handler)
         .await
         .expect("Error creating client");
+
+    // Use CacheAndHttp to avoid having to clone the client before passing it
+    // into the handler, and so that we can access the context and http externally.
+    CacheAndHttp::init(Arc::clone(&client.cache_and_http));
+
+    let app = Router::new()
+        .route("/message", post(events::message::message))
+        .route("/embed", post(events::message::embed));
+
+    tokio::spawn(async {
+        let addr = SocketAddr::from(([127, 0, 0, 1], 8082));
+        println!("Server started, listening on {addr}");
+        axum::Server::bind(&addr)
+            .serve(app.into_make_service())
+            .await
+            .expect("Failed to start server");
+    });
 
     // Finally, start a single shard, and start listening to events.
     //
