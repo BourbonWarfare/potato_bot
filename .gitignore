@@ -3,3 +3,4 @@
 src/commands/inProgress/
 /log
 test/test.pbo
+*.pbo

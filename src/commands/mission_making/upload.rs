@@ -1,11 +1,7 @@
 use log::{error, info};
-use std::env;
-
-use tokio::fs::File;
-use tokio::io::AsyncWriteExt;
 
 use serenity::{
-    builder::{CreateApplicationCommand, CreateEmbed},
+    builder::{CreateApplicationCommand, CreateComponents, CreateEmbed, CreateInputText},
     model::prelude::command::CommandOptionType,
     model::prelude::interaction::application_command::{
         ApplicationCommandInteraction, CommandDataOption, CommandDataOptionValue,
@@ -18,29 +14,27 @@ pub async fn run(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> Result<(), SerenityError> {
-    info!("upload command called");
-
     let option_repo = options.get(0);
     let option_attachment = options.get(1);
 
-    let mut env_path = String::new();
-    let mut embed = CreateEmbed::default();
-
+<<<<<<< Updated upstream
     if let Some(command_data_option) = option_repo {
         if let Some(CommandDataOptionValue::String(commandname)) = &command_data_option.resolved {
             match commandname.as_str() {
-                "main" => {
-                    env_path =
-                        env::var("MAIN_MISSIONS_PATH").expect("MAIN_MISSIONS_PATH env var expected")
-                }
-                "alt" => {
-                    env_path =
-                        env::var("ALT_MISSIONS_PATH").expect("ALT_MISSIONS_PATH env var expected")
-                }
+                "main" => {}
+                "alt" => {}
                 _ => {
                     error!("no repo given")
                 }
             }
+=======
+    let env_path = env::var("MISSIONS_UPLOAD_PATH").expect("MISSIONS_UPLOAD_PATH env var expected");
+    let mut embed = CreateEmbed::default();
+
+    if let Some(command_data_option) = option_repo {
+        if let Some(CommandDataOptionValue::String(commandname)) = &command_data_option.resolved {
+            info!("Repo: {:?}", commandname);
+>>>>>>> Stashed changes
         } else {
             error!("Failed to resolve a repo name");
         }
@@ -50,22 +44,34 @@ pub async fn run(
     if let Some(command_data_option) = option_attachment {
         if let Some(CommandDataOptionValue::Attachment(attachment)) = &command_data_option.resolved
         {
-            let full_path = format!("{}/{}", env_path, &attachment.filename);
+<<<<<<< Updated upstream
             info!("Attachment: {:?}", attachment);
-            let content = attachment
-                .download()
-                .await
-                .expect("Error downloading file.");
+            attachment.download().await?;
+=======
+            if attachment.filename.contains(".pbo") {
+                let full_path = format!("{}/{}", env_path, &attachment.filename);
+                info!("Attachment: {:?}", attachment);
+                let content = attachment
+                    .download()
+                    .await
+                    .expect("Error downloading file.");
 
-            let mut file = File::create(full_path).await.expect("Error creating file");
-            file.write_all(&content).await.expect("Error writing file");
+                let mut file = File::create(full_path).await.expect("Error creating file");
+                file.write_all(&content).await.expect("Error writing file");
 
+                let description = format!("File uploaded by {:?}", &command.user.name);
+
+                embed.title(&attachment.filename).description(description);
+            } else {
+                embed
+                    .title(&attachment.filename)
+                    .description("File is not a pbo");
+                error!("File is not a pbo");
+            }
             command
                 .defer(&ctx.http)
                 .await
                 .expect("Unable to defer interaction");
-
-            embed.title(&attachment.filename);
 
             command
                 .edit_original_interaction_response(
@@ -76,6 +82,7 @@ pub async fn run(
                 )
                 .await
                 .expect("Unable to edit original interaction response");
+>>>>>>> Stashed changes
         } else {
             error!("Failed to resolve a attachment");
         }
@@ -88,7 +95,7 @@ pub async fn run(
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("upload")
-        .description("Upload a mission to the game server")
+        .description("Create a github issue")
         .create_option(|option| {
             option
                 .name("upload")
