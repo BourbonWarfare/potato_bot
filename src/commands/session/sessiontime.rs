@@ -16,7 +16,7 @@ use serenity::{
 };
 
 fn next_session(time: DateTime<Utc>) -> DateTime<Utc> {
-    let session_time_today = Utc.with_ymd_and_hms(time.year(), time.month(), time.day(), 1, 0, 0).unwrap();
+    let session_time_today = Utc.with_ymd_and_hms(time.year(), time.month(), time.day(), 0, 0, 0).unwrap();
     let weekday_num = time.weekday().num_days_from_monday();
 
     // Check if weekday given is after wednesday
@@ -49,7 +49,7 @@ fn next_session(time: DateTime<Utc>) -> DateTime<Utc> {
 }
 
 fn relative_time(relative: f64) -> DateTime<Utc> {
-    let session_time_today = Utc.with_ymd_and_hms(2022, 1, 1, 1, 0, 0).unwrap();
+    let session_time_today = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
     let seconds: i64 = (relative * 3600.0) as i64;
     session_time_today + Duration::seconds(seconds)
 }
