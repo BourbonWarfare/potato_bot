@@ -15,6 +15,7 @@ use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::prelude::*;
 
+use commands::community;
 use commands::mission_making;
 use commands::potato;
 use commands::recruitment;
@@ -68,6 +69,8 @@ impl EventHandler for Handler {
                 "orientation" => {
                     recruitment::orientation::run(&ctx, &command, &command.data.options).await
                 }
+                "help" => community::help::run(&ctx, &command, &command.data.options).await,
+                "docs" => community::docs::run(&ctx, &command, &command.data.options).await,
                 // "upload" => {
                 //     mission_making::upload::run(&ctx, &command, &command.data.options).await
                 // }
@@ -95,6 +98,8 @@ impl EventHandler for Handler {
                 .create_application_command(|command| potato::issue::register(command))
                 .create_application_command(|command| mission_making::bwmf::register(command))
                 .create_application_command(|command| session::sessiontime::register(command))
+                .create_application_command(|command| community::docs::register(command))
+                .create_application_command(|command| community::help::register(command))
             // .create_application_command(|command| mission_making::upload::register(command))
         })
         .await;
