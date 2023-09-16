@@ -1,6 +1,5 @@
 use log::{error, info};
 
-use serenity::{builder::CreateSelectMenu, model::prelude::ChannelId};
 use std::fs::File;
 use std::{error::Error, io::Read};
 
@@ -117,7 +116,7 @@ pub async fn run(
 
             let mut embed = CreateEmbed::default();
 
-            let file_path = "./template/leadership_feedback";
+            let file_path = "./templates/leadership_feedback";
 
             let description = match read_file_to_string(file_path) {
                 Ok(contents) => {
