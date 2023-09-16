@@ -1,0 +1,18 @@
+Use the copy to clipboard button at the top right corner of the code block below and paste into your own message. 
+You will need to replace anything in square brackets with the appropriate text.
+```
+**__SESSION__** : [thread]
+**__MISSION__** : `[mission_type]`
+
+**You were** : `[you_were]`
+**I was** : `[i_was]`
+
+<:greenAAR:1145575371551543316> **Sustains** : 
+[sustains]
+
+<:orangeAAR:1145575371551543316> **Improves** : 
+[improves]
+
+<:happypotato:497111945925623809> **Overall comments** :
+[overall]
+```

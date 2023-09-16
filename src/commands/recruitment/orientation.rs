@@ -108,7 +108,7 @@ pub async fn run(
                 )
             }
             false => {
-                member.unwrap().add_role(&ctx.http, awaiting_role).await;
+                let _ = member.unwrap().add_role(&ctx.http, awaiting_role).await;
                 info!(
                     "Added the Awaiting orientation role to {}",
                     command.user.name

@@ -85,8 +85,8 @@ pub async fn run(
                             }
                             InputText(input) if input.custom_id == "description" => {
                                 description = Some(input.value.clone());
-                                &description.as_mut().unwrap().push_str("\n\n Reported by: ");
-                                &description.as_mut().unwrap().push_str(&command.user.name);
+                                description.as_mut().unwrap().push_str("\n\n Reported by: ");
+                                description.as_mut().unwrap().push_str(&command.user.name);
                             }
                             _ => return error!("No input collected"),
                         }
