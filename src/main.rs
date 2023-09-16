@@ -71,9 +71,7 @@ impl EventHandler for Handler {
                 }
                 "help" => community::help::run(&ctx, &command, &command.data.options).await,
                 "docs" => community::docs::run(&ctx, &command, &command.data.options).await,
-                // "upload" => {
-                //     mission_making::upload::run(&ctx, &command, &command.data.options).await
-                // }
+                "leadership_feedback" => session::leadership_feedback::run(&ctx, &command).await,
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -100,6 +98,9 @@ impl EventHandler for Handler {
                 .create_application_command(|command| session::sessiontime::register(command))
                 .create_application_command(|command| community::docs::register(command))
                 .create_application_command(|command| community::help::register(command))
+                .create_application_command(|command| {
+                    session::leadership_feedback::register(command)
+                })
             // .create_application_command(|command| mission_making::upload::register(command))
         })
         .await;

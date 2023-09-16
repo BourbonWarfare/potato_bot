@@ -1,23 +1,169 @@
-2023-09-06 20:49:57 - INFO: Received command interaction: "sessiontime" from: ".badwolf"
-2023-09-06 20:49:58 - INFO: Executed command interaction: "sessiontime"
-2023-09-06 20:49:58 - INFO: Returned: Ok(
+2023-09-16 04:21:37 - INFO: Received command interaction: "leadership_feedback" from: ".badwolf"
+2023-09-16 04:21:37 - INFO: Creating new feedback
+2023-09-16 04:21:42 - INFO: Finished creating feedback template
+2023-09-16 04:21:42 - INFO: File contents:
+```
+SESSION : [thread]
+MISSION : [mission_type]
+
+You were : `[you_were]`
+I was : `[i_was]`
+
+Sustains : 
+[sustains]
+
+Improves : 
+[improves]
+
+Overall/Commentary :-
+[overall]
+```
+
+2023-09-16 04:21:42 - ERROR: Unable to create message response: Invalid Form Body (embeds.0.description: Must be 4096 or fewer in length.)
+2023-09-16 04:21:42 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:21:42 - INFO: Returned: Ok(
     (),
 )
-2023-09-06 20:53:05 - DEBUG: Building client
-2023-09-06 20:53:06 - INFO: POTBOT is connected!
-2023-09-06 20:53:06 - INFO: I now have the following guild slash commands: Ok(
+2023-09-16 04:21:58 - INFO: Received command interaction: "leadership_feedback" from: ".badwolf"
+2023-09-16 04:21:58 - INFO: Creating new feedback
+2023-09-16 04:22:11 - INFO: Finished creating feedback template
+2023-09-16 04:22:11 - INFO: File contents:
+```
+SESSION : [thread]
+MISSION : [mission_type]
+
+You were : `[you_were]`
+I was : `[i_was]`
+
+Sustains : 
+[sustains]
+
+Improves : 
+[improves]
+
+Overall/Commentary :-
+[overall]
+```
+
+2023-09-16 04:22:12 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:22:12 - INFO: Returned: Ok(
+    (),
+)
+2023-09-16 04:22:25 - INFO: Received command interaction: "leadership_feedback" from: ".badwolf"
+2023-09-16 04:22:25 - INFO: Creating new feedback
+2023-09-16 04:22:40 - INFO: Finished creating feedback template
+2023-09-16 04:22:40 - INFO: File contents:
+```
+SESSION : [thread]
+MISSION : [mission_type]
+
+You were : `[you_were]`
+I was : `[i_was]`
+
+Sustains : 
+[sustains]
+
+Improves : 
+[improves]
+
+Overall/Commentary :-
+[overall]
+```
+
+2023-09-16 04:22:40 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:22:40 - INFO: Returned: Ok(
+    (),
+)
+2023-09-16 04:28:38 - INFO: Received command interaction: "leadership_feedback" from: ".badwolf"
+2023-09-16 04:28:38 - INFO: Creating new feedback
+2023-09-16 04:28:49 - INFO: Finished creating feedback template
+2023-09-16 04:28:49 - INFO: File contents:
+```
+**__SESSION__** : [thread]
+**__MISSION__** : `[mission_type]`
+
+**You were** : `[you_were]`
+**I was** : `[i_was]`
+
+**Sustains** <:greenAAR:1145575371551543316> : 
+[sustains]
+
+**Improves** <:orange:1145575371551543316> : 
+[improves]
+
+**Overall/Commentary** <:happypotato:497111945925623809> :-
+[overall]
+```
+
+2023-09-16 04:28:49 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:28:49 - INFO: Returned: Ok(
+    (),
+)
+2023-09-16 04:30:29 - INFO: Received command interaction: "leadership_feedback" from: ".badwolf"
+2023-09-16 04:30:29 - INFO: Creating new feedback
+2023-09-16 04:30:49 - INFO: Finished creating feedback template
+2023-09-16 04:30:49 - INFO: File contents:
+```
+**__SESSION__** : [thread]
+**__MISSION__** : `[mission_type]`
+
+**You were** : `[you_were]`
+**I was** : `[i_was]`
+
+<:greenAAR:1145575371551543316> **Sustains** : 
+[sustains]
+
+<:orangeAAR:1145575371551543316> **Improves** : 
+[improves]
+
+<:happypotato:497111945925623809> **Overall/Commentary** :-
+[overall]
+```
+
+2023-09-16 04:30:49 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:30:49 - INFO: Returned: Ok(
+    (),
+)
+2023-09-16 04:32:22 - INFO: Received command interaction: "leadership_feedback" from: "kilo"
+2023-09-16 04:32:22 - INFO: Creating new feedback
+2023-09-16 04:33:24 - INFO: Finished creating feedback template
+2023-09-16 04:33:24 - INFO: File contents:
+```
+**__SESSION__** : [thread]
+**__MISSION__** : `[mission_type]`
+
+**You were** : `[you_were]`
+**I was** : `[i_was]`
+
+<:greenAAR:1145575371551543316> **Sustains** : 
+[sustains]
+
+<:orangeAAR:1145575371551543316> **Improves** : 
+[improves]
+
+<:happypotato:497111945925623809> **Overall/Commentary** :-
+[overall]
+```
+
+2023-09-16 04:33:24 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:33:24 - INFO: Returned: Ok(
+    (),
+)
+2023-09-16 04:40:08 - DEBUG: Building client
+2023-09-16 04:40:09 - INFO: POTBOT-dev is connected!
+2023-09-16 04:40:09 - INFO: I now have the following guild slash commands: Ok(
     [
         Command {
             id: CommandId(
-                1059666582030258337,
+                1138556723133681779,
             ),
             kind: ChatInput,
             application_id: ApplicationId(
-                1059590927930368170,
+                1056054853232758814,
             ),
             guild_id: Some(
                 GuildId(
-                    204621032428929025,
+                    174902097580523520,
                 ),
             ),
             name: "handbook",
@@ -59,20 +205,20 @@
             dm_permission: None,
             default_permission: true,
             version: CommandVersionId(
-                1059666582030258341,
+                1138556723645403151,
             ),
         },
         Command {
             id: CommandId(
-                1060743840492965968,
+                1138556723645403146,
             ),
             kind: ChatInput,
             application_id: ApplicationId(
-                1059590927930368170,
+                1056054853232758814,
             ),
             guild_id: Some(
                 GuildId(
-                    204621032428929025,
+                    174902097580523520,
                 ),
             ),
             name: "orientation",
@@ -86,20 +232,20 @@
             dm_permission: None,
             default_permission: true,
             version: CommandVersionId(
-                1060743840492965969,
+                1138556723645403152,
             ),
         },
         Command {
             id: CommandId(
-                1059666582030258338,
+                1138556723645403147,
             ),
             kind: ChatInput,
             application_id: ApplicationId(
-                1059590927930368170,
+                1056054853232758814,
             ),
             guild_id: Some(
                 GuildId(
-                    204621032428929025,
+                    174902097580523520,
                 ),
             ),
             name: "issue",
@@ -146,20 +292,20 @@
             dm_permission: None,
             default_permission: true,
             version: CommandVersionId(
-                1059666582030258342,
+                1138556723645403153,
             ),
         },
         Command {
             id: CommandId(
-                1059666582030258339,
+                1138556723645403148,
             ),
             kind: ChatInput,
             application_id: ApplicationId(
-                1059590927930368170,
+                1056054853232758814,
             ),
             guild_id: Some(
                 GuildId(
-                    204621032428929025,
+                    174902097580523520,
                 ),
             ),
             name: "bwmf",
@@ -173,20 +319,20 @@
             dm_permission: None,
             default_permission: true,
             version: CommandVersionId(
-                1059666582030258343,
+                1138556723645403154,
             ),
         },
         Command {
             id: CommandId(
-                1059666582030258340,
+                1138556723645403149,
             ),
             kind: ChatInput,
             application_id: ApplicationId(
-                1059590927930368170,
+                1056054853232758814,
             ),
             guild_id: Some(
                 GuildId(
-                    204621032428929025,
+                    174902097580523520,
                 ),
             ),
             name: "sessiontime",
@@ -217,18 +363,148 @@
             dm_permission: None,
             default_permission: true,
             version: CommandVersionId(
-                1059666582030258344,
+                1138556723645403155,
+            ),
+        },
+        Command {
+            id: CommandId(
+                1149792876755173396,
+            ),
+            kind: ChatInput,
+            application_id: ApplicationId(
+                1056054853232758814,
+            ),
+            guild_id: Some(
+                GuildId(
+                    174902097580523520,
+                ),
+            ),
+            name: "docs",
+            name_localized: None,
+            name_localizations: None,
+            description: "Get help with the bot",
+            description_localized: None,
+            description_localizations: None,
+            options: [],
+            default_member_permissions: None,
+            dm_permission: None,
+            default_permission: true,
+            version: CommandVersionId(
+                1149792876755173398,
+            ),
+        },
+        Command {
+            id: CommandId(
+                1149792876755173397,
+            ),
+            kind: ChatInput,
+            application_id: ApplicationId(
+                1056054853232758814,
+            ),
+            guild_id: Some(
+                GuildId(
+                    174902097580523520,
+                ),
+            ),
+            name: "help",
+            name_localized: None,
+            name_localizations: None,
+            description: "Get help with the bot",
+            description_localized: None,
+            description_localizations: None,
+            options: [],
+            default_member_permissions: None,
+            dm_permission: None,
+            default_permission: true,
+            version: CommandVersionId(
+                1149792876755173399,
+            ),
+        },
+        Command {
+            id: CommandId(
+                1152418098935246848,
+            ),
+            kind: ChatInput,
+            application_id: ApplicationId(
+                1056054853232758814,
+            ),
+            guild_id: Some(
+                GuildId(
+                    174902097580523520,
+                ),
+            ),
+            name: "leadership_feedback",
+            name_localized: None,
+            name_localizations: None,
+            description: "Provide leadership feedback to a member",
+            description_localized: None,
+            description_localizations: None,
+            options: [],
+            default_member_permissions: None,
+            dm_permission: None,
+            default_permission: true,
+            version: CommandVersionId(
+                1152418098935246849,
             ),
         },
     ],
 )
-2023-09-06 20:53:08 - INFO: Received command interaction: "sessiontime" from: ".badwolf"
-2023-09-06 20:53:09 - INFO: Executed command interaction: "sessiontime"
-2023-09-06 20:53:09 - INFO: Returned: Ok(
+2023-09-16 04:40:16 - INFO: Received command interaction: "leadership_feedback" from: ".badwolf"
+2023-09-16 04:40:16 - INFO: Creating new feedback
+2023-09-16 04:40:26 - INFO: Finished creating feedback template
+2023-09-16 04:40:26 - INFO: File contents:
+Use the copy to clipboard button at the top of the code block below and paste into your own message. 
+You will need to replace anything in square brackets with the appropriate text.
+```
+**__SESSION__** : [thread]
+**__MISSION__** : `[mission_type]`
+
+**You were** : `[you_were]`
+**I was** : `[i_was]`
+
+<:greenAAR:1145575371551543316> **Sustains** : 
+[sustains]
+
+<:orangeAAR:1145575371551543316> **Improves** : 
+[improves]
+
+<:happypotato:497111945925623809> **Overall comments** :
+[overall]
+```
+
+2023-09-16 04:40:27 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:40:27 - INFO: Returned: Ok(
     (),
 )
-2023-09-06 20:53:25 - INFO: Received command interaction: "sessiontime" from: ".badwolf"
-2023-09-06 20:53:26 - INFO: Executed command interaction: "sessiontime"
-2023-09-06 20:53:26 - INFO: Returned: Ok(
+2023-09-16 04:41:53 - INFO: Received command interaction: "leadership_feedback" from: ".badwolf"
+2023-09-16 04:41:53 - INFO: Creating new feedback
+2023-09-16 04:42:13 - INFO: Finished creating feedback template
+2023-09-16 04:42:13 - INFO: File contents:
+Use the copy to clipboard button at the top right corner of the code block below and paste into your own message. 
+You will need to replace anything in square brackets with the appropriate text.
+```
+**__SESSION__** : [thread]
+**__MISSION__** : `[mission_type]`
+
+**You were** : `[you_were]`
+**I was** : `[i_was]`
+
+<:greenAAR:1145575371551543316> **Sustains** : 
+[sustains]
+
+<:orangeAAR:1145575371551543316> **Improves** : 
+[improves]
+
+<:happypotato:497111945925623809> **Overall comments** :
+[overall]
+```
+
+2023-09-16 04:42:13 - INFO: Executed command interaction: "leadership_feedback"
+2023-09-16 04:42:13 - INFO: Returned: Ok(
+    (),
+)
+2023-09-16 04:43:14 - INFO: Received command interaction: "help" from: ".badwolf"
+2023-09-16 04:43:14 - INFO: Executed command interaction: "help"
+2023-09-16 04:43:14 - INFO: Returned: Ok(
     (),
 )

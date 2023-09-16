@@ -44,7 +44,8 @@ pub async fn run(
             "/sessiontime",
             "A tool to help you convert between timezones",
             false,
-        );
+        )
+        .field("/leadership_feedback", "Fill in some fields and output a template for easy formatting", false);
 
     command
         .create_interaction_response(&ctx.http, |response| {
