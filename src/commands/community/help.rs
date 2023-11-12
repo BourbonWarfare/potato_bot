@@ -25,6 +25,16 @@ pub async fn run(
             false,
         )
         .field(
+            "/html",
+            "The current modlist for BW sessions",
+            false,
+        )
+        .field(
+            "/imbatman",
+            "Get the latest bat file to launch the BW modlist without A3Launcher",
+            false,
+        )
+        .field(
             "/bwmf",
             "A download link for the latest bwmf release",
             false,
@@ -37,6 +47,11 @@ pub async fn run(
         .field(
             "/issue",
             "A submit an issue for various Potato tools",
+            false,
+        )
+        .field(
+            "/upload",
+            "Used to upload missions to arma game server mission repos",
             false,
         )
         .field("/orientation", "Request an orientation", false)
