@@ -97,6 +97,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .required(true)
                 .add_string_choice("Main mission repo", "main")
                 .add_string_choice("Off-night / alternate repo", "alternate")
+				.add_string_choice("Public / Community Event repo", "event")
         })
         .create_option(|option| {
             option
