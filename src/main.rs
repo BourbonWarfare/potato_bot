@@ -62,6 +62,9 @@ impl EventHandler for Handler {
                     session::sessiontime::run(&ctx, &command, &command.data.options).await
                 }
                 "bwmf" => mission_making::bwmf::run(&ctx, &command, &command.data.options).await,
+                "upload" => {
+                    mission_making::upload::run(&ctx, &command, &command.data.options).await
+                }
                 "handbook" => {
                     recruitment::handbook::run(&ctx, &command, &command.data.options).await
                 }
@@ -95,6 +98,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| recruitment::orientation::register(command))
                 .create_application_command(|command| potato::issue::register(command))
                 .create_application_command(|command| mission_making::bwmf::register(command))
+                .create_application_command(|command| mission_making::upload::register(command))
                 .create_application_command(|command| session::sessiontime::register(command))
                 .create_application_command(|command| community::docs::register(command))
                 .create_application_command(|command| community::help::register(command))
