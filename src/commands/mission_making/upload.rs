@@ -24,10 +24,12 @@ pub async fn run(
     let env_path = env::var("MISSIONS_UPLOAD_PATH").expect("MISSIONS_UPLOAD_PATH env var expected");
     let mut embed = CreateEmbed::default();
     let mut full_path = String::new();
+	let mut repo = String::new();
 
     if let Some(command_data_option) = option_repo {
         if let Some(CommandDataOptionValue::String(commandname)) = &command_data_option.resolved {
             info!("Repo: {:?}", commandname);
+			repo = commandname.to_string();
             full_path = format!("{}/{}", env_path, commandname.as_str());
             info!("Full_Path: {}", full_path);
         } else {
@@ -51,7 +53,7 @@ pub async fn run(
                 let mut file = File::create(final_path).await?;
                 file.write_all(&content).await?;
 
-                let description = format!("File uploaded by {:?}", &command.user.name);
+                let description = format!("File uploaded by **{}** to **{}** mission repo", &command.user.name.as_str(), repo);
 
                 embed
                     .title(format!(":white_check_mark: {}", &attachment.filename))
