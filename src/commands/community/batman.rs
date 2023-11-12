@@ -1,8 +1,14 @@
+use std::env;
+use std::path::Path;
+
 use serenity::{
     builder::{CreateApplicationCommand, CreateEmbed},
-    model::prelude::interaction::{
-        application_command::{ApplicationCommandInteraction, CommandDataOption},
-        InteractionResponseType,
+    model::prelude::{
+        interaction::{
+            application_command::{ApplicationCommandInteraction, CommandDataOption},
+            InteractionResponseType,
+        },
+        AttachmentType,
     },
     prelude::*,
 };
@@ -17,7 +23,9 @@ pub async fn run(
 
     let bat_path = env::var("BAT_FILE_PATH").expect("Expected GUILD_ID in environment");
 
-    let bat_file = [(&File::open("image.png").await?, "image.png")];
+    let path = Path::new(bat_path.as_str());
+
+    let bat_file = AttachmentType::from(path);
 
     embed
         .title("🦇 batman")
