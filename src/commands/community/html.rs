@@ -39,7 +39,7 @@ pub async fn run(
                     message
                         .add_file(html_file)
                         .add_embed(embed)
-                        .ephemeral(false)
+                        .ephemeral(true)
                 })
         })
         .await

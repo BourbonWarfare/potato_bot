@@ -36,7 +36,7 @@ pub async fn run(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.add_file(bat_file).add_embed(embed).ephemeral(false)
+                    message.add_file(bat_file).add_embed(embed).ephemeral(true)
                 })
         })
         .await
