@@ -1,21 +1,32 @@
 [package]
-name = "dev"
+name = "potato_bot"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.23.0", features = ["full"] }
 dotenv = "0.15.0"
-log = "0.4.0"
-env_logger = "0.9.0"
-chrono = "0.4.23"
-octocrab = "0.18.1"
+a2s = { version = "0.5.2", features = ["serde", "async"] }
+env_logger = "0.9.3"
+futures = "0.3"
+serde = { version = "1.0.163", features = ["derive"] }
+serde_json = "1.0.96"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "0.8", features = ["serde", "v4"] }
+tokio = { version = "1.28.1", features = ["full"] }
+futures-util = "0.3"
 log4rs = "1.2.0"
-axum = "0.6.20"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+log = "0.4.17"
+reqwest = { version = "0.11.20", features = ["json"] }
+lazy_static = "1.4.0"
+tokio-cron-scheduler = "0.9.4"
+axum = "0.7.2"
+regex = "1.10.2"
+tracing = "0.1.40"
+tracing-subscriber = {version = "0.3.18", features = ["env-filter"]}
+octocrab = "0.32.0"
+rust_socketio = { version = "0.4.4", features = ["async"] }
 
 [dependencies.serenity]
 default-features = false
@@ -26,4 +37,4 @@ features = ["model"
     ,"builder"
     ,"cache"
     ,"collector"]
-version = "0.11.5" 
+version = "0.12.0" 

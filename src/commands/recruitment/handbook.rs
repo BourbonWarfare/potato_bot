@@ -1,88 +1,67 @@
-use log::error;
-
 use serenity::{
-    builder::{CreateApplicationCommand, CreateEmbed},
-    model::prelude::command::CommandOptionType,
-    model::prelude::interaction::{
-        application_command::{
-            ApplicationCommandInteraction,
-            CommandDataOption, 
-            CommandDataOptionValue, 
-        },
-        InteractionResponseType},
-    prelude::*
+    all::{CommandInteraction, CommandOptionType, ResolvedOption, ResolvedValue},
+    builder::{
+        CreateCommand, CreateCommandOption, CreateEmbed, CreateInteractionResponse,
+        CreateInteractionResponseMessage,
+    },
+    prelude::*,
 };
+use tracing::{error, info};
 
-pub async fn run(
-    ctx: &Context,
-    command: &ApplicationCommandInteraction,
-    options: &[CommandDataOption]
-) -> Result<(), SerenityError> {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
+    let options = command.data.options();
 
-    let option = options.get(0);
-
-    let content = if let Some(command_data_option) = option {
-        if let Some(CommandDataOptionValue::String(commandname)) = &command_data_option.resolved { 
-            match commandname.as_str() {
-                "recruit" => {
-                    "https://forums.bourbonwarfare.com/viewtopic.php?t=6877".to_string()
-                }
-                "member" => {
-                    "https://forums.bourbonwarfare.com/viewtopic.php?t=579".to_string()
-                }
-                _ => {
-                    "https://forums.bourbonwarfare.com/index.php".to_string()
-                }
+    let url = if let Some(ResolvedOption {
+        value: ResolvedValue::String(handbook),
+        ..
+    }) = options.get(1)
+    {
+        info!("Getting link for handbook: {}", handbook);
+        let out = match *handbook {
+            "recruit" => "https://forums.bourbonwarfare.com/viewtopic.php?t=6877",
+            "member" => "https://forums.bourbonwarfare.com/viewtopic.php?t=579",
+            _ => {
+                error!("No handbook selected");
+                "https://forums.bourbonwarfare.com/index.php"
             }
-        } else {
-            error!("Failed to resolve a handbook name");
-            "Failed to resolve a handbook name".to_string()
-        }
+        };
+        out
     } else {
-        error!("Something went horribly wrong");
-        "Something went horribly wrong".to_string()
+        error!("No handbook selected");
+        "https://forums.bourbonwarfare.com/index.php"
     };
 
-    let mut embed = CreateEmbed::default();
-
-    embed
+    let embed = CreateEmbed::new()
         .title("📓 CLICK HERE to open handbook")
         .description(
             "Handbooks and other useful information can be found on our website:
         https://forums.bourbonwarfare.com/index.php",
         )
-        .url(content);
+        .url(url);
 
     command
-        .create_interaction_response(&ctx.http, |response| {
-            response
-                .kind(InteractionResponseType::ChannelMessageWithSource)
-                .interaction_response_data(|message| {
-                    message
-                        .add_embed(embed)
-                        .ephemeral(true)
-                })
-        })
+        .create_response(
+            &ctx.http,
+            CreateInteractionResponse::Message(
+                CreateInteractionResponseMessage::new()
+                    .embed(embed)
+                    .ephemeral(true),
+            ),
+        )
         .await
 }
 
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("handbook")
+pub fn register() -> CreateCommand {
+    CreateCommand::new("handbook")
         .description("Links to our handbooks.")
-        .create_option(|option| {
-            option
-                .name("handbook")
-                .description("Select which handbook.")
-                .kind(CommandOptionType::String)
-                .required(true)
-                .add_string_choice(
-                    "📘 Recruit Handbook 😕",
-                    "recruit"
-                )
-                .add_string_choice(
-                    "📗 Member Handbook 🔫",
-                    "member"
-                )
-        })
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::String,
+                "handbook",
+                "Select which handbook",
+            )
+            .required(true)
+            .add_string_choice("📘 Recruit Handbook 😕", "recruit")
+            .add_string_choice("📗 Member Handbook 🔫", "member"),
+        )
 }

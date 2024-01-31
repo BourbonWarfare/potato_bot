@@ -1,2 +1,2 @@
-pub mod bwmf;
-pub mod upload;
+pub mod get_bwmf;
+pub mod upload_mission;
