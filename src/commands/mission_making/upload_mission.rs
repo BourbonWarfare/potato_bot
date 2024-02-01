@@ -11,7 +11,7 @@ use tokio::{fs::File, io::AsyncWriteExt};
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let options = &command.data.options();
-    let env_path = env::var("MISSIONS_UPLOAD_PATH").expect("MISSIONS_UPLOAD_PATH env var expected");
+    let env_path = env::var("MISSIONS_UPLOAD_DIR").expect("MISSIONS_UPLOAD_DIR env var expected");
     let mut _full_path = String::new();
     let mut _title = String::new();
     let mut _description = String::new();
@@ -19,7 +19,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
     if let Some(ResolvedOption {
         value: ResolvedValue::String(repo),
         ..
-    }) = options.get(1)
+    }) = options.first()
     {
         _full_path = format!("{}/{}", env_path, repo);
         info!("Full_Path: {}", _full_path);
@@ -27,7 +27,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         if let Some(ResolvedOption {
             value: ResolvedValue::Attachment(attachment),
             ..
-        }) = options.first()
+        }) = options.get(1)
         {
             if attachment.filename.contains(".pbo") {
                 let final_path = format!("{}/{}", _full_path, &attachment.filename);
@@ -83,7 +83,7 @@ pub fn register() -> CreateCommand {
         .description("Create a github issue")
         .add_option(
             CreateCommandOption::new(
-                CommandOptionType::Number,
+                CommandOptionType::String,
                 "upload",
                 "Which mission collection are you uploading to?",
             )

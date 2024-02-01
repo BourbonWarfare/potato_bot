@@ -32,7 +32,7 @@ impl EventHandler for Handler {
                 "sessiontime" => helpers::sessiontime::run(&ctx, &command).await,
                 // Mission making commands
                 "bwmf" => mission_making::get_bwmf::run(&ctx, &command).await,
-                // "upload" => mission_making::upload_mission::run(&ctx, &command).await,
+                "upload" => mission_making::upload_mission::run(&ctx, &command).await,
                 // Recruitment commands
                 "handbook" => recruitment::handbook::run(&ctx, &command).await,
                 "orientation" => recruitment::request_orientation::run(&ctx, &command).await,
@@ -72,7 +72,7 @@ impl EventHandler for Handler {
                     helpers::sessiontime::register(),
                     // Mission making commands
                     mission_making::get_bwmf::register(),
-                    // mission_making::upload_mission::register(),
+                    mission_making::upload_mission::register(),
                     // Recruitment commands
                     recruitment::handbook::register(),
                     recruitment::request_orientation::register(),
