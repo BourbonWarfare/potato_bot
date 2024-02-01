@@ -1,7 +1,7 @@
 use crate::{events, SOCKET};
 use futures_util::FutureExt;
 use rust_socketio::{asynchronous::ClientBuilder, Payload};
-use serde_json::{json, Value};
+use serde_json::json;
 use tracing::info;
 
 pub async fn init() {
@@ -44,10 +44,4 @@ pub async fn init() {
         .expect("Unable to connect to socketio server");
 
     let _ = SOCKET.set(socket);
-
-    let _ = SOCKET
-        .get()
-        .expect("unable to get valid socket")
-        .emit("join", "")
-        .await;
 }
