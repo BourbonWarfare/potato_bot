@@ -9,7 +9,7 @@ use serenity::{
 use std::{env, fs, path::PathBuf, time::SystemTime};
 use tracing::info;
 
-use crate::SERVERLIST;
+use crate::CONFIG;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let options = command.data.options();
@@ -17,9 +17,8 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 
     let title = format!("🪵 RPT for server: {}", &servername.to_uppercase());
 
-    let result = SERVERLIST
-        .get()
-        .expect("unable to get valid server list")
+    let result = CONFIG
+        .servers
         .iter()
         .find(|s| s.name == servername.to_string());
 
@@ -84,18 +83,11 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 }
 
 pub fn register() -> CreateCommand {
-    let option = CreateCommandOption::new(
-        CommandOptionType::SubCommandGroup,
-        "server",
-        "Select the Server",
-    )
-    .required(true);
-
-    for server in &*SERVERLIST.get().expect("unable to get valid server list") {
-        let _ = option
-            .clone()
-            .add_string_choice(server.name_pretty.to_string(), server.name.to_string());
-    }
+    let option = CreateCommandOption::new(CommandOptionType::String, "server", "Select the Server")
+        .required(true)
+        .add_string_choice("Main Server", "main")
+        .add_string_choice("Training Server", "training")
+        .add_string_choice("Event Server", "event");
 
     CreateCommand::new("rpt")
         .description("Fetch the RPT for a given server")

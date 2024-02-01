@@ -14,7 +14,7 @@ use serenity::{
 };
 use tokio::time::timeout;
 
-use crate::SERVERLIST;
+use crate::CONFIG;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct EmbedData {
@@ -78,17 +78,10 @@ pub async fn get_server_status(
     target_server_pn: Option<&String>,
 ) -> ServerData {
     let client = A2SClient::new().await.expect("Unable to create A2S client");
-    let server = SERVERLIST
-        .get()
-        .expect("unable to get valid server list")
-        .iter()
-        .find(|s| s.name == *target_server);
+    let server = CONFIG.servers.iter().find(|s| s.name == *target_server);
 
-    let game_port: String = server.expect("").game_port.to_owned();
-    let steam_port: u16 = game_port
-        .parse::<u16>()
-        .expect("Unable to parse an int from the game_port value")
-        + 1;
+    let game_port: u16 = server.expect("").port.to_owned();
+    let steam_port: u16 = game_port + 1;
 
     info!("127.0.0.1:{}", steam_port);
 
@@ -131,18 +124,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
     let mut _server_list = Vec::new();
 
     if option.is_some() {
-        _server_list = SERVERLIST
-            .get()
-            .expect("unable to get valid server list")
+        _server_list = CONFIG
+            .servers
             .iter()
             .filter(|e| e.name == option.unwrap().name)
             .collect();
     } else {
-        _server_list = SERVERLIST
-            .get()
-            .expect("unable to get valid server list")
-            .iter()
-            .collect();
+        _server_list = CONFIG.servers.iter().collect();
     }
 
     let mut fields: Vec<(_, _, bool)> = Vec::new();
@@ -182,17 +170,11 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 }
 
 pub fn register() -> CreateCommand {
-    let option = CreateCommandOption::new(
-        CommandOptionType::SubCommandGroup,
-        "server",
-        "Select the Server",
-    );
-
-    for server in &*SERVERLIST.get().expect("unable to get valid server list") {
-        let _ = option
-            .clone()
-            .add_string_choice(server.name_pretty.to_string(), server.name.to_string());
-    }
+    let option = CreateCommandOption::new(CommandOptionType::String, "server", "Select the Server")
+        .required(true)
+        .add_string_choice("Main Server", "main")
+        .add_string_choice("Training Server", "training")
+        .add_string_choice("Event Server", "event");
 
     CreateCommand::new("serverstatus")
         .description("Get arma servers status")

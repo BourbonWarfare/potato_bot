@@ -32,15 +32,15 @@ impl EventHandler for Handler {
                 "sessiontime" => helpers::sessiontime::run(&ctx, &command).await,
                 // Mission making commands
                 "bwmf" => mission_making::get_bwmf::run(&ctx, &command).await,
-                "upload" => mission_making::upload_mission::run(&ctx, &command).await,
+                // "upload" => mission_making::upload_mission::run(&ctx, &command).await,
                 // Recruitment commands
                 "handbook" => recruitment::handbook::run(&ctx, &command).await,
                 "orientation" => recruitment::request_orientation::run(&ctx, &command).await,
                 // Staff commands
-                //    "armaserver" => staff::armaserver::run(&ctx, &command).await,
+                "armaserver" => staff::armaserver::run(&ctx, &command).await,
                 "aar_template" => staff::create_aar::run(&ctx, &command).await,
-                //"rpt" => staff::get_rpt::run(&ctx, &command).await,
-                //"serverstatus" => staff::serverstatus::run(&ctx, &command).await,
+                "rpt" => staff::get_rpt::run(&ctx, &command).await,
+                "serverstatus" => staff::serverstatus::run(&ctx, &command).await,
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -72,15 +72,15 @@ impl EventHandler for Handler {
                     helpers::sessiontime::register(),
                     // Mission making commands
                     mission_making::get_bwmf::register(),
-                    mission_making::upload_mission::register(),
+                    // mission_making::upload_mission::register(),
                     // Recruitment commands
                     recruitment::handbook::register(),
                     recruitment::request_orientation::register(),
                     // Staff commands
-                    //       staff::armaserver::register(),
+                    staff::armaserver::register(),
                     staff::create_aar::register(),
-                    //staff::get_rpt::register(),
-                    //staff::serverstatus::register(),
+                    staff::get_rpt::register(),
+                    staff::serverstatus::register(),
                 ],
             )
             .await;

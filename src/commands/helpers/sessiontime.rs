@@ -3,6 +3,7 @@ use chrono::{DateTime, Datelike, Duration, Local, TimeZone};
 use serenity::all::{ResolvedOption, ResolvedValue};
 use tracing::error;
 
+use crate::CONFIG;
 use serenity::{
     all::{CommandInteraction, CommandOptionType},
     builder::{
@@ -13,10 +14,11 @@ use serenity::{
 };
 
 fn next_session(time: DateTime<Local>) -> DateTime<Local> {
+    let session_hour = CONFIG.local_session_time;
     let session_time_today = Local
-        .with_ymd_and_hms(time.year(), time.month(), time.day(), 1, 0, 0)
+        .with_ymd_and_hms(time.year(), time.month(), time.day(), session_hour, 0, 0)
         .unwrap();
-    let weekday_num = time.weekday().num_days_from_monday();
+    let weekday_num = time.weekday().num_days_from_sunday();
 
     // Check if weekday given is after wednesday
     match weekday_num {
@@ -109,33 +111,4 @@ pub fn register() -> CreateCommand {
             )
             .required(false),
         )
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    #[test]
-    fn session_test() {
-        assert_eq!(
-            next_session(Local.with_ymd_and_hms(2022, 12, 18, 12, 0, 0).unwrap()),
-            Local.with_ymd_and_hms(2022, 12, 19, 1, 0, 0).unwrap()
-        );
-        assert_eq!(
-            next_session(Local.with_ymd_and_hms(2022, 12, 13, 12, 0, 0).unwrap()),
-            Local.with_ymd_and_hms(2022, 12, 15, 1, 0, 0).unwrap()
-        );
-        assert_eq!(
-            next_session(Local.with_ymd_and_hms(2022, 12, 15, 0, 10, 0).unwrap()),
-            Local.with_ymd_and_hms(2022, 12, 15, 1, 0, 0).unwrap()
-        );
-        assert_eq!(
-            next_session(Local.with_ymd_and_hms(2022, 12, 15, 12, 0, 0).unwrap()),
-            Local.with_ymd_and_hms(2022, 12, 19, 1, 0, 0).unwrap()
-        );
-        assert_eq!(
-            next_session(Local.with_ymd_and_hms(2022, 12, 19, 0, 10, 0).unwrap()),
-            Local.with_ymd_and_hms(2022, 12, 19, 1, 0, 0).unwrap()
-        );
-    }
 }

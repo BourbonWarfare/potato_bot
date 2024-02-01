@@ -4,9 +4,9 @@ use std::{env, sync::Arc};
 use tokio::sync::OnceCell;
 use tracing::{error, info, Level};
 
-mod arma_servers;
 mod commands;
 // pub mod events;
+mod config;
 mod functions;
 mod handler;
 mod http;
@@ -19,7 +19,7 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     static ref SOCKET: OnceCell<rust_socketio::asynchronous::Client> = OnceCell::new();
-    static ref SERVERLIST: OnceCell<Vec<arma_servers::A3ServerConfig>> = OnceCell::new();
+    static ref CONFIG: config::Config = config::get();
 }
 
 #[tokio::main]
@@ -58,8 +58,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Socketio client initialized");
 
     // Get serverlist from PSM
-    let _ = arma_servers::get_serverlist().await;
-    info!("Server list populated {:?}", SERVERLIST.get());
+    // Check Server Config has been populated
+    info!("Server list: {:?}", CONFIG.servers);
+    info!("Mods list: {:?}", CONFIG.mods);
 
     // Start a single shard, and start listening to events.
     if let Err(why) = client.start().await {

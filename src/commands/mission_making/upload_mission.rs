@@ -87,10 +87,10 @@ pub fn register() -> CreateCommand {
                 "upload",
                 "Which mission collection are you uploading to?",
             )
-            .required(true)
             .add_string_choice("Main mission repo", "main")
             .add_string_choice("Off-night / alternate repo", "alternate")
-            .add_string_choice("Public / Community Event repo", "event"),
+            .add_string_choice("Public / Community Event repo", "event")
+            .required(true),
         )
         .add_option(
             CreateCommandOption::new(

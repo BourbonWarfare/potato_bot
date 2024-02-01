@@ -1,34 +1,45 @@
-use futures_util::FutureExt;
-use rust_socketio::Payload;
-use serde_json::json;
+use reqwest::header::{ACCEPT, CONTENT_TYPE};
+use serenity::model::application::ResolvedValue;
 use serenity::{
-    all::{CommandInteraction, CommandOptionType},
+    all::{CommandInteraction, CommandOptionType, ResolvedOption},
     builder::{CreateCommand, CreateCommandOption, CreateEmbed, CreateInteractionResponseFollowup},
     prelude::*,
 };
-use tokio::time::Duration;
-use tracing::{error, info};
+use std::env;
+use tracing::info;
 
-use crate::{SERVERLIST, SOCKET};
-
-#[derive(Debug, serde::Deserialize)]
-struct Response {
-    status: String,
-}
+use crate::CONFIG;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = command.data.options();
-    let servername = &options.get(0).unwrap().name;
-    let action = &options.get(1).unwrap().name;
+    let options = &command.data.options();
 
-    info!("Server: {}", servername);
+    let servername = if let Some(ResolvedOption {
+        value: ResolvedValue::String(servername),
+        ..
+    }) = options.first()
+    {
+        info!("Servername: {}", servername);
+        servername
+    } else {
+        "Error"
+    };
+    let action = if let Some(ResolvedOption {
+        value: ResolvedValue::String(action),
+        ..
+    }) = options.get(1)
+    {
+        info!("Action: {}", action);
+        action
+    } else {
+        "N/A"
+    };
 
-    let title = match *servername {
+    let title = match servername {
         "all" => {
             format!("{} All Servers", &action.to_uppercase())
         }
         _ => {
-            format!("{} {}", &action.to_uppercase(), &action.to_uppercase())
+            format!("{} {}", &action.to_uppercase(), &servername.to_uppercase())
         }
     };
 
@@ -39,18 +50,17 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 
     let mut server_info_list = Vec::new();
 
-    let server_list_action = match *servername {
+    let server_list_action = match servername {
         "all" => {
-            for server in &*SERVERLIST.get().expect("unable to get valid server list") {
+            for server in &CONFIG.servers {
                 server_info_list.push(server)
             }
             server_info_list
         }
         _ => {
             server_info_list.push(
-                SERVERLIST
-                    .get()
-                    .expect("unable to get valid server list")
+                &CONFIG
+                    .servers
                     .iter()
                     .find(|e| e.name == servername.to_string())
                     .unwrap(),
@@ -61,34 +71,43 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 
     let mut field_name: String = String::new();
     let mut field_status: String = String::new();
+    let mut error_code: String = String::new();
+
+    let server_url = env::var("SERVER_MANGER_URL").unwrap();
 
     for server in &server_list_action {
+        let url = format!(
+            "http://{}/arma/server/{}/{}",
+            &server_url.as_str(),
+            &server.name.as_str(),
+            &action
+        );
+        let rclient = reqwest::Client::new();
+        let response = rclient
+            .get(url)
+            .header(CONTENT_TYPE, "application/json")
+            .header(ACCEPT, "application/json")
+            .send()
+            .await;
+
         field_name.push_str(format!("{}\n", server.name_pretty.as_str()).as_str());
 
-        let payload = json!({
-            "server": server.name,
-            "action": action,
-        });
+        let status = response.unwrap().status();
 
-        let response = SOCKET
-            .get()
-            .expect("unable to get valid socket")
-            .emit("manage_arma_server", payload)
-            .await
-            .unwrap();
-
-        match response.status.as_str() {
-            "success" => field_status.push_str("✅ - Command Successfull\n"),
+        match status {
+            reqwest::StatusCode::OK => field_status.push_str("✅ - Command Successfull\n"),
             _ => {
-                error!("Command Failed");
-                field_status.push_str("❌ - Command Failed\n")
+                field_status.push_str("❌ - Command Failed\n");
+                error_code.push_str(format!["{}\n", status.clone()].as_str());
             }
         }
     }
+
     let embed = CreateEmbed::new()
         .title(title)
         .field("Name", field_name, true)
-        .field("Status", field_status, true);
+        .field("Status", field_status, true)
+        .field("Return Code", error_code, true);
 
     command
         .create_followup(
@@ -103,15 +122,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 pub fn register() -> CreateCommand {
     let mut options = Vec::new();
     let option = CreateCommandOption::new(CommandOptionType::String, "server", "Select the Server")
-        .required(true);
+        .required(true)
+        .add_string_choice("Main Server", "main")
+        .add_string_choice("Training Server", "training")
+        .add_string_choice("Event Server", "event")
+        .add_string_choice("All Servers", "all");
 
-    for server in &*SERVERLIST.get().expect("unable to get valid server list") {
-        let _ = option
-            .clone()
-            .add_string_choice(server.name_pretty.to_string(), server.name.to_string());
-    }
-
-    options.push(option);
+    let _ = &options.push(option);
 
     let actions = CreateCommandOption::new(CommandOptionType::String, "action", "Select Action")
         .required(true)
@@ -119,9 +136,10 @@ pub fn register() -> CreateCommand {
         .add_string_choice("Stop", "stop")
         .add_string_choice("Restart", "restart");
 
-    options.push(actions);
+    let _ = options.push(actions);
+    let final_options = options;
 
     CreateCommand::new("armaserver")
         .description("Get arma servers status")
-        .set_options(options)
+        .set_options(final_options)
 }

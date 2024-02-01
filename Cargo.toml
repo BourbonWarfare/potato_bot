@@ -27,6 +27,7 @@ tracing = "0.1.40"
 tracing-subscriber = {version = "0.3.18", features = ["env-filter"]}
 octocrab = "0.32.0"
 rust_socketio = { version = "0.4.4", features = ["async"] }
+toml = { version = "0.8.9", features = ["parse"] }
 
 [dependencies.serenity]
 default-features = false
