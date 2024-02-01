@@ -14,28 +14,28 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
     let url = if let Some(ResolvedOption {
         value: ResolvedValue::String(handbook),
         ..
-    }) = options.get(1)
+    }) = options.first()
     {
         info!("Getting link for handbook: {}", handbook);
         let out = match *handbook {
-            "recruit" => "https://forums.bourbonwarfare.com/viewtopic.php?t=6877",
+            "recruit" => "https://docs.bourbonwarfare.com/wiki/welcome-to-bw/recruit-handbook",
             "member" => "https://forums.bourbonwarfare.com/viewtopic.php?t=579",
             _ => {
                 error!("No handbook selected");
-                "https://forums.bourbonwarfare.com/index.php"
+                "https://docs.bourbonwarfare.com/wiki/"
             }
         };
         out
     } else {
         error!("No handbook selected");
-        "https://forums.bourbonwarfare.com/index.php"
+        "https://docs.bourbonwarfare.com/wiki/"
     };
 
     let embed = CreateEmbed::new()
         .title("📓 CLICK HERE to open handbook")
         .description(
             "Handbooks and other useful information can be found on our website:
-        https://forums.bourbonwarfare.com/index.php",
+        https://docs.bourbonwarfare.com/wiki/",
         )
         .url(url);
 

@@ -44,7 +44,7 @@ impl EventHandler for Handler {
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
-            info!("Returned: {:#?}", output)
+            info!("Returned: {:?}", output)
         }
     }
 
