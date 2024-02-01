@@ -11,9 +11,9 @@ impl BotCache {
     /// # Panics
     ///
     /// Panics if the bot does not exists
-    //    pub fn get() -> Arc<Http> {
-    //        unsafe { SINGLETON.assume_init_ref().clone() }
-    //    }
+    pub fn get() -> Arc<Http> {
+        unsafe { SINGLETON.assume_init_ref().clone() }
+    }
 
     /// Initializes the Bot cache and http
     pub fn init(bot: Arc<Http>) {

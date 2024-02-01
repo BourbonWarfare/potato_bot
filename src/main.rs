@@ -5,8 +5,8 @@ use tokio::sync::OnceCell;
 use tracing::{error, info, Level};
 
 mod commands;
-// pub mod events;
 mod config;
+pub mod events;
 mod functions;
 mod handler;
 mod http;
@@ -24,10 +24,6 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Setup environment variables
-    dotenv().ok();
-    info!("Environment variables loaded");
-
     // Setup logging
     let _ = tracing_subscriber::fmt()
         .with_max_level(Level::INFO)
@@ -35,6 +31,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     info!("Logging initialized");
+
+    // Setup environment variables
+    dotenv().ok();
+    info!("Environment variables loaded");
 
     // Configure the client with your Discord bot token in the environment.
     let token = env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN not found in env");

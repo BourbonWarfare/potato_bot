@@ -1,5 +1,4 @@
-use axum::Json;
-use serde::{Deserialize, Serialize};
+use rust_socketio::Payload;
 use serde_json::Value;
 use std::io::Error;
 use tracing::{error, info};
@@ -9,13 +8,13 @@ use serenity::{
     model::id::ChannelId,
 };
 
-use crate::bots::BotCache;
+use crate::http::BotCache;
 
-#[derive(Serialize, Deserialize)]
-pub struct Message {
-    target: String,
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+struct Message {
     message: String,
-    title: String,
+    channel: String,
+    title: Option<String>,
 }
 
 fn get_target(target: String) -> Result<u64, Error> {
@@ -44,12 +43,13 @@ fn get_target(target: String) -> Result<u64, Error> {
     Ok(target_u64)
 }
 
-pub async fn message(Json(payload): Json<Value>) {
+pub async fn message(payload: String) -> String {
     info!("Received message request: {:?}", payload);
 
-    let request_contents: Message = serde_json::from_value(payload).unwrap();
+    let request_contents: Message =
+        serde_json::from_str(payload.as_str()).expect("Unable to parse message");
 
-    let target = get_target(request_contents.target).expect("Unable to get valid target channel");
+    let target = get_target(request_contents.channel).expect("Unable to get valid target channel");
 
     let channel_id = ChannelId::from(target);
 
@@ -60,41 +60,54 @@ pub async fn message(Json(payload): Json<Value>) {
         )
         .await;
 
-    match response {
+    let output = match response {
         Ok(_) => {
             info!("Message sent successfully");
+            "Discord Bot Message sent successfully".to_string()
         }
-        Err(_) => {
+        Err(err) => {
             error!("Message failed to send");
+            format!["Error: {}", err]
         }
     };
+    output
 }
 
-pub async fn embed(Json(payload): Json<Value>) {
+pub async fn embed(payload: String) -> String {
     info!("Received embed request: {:?}", payload);
 
-    let request_contents: Message = serde_json::from_value(payload).unwrap();
+    let request_contents: Message =
+        serde_json::from_str(payload.as_str()).expect("Unable to parse message");
 
-    let target = get_target(request_contents.target).expect("Unable to get valid target channel");
+    let target = get_target(request_contents.channel).expect("Unable to get valid target channel");
 
     let channel_id = ChannelId::from(target);
+
+    let title = if request_contents.title.is_some() {
+        request_contents.title.unwrap()
+    } else {
+        panic!("Title is required for an embed")
+    };
 
     let response = channel_id
         .send_message(&BotCache::get(), {
             CreateMessage::new().embed(
                 CreateEmbed::new()
-                    .title(request_contents.title)
+                    .title(title)
                     .description(request_contents.message),
             )
         })
         .await;
 
-    match response {
+    let output = match response {
         Ok(_) => {
-            info!("Embed sent successfully");
+            info!("Message sent successfully");
+            "Discord Bot Embed sent successfully".to_string()
         }
-        Err(_) => {
+        Err(err) => {
             error!("Message failed to send");
+            format!["Error: {}", err]
         }
     };
+    output
 }
