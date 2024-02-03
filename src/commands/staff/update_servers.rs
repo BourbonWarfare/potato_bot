@@ -75,7 +75,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
                 .emit_with_ack(
                     "update_arma_servers",
                     json!({}),
-                    Duration::from_secs(2),
+                    Duration::from_secs(60 * 3),
                     callback,
                 )
                 .await
