@@ -75,9 +75,9 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
                 .get()
                 .expect("Unable to get socket")
                 .emit_with_ack(
-                    "update_arma_servers",
+                    "update_arma_mods",
                     json!({}),
-                    Duration::from_secs(30),
+                    Duration::from_secs(2),
                     callback,
                 )
                 .await
