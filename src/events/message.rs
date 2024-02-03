@@ -2,7 +2,7 @@ use std::io::Error;
 use tracing::{error, info};
 
 use serenity::{
-    builder::{CreateEmbed, CreateMessage},
+    builder::{CreateAttachment, CreateEmbed, CreateMessage},
     model::id::ChannelId,
 };
 
@@ -13,6 +13,7 @@ struct Message {
     message: String,
     channel: String,
     title: Option<String>,
+    attachment: Option<String>,
 }
 
 fn get_target(target: String) -> Result<u64, Error> {
@@ -87,15 +88,26 @@ pub async fn embed(payload: String) -> String {
         panic!("Title is required for an embed")
     };
 
-    let response = channel_id
-        .send_message(&BotCache::get(), {
-            CreateMessage::new().embed(
+    let message = if request_contents.attachment.is_some() {
+        let attachment = CreateAttachment::path(request_contents.attachment.unwrap())
+            .await
+            .expect("Unable to create attachment from path");
+
+        CreateMessage::new()
+            .embed(
                 CreateEmbed::new()
                     .title(title)
                     .description(request_contents.message),
             )
-        })
-        .await;
+            .add_file(attachment)
+    } else {
+        CreateMessage::new().embed(
+            CreateEmbed::new()
+                .title(title)
+                .description(request_contents.message),
+        )
+    };
+    let response = channel_id.send_message(&BotCache::get(), message).await;
 
     let output = match response {
         Ok(_) => {

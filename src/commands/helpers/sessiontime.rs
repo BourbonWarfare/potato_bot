@@ -46,7 +46,10 @@ fn next_session(time: DateTime<Local>) -> DateTime<Local> {
 }
 
 fn relative_time(relative: f64) -> DateTime<Local> {
-    let session_time_today = Local.with_ymd_and_hms(2022, 1, 1, 1, 20, 0).unwrap();
+    let session_hour = CONFIG.local_session_time;
+    let session_time_today = Local
+        .with_ymd_and_hms(2022, 1, 1, session_hour, 0, 0)
+        .unwrap();
     let seconds: i64 = (relative * 3600.0) as i64;
     session_time_today + Duration::seconds(seconds)
 }

@@ -41,6 +41,8 @@ impl EventHandler for Handler {
                 "aar_template" => staff::create_aar::run(&ctx, &command).await,
                 "rpt" => staff::get_rpt::run(&ctx, &command).await,
                 "serverstatus" => staff::serverstatus::run(&ctx, &command).await,
+                "update_mods" => staff::update_mods::run(&ctx, &command).await,
+                "update_servers" => staff::update_servers::run(&ctx, &command).await,
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -81,6 +83,8 @@ impl EventHandler for Handler {
                     staff::create_aar::register(),
                     staff::get_rpt::register(),
                     staff::serverstatus::register(),
+                    staff::update_mods::register(),
+                    staff::update_servers::register(),
                 ],
             )
             .await;

@@ -39,6 +39,58 @@ pub async fn init() {
                 .boxed()
             },
         )
+        .on(
+            "server_change_state",
+            |args: Payload, socket: rust_socketio::asynchronous::Client| {
+                async move {
+                    let response = match args {
+                        Payload::String(string) => events::message::message(string).await,
+                        _ => panic!("Invalid payload type"),
+                    };
+                    let _ = socket.emit("bot_result", json!(response)).await;
+                }
+                .boxed()
+            },
+        )
+        .on(
+            "update_arma_servers_response",
+            |args: Payload, socket: rust_socketio::asynchronous::Client| {
+                async move {
+                    let response = match args {
+                        Payload::String(string) => events::message::embed(string).await,
+                        _ => panic!("Invalid payload type"),
+                    };
+                    let _ = socket.emit("bot_result", json!(response)).await;
+                }
+                .boxed()
+            },
+        )
+        .on(
+            "update_arma_mods_response",
+            |args: Payload, socket: rust_socketio::asynchronous::Client| {
+                async move {
+                    let response = match args {
+                        Payload::String(string) => events::message::embed(string).await,
+                        _ => panic!("Invalid payload type"),
+                    };
+                    let _ = socket.emit("bot_result", json!(response)).await;
+                }
+                .boxed()
+            },
+        )
+        .on(
+            "arma_server_manage_response",
+            |args: Payload, socket: rust_socketio::asynchronous::Client| {
+                async move {
+                    let response = match args {
+                        Payload::String(string) => events::message::embed(string).await,
+                        _ => panic!("Invalid payload type"),
+                    };
+                    let _ = socket.emit("bot_result", json!(response)).await;
+                }
+                .boxed()
+            },
+        )
         .connect()
         .await
         .expect("Unable to connect to socketio server");

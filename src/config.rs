@@ -2,13 +2,14 @@ use serde::Deserialize;
 use std::env;
 use std::fs;
 use toml;
-use tracing::info;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub locations: Vec<String>,
     pub local_session_time: u32,
+    pub timezone: String,
     pub servers: Vec<A3ServerConfig>,
+    pub master_mod_list: Vec<Mod>,
     pub mods: Vec<ModsList>,
 }
 
@@ -19,14 +20,30 @@ pub struct A3ServerConfig {
     pub port: u16,
     pub location: String,
     pub hc: u32,
-    pub mods: Option<Vec<ModsList>>,
+    pub auto_start: bool,
+    pub modlist: Option<String>,
     pub password: Option<String>,
+    pub cron_job: Option<CronJob>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CronJob {
+    pub cron: String,
+    pub action: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ModsList {
     pub name: String,
-    pub list: Vec<(String, u32)>,
+    pub list: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Mod {
+    pub name: String,
+    pub id: u32,
+    pub auto_update: bool,
+    pub optional: bool,
 }
 
 pub fn get() -> Config {
@@ -35,6 +52,5 @@ pub fn get() -> Config {
         .to_string();
     let toml_string = fs::read_to_string(config_location).expect("unable to read config file");
     let config: Config = toml::from_str(&toml_string).unwrap();
-    info!("Config: {:?}", config);
     config
 }
