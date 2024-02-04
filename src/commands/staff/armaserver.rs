@@ -72,7 +72,7 @@ pub fn register() -> CreateCommand {
         .required(true)
         .add_string_choice("Main Server", "main")
         .add_string_choice("Training Server", "training")
-        .add_string_choice("Event Server", "event")
+        .add_string_choice("Alternate/Off Night Server", "alternate")
         .add_string_choice("All Servers", "all");
 
     let _ = &options.push(option);
