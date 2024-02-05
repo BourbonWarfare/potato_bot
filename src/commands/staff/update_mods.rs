@@ -21,7 +21,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         .send_message(
             &ctx,
             CreateMessage::new()
-                .content("Are you sure?")
+                .content("Are you sure?\n This will require shutting down all running servers")
                 .button(
                     CreateButton::new("confirm")
                         .style(ButtonStyle::Danger)
@@ -77,7 +77,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
                 .emit_with_ack(
                     "update_arma_mods",
                     json!({}),
-                    Duration::from_secs(30),
+                    Duration::from_secs(60 * 3),
                     callback,
                 )
                 .await
@@ -85,7 +85,11 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
             m.delete(&ctx).await.unwrap();
             output
         }
-        _ => panic!("Cancel selection"),
+        _ => {
+            m.delete(&ctx).await.unwrap();
+            error!("Cancel selection");
+            Ok(())
+        }
     }
 }
 

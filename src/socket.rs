@@ -13,6 +13,12 @@ pub async fn init() {
             }
             .boxed()
         })
+        .on("result", |args, _| {
+            async move {
+                info!("Result from PSM: {:?}", args);
+            }
+            .boxed()
+        })
         .on(
             "send_message",
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
@@ -32,19 +38,6 @@ pub async fn init() {
                 async move {
                     let response = match args {
                         Payload::String(string) => events::message::embed(string).await,
-                        _ => panic!("Invalid payload type"),
-                    };
-                    let _ = socket.emit("bot_result", json!(response)).await;
-                }
-                .boxed()
-            },
-        )
-        .on(
-            "server_change_state",
-            |args: Payload, socket: rust_socketio::asynchronous::Client| {
-                async move {
-                    let response = match args {
-                        Payload::String(string) => events::message::message(string).await,
                         _ => panic!("Invalid payload type"),
                     };
                     let _ = socket.emit("bot_result", json!(response)).await;
