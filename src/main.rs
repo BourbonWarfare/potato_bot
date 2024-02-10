@@ -3,6 +3,7 @@ use serenity::{all::GatewayIntents, Client};
 use std::{env, sync::Arc};
 use tokio::sync::OnceCell;
 use tracing::{error, info, Level};
+use tracing_subscriber::fmt::time::ChronoLocal;
 
 mod commands;
 mod config;
