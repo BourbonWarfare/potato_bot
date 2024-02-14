@@ -3,6 +3,7 @@ use serenity::{all::GatewayIntents, Client};
 use std::{env, sync::Arc};
 use tokio::sync::OnceCell;
 use tracing::{error, info, Level};
+use tracing_subscriber::fmt::time::ChronoLocal;
 
 mod commands;
 mod config;
@@ -28,6 +29,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _ = tracing_subscriber::fmt()
         .with_max_level(Level::INFO)
         .with_line_number(true)
+		.with_ansi(false)
+		.with_timer(ChronoLocal::rfc_3339())
         .init();
 
     info!("Logging initialized");

@@ -24,7 +24,7 @@ tokio-cron-scheduler = "0.9.4"
 axum = "0.7.2"
 regex = "1.10.2"
 tracing = "0.1.40"
-tracing-subscriber = {version = "0.3.18", features = ["env-filter"]}
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "time", "chrono"] }
 octocrab = "0.32.0"
 rust_socketio = { version = "0.4.4", features = ["async"] }
 toml = { version = "0.8.9", features = ["parse"] }
