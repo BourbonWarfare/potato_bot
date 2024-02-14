@@ -23,9 +23,7 @@ fn get_target(target: String) -> Result<u64, Error> {
         "member" => std::env::var("MEMBER_CHANNEL_ID").expect("MEMBER_CHANNEL_ID not found in env"),
         "staff" => std::env::var("STAFF_CHANNEL_ID").expect("STAFF_CHANNEL_ID not found in env"),
         "admin" => std::env::var("ADMIN_CHANNEL_ID").expect("ADMIN_CHANNEL_ID not found in env"),
-        "tech" => {
-            std::env::var("TECH_CHANNEL_ID").expect("TECH_STAFF_CHANNEL_ID not found in env")
-        }
+        "tech" => std::env::var("TECH_CHANNEL_ID").expect("TECH_STAFF_CHANNEL_ID not found in env"),
         "recruit" => std::env::var("RECRUITMENT_CHANNEL_ID")
             .expect("RECRUITMENT_CHANNEL_ID not found in env"),
         "bot" => {
