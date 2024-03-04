@@ -81,8 +81,8 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
             .build();
 
         let channel = ChannelId::new(
-            env::var("RECRUITMENT_CHANNEL")
-                .expect("RECRUITMENT_CHANNEL not found in env")
+            env::var("RECRUITMENT_CHANNEL_ID")
+                .expect("RECRUITMENT_CHANNEL_ID not found in env")
                 .parse()
                 .expect("Expected a ChannelId integer"),
         );
