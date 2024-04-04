@@ -1,7 +1,9 @@
+use chrono::NaiveDate;
 use std::io::Error;
 use tracing::{error, info};
 
 use serenity::{
+    all::Colour,
     builder::{CreateAttachment, CreateEmbed, CreateMessage},
     model::id::ChannelId,
 };
@@ -16,6 +18,18 @@ struct Message {
     attachment: Option<String>,
 }
 
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+struct Mod {
+    ws_name: String,
+    ws_id: String,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+struct Session {
+    thread_id: uuid::Uuid,
+    date: NaiveDate,
+}
+
 fn get_target(target: String) -> Result<u64, Error> {
     let target_uid = match target.as_str() {
         "arma" => std::env::var("ARMA_GENERAL_CHANNEL_ID")
@@ -23,13 +37,14 @@ fn get_target(target: String) -> Result<u64, Error> {
         "member" => std::env::var("MEMBER_CHANNEL_ID").expect("MEMBER_CHANNEL_ID not found in env"),
         "staff" => std::env::var("STAFF_CHANNEL_ID").expect("STAFF_CHANNEL_ID not found in env"),
         "admin" => std::env::var("ADMIN_CHANNEL_ID").expect("ADMIN_CHANNEL_ID not found in env"),
-        "tech" => {
-            std::env::var("TECH_CHANNEL_ID").expect("TECH_STAFF_CHANNEL_ID not found in env")
-        }
+        "tech" => std::env::var("TECH_CHANNEL_ID").expect("TECH_STAFF_CHANNEL_ID not found in env"),
         "recruit" => std::env::var("RECRUITMENT_CHANNEL_ID")
             .expect("RECRUITMENT_CHANNEL_ID not found in env"),
         "bot" => {
             std::env::var("BOT_SPAM_CHANNEL_ID").expect("BOT_SPAM_CHANNEL_ID not found in env")
+        }
+        "mod_update" => {
+            std::env::var("MOD_UPDATE_CHANNEL_ID").expect("MOD_UPDATE_CHANNEL_ID not found in env")
         }
         _ => {
             error!("Not a valid target");
@@ -120,4 +135,84 @@ pub async fn embed(payload: String) -> String {
         }
     };
     output
+}
+
+pub async fn scheduled_session_message(payload: String) -> String {
+    info!("Received embed request: {:?}", payload);
+
+    // TODO: Include the extra fun stuff here that will link to the session aar id etc
+    /* let _request_contents: Session =
+    serde_json::from_str(payload.as_str()).expect("Unable to parse message"); */
+
+    let title = format!("Session Time T-1 Hour");
+    let member_role_id = std::env::var("MEMBER_ROLE_ID").expect("MEMBER_ROLE_ID not found in env");
+    let recruit_role_id =
+        std::env::var("RECRUIT_ROLE_ID").expect("RECRUIT_ROLE_ID not found in env");
+    let description = format!(
+        "<@&{}> and <@&{}> session time starts in one hour.
+Make sure that you have updated your mods.",
+        member_role_id, recruit_role_id
+    );
+
+    let message = CreateMessage::new().embed(
+        CreateEmbed::new()
+            .title(title)
+            .description(description)
+            .image("https://cdn.discordapp.com/attachments/285837079139844096/724897893315641404/unknown.png?ex=661e3145&is=660bbc45&hm=e9a36f7f7af1f853e0d2188ebabd63575609d89fa07536f620742974b38121d5&")
+            .colour(Colour::from_rgb(239, 79, 10)),
+    );
+    let channel_id = ChannelId::from(
+        get_target("arma".to_string()).expect("Unable to get valid target channel"),
+    );
+    let response = channel_id.send_message(&BotCache::get(), message).await;
+
+    let output = match response {
+        Ok(_) => {
+            info!("Message sent successfully");
+            "Discord Bot Embed sent successfully".to_string()
+        }
+        Err(err) => {
+            error!("Message failed to send");
+            format!["Error: {}", err]
+        }
+    };
+    output
+}
+
+pub async fn mod_update_message(payload: String) -> String {
+    info!("Received embed request: {:?}", payload);
+
+    let request_contents: Mod =
+        serde_json::from_str(payload.as_str()).expect("Unable to parse message");
+
+    let msg = format!(
+        "# __**PSM Mod update: {0}**__
+[{0} Workshop Page](https://steamcommunity.com/sharedfiles/filedetails/?id={1})",
+        request_contents.ws_name, request_contents.ws_id
+    );
+
+    let mut output_str = String::new();
+
+    for ws_mod in vec!["mod_update", "staff"] {
+        let target = get_target(ws_mod.to_string()).expect("Unable to get valid target channel");
+
+        let channel_id = ChannelId::from(target);
+
+        let response = channel_id
+            .send_message(&BotCache::get(), CreateMessage::new().content(&msg))
+            .await;
+
+        let o = match response {
+            Ok(_) => {
+                info!("Message sent successfully");
+                "Discord Bot Embed sent successfully".to_string()
+            }
+            Err(err) => {
+                error!("Message failed to send");
+                format!["Error: {}", err]
+            }
+        };
+        output_str.push_str(&o)
+    }
+    output_str
 }

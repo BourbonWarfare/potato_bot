@@ -84,6 +84,36 @@ pub async fn init() {
                 .boxed()
             },
         )
+        .on(
+            "mod_update_message",
+            |args: Payload, socket: rust_socketio::asynchronous::Client| {
+                async move {
+                    let response = match args {
+                        Payload::String(string) => {
+                            events::message::mod_update_message(string).await
+                        }
+                        _ => panic!("Invalid payload type"),
+                    };
+                    let _ = socket.emit("bot_result", json!(response)).await;
+                }
+                .boxed()
+            },
+        )
+        .on(
+            "scheduled_session_message",
+            |args: Payload, socket: rust_socketio::asynchronous::Client| {
+                async move {
+                    let response = match args {
+                        Payload::String(string) => {
+                            events::message::scheduled_session_message(string).await
+                        }
+                        _ => panic!("Invalid payload type"),
+                    };
+                    let _ = socket.emit("bot_result", json!(response)).await;
+                }
+                .boxed()
+            },
+        )
         .connect()
         .await
         .expect("Unable to connect to socketio server");
