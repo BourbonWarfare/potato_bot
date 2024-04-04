@@ -193,7 +193,7 @@ pub async fn mod_update_message(payload: String) -> String {
 
     let mut output_str = String::new();
 
-    for ws_mod in vec!["mod_update", "staff"] {
+    for ws_mod in vec!["mod_update", "tech"] {
         let target = get_target(ws_mod.to_string()).expect("Unable to get valid target channel");
 
         let channel_id = ChannelId::from(target);
