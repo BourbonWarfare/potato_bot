@@ -1,68 +1,56 @@
-use serde_json::json;
+use futures::FutureExt;
+use rust_socketio::Payload;
+use serde::{Deserialize, Serialize};
+use serenity::all::CommandDataOptionValue;
 use serenity::builder::{CreateInteractionResponse, CreateInteractionResponseMessage};
-use serenity::model::application::ResolvedValue;
 use serenity::{
-    all::{CommandInteraction, CommandOptionType, ResolvedOption},
+    all::{CommandInteraction, CommandOptionType},
     builder::{CreateCommand, CreateCommandOption},
     prelude::*,
 };
 use tracing::{error, info};
 
-use crate::SOCKET;
+use crate::{callback_and_response, create_response_message, emit_and_ack, get_option};
+
+#[derive(Serialize, Deserialize)]
+struct Data {
+    server: String,
+    action: String,
+}
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = &command.data.options();
-
-    let content = if let Some(ResolvedOption {
-        value: ResolvedValue::String(servername),
-        ..
-    }) = options.first()
-    {
+    if let Some(servername) = get_option!(&command.data, "server", String) {
         info!("Servername: {}", servername);
-        if let Some(ResolvedOption {
-            value: ResolvedValue::String(action),
-            ..
-        }) = options.get(1)
-        {
+
+        if let Some(action) = get_option!(&command.data, "action", String) {
             info!("Action: {}", action);
-            let json = json!({ "name": servername, "action": action });
 
-            let response = SOCKET
-                .get()
-                .expect("Unable to get socket")
-                .emit("manage_arma_server", json)
-                .await;
-
-            let output = match response {
-                Ok(_) => "Successfully sent command to PSM",
-                Err(_) => "Error sending message to PSM",
+            let data = Data {
+                server: servername.to_string(),
+                action: action.to_string(),
             };
 
-            format!(
-                "Performing action [{}] on server [{}]\n{}",
-                action.to_uppercase(),
-                servername.to_uppercase(),
-                output
-            )
+            let callback = |payload: Payload, _: rust_socketio::asynchronous::Client| {
+                async move {
+                    callback_and_response!(payload);
+                }
+                .boxed()
+            };
+
+            emit_and_ack!(
+                serde_json::to_string(&data).unwrap(),
+                "manage_arma_server",
+                callback
+            );
         } else {
             error!("Action not found");
-            "No action given".to_string()
         }
     } else {
         error!("Server not found");
-        "Wasn't able to get servername".to_string()
     };
 
-    let _ = command
-        .create_response(
-            &ctx.http,
-            CreateInteractionResponse::Message(
-                CreateInteractionResponseMessage::new()
-                    .content(content)
-                    .ephemeral(true),
-            ),
-        )
-        .await;
+    create_response_message!(ctx, command, "Sending your request to the server", true);
+
     Ok(())
 }
 

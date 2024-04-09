@@ -1,5 +1,6 @@
+use serenity::all::CommandDataOptionValue;
 use serenity::{
-    all::{CommandInteraction, CommandOptionType, ResolvedOption, ResolvedValue},
+    all::{CommandInteraction, CommandOptionType},
     builder::{
         CreateAttachment, CreateCommand, CreateCommandOption, CreateEmbed,
         CreateInteractionResponse, CreateInteractionResponseMessage,
@@ -9,21 +10,11 @@ use serenity::{
 use std::{env, fs, path::PathBuf, time::SystemTime};
 use tracing::info;
 
-use crate::CONFIG;
+use crate::{get_option, CONFIG};
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = command.data.options();
-
-    if let Some(ResolvedOption {
-        value: ResolvedValue::String(server),
-        ..
-    }) = options.first()
-    {
-        let server_config = CONFIG
-            .servers
-            .iter()
-            .find(|s| s.name == server.to_string())
-            .unwrap();
+    if let Some(server) = get_option!(&command.data, "server", String) {
+        let server_config = CONFIG.get_server(server).unwrap();
         let arma_base_path = env::var("ARMA_BASE_DIR").expect("ARMA_BASE_DIR not found in env");
         let server_path = format!("{}/{}", arma_base_path, server_config.location.to_string());
         let rpt_path = format!(

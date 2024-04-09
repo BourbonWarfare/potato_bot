@@ -1,23 +1,19 @@
 use serenity::{
-    all::{CommandInteraction, CommandOptionType, ResolvedOption, ResolvedValue},
-    builder::{
-        CreateCommand, CreateCommandOption, CreateEmbed, CreateInteractionResponse,
+    all::{
+        CommandDataOptionValue, CommandInteraction, CommandOptionType, CreateInteractionResponse,
         CreateInteractionResponseMessage,
     },
+    builder::{CreateCommand, CreateCommandOption, CreateEmbed},
     prelude::*,
 };
 use tracing::{error, info};
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = command.data.options();
+use crate::{create_response_embed, get_option};
 
-    let url = if let Some(ResolvedOption {
-        value: ResolvedValue::String(handbook),
-        ..
-    }) = options.first()
-    {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
+    let url = if let Some(handbook) = get_option!(&command.data, "handbook", String) {
         info!("Getting link for handbook: {}", handbook);
-        let out = match *handbook {
+        let out = match handbook.as_str() {
             "recruit" => "https://docs.bourbonwarfare.com/wiki/welcome-to-bw/recruit-handbook",
             "member" => "https://forums.bourbonwarfare.com/viewtopic.php?t=579",
             _ => {
@@ -39,16 +35,8 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         )
         .url(url);
 
-    command
-        .create_response(
-            &ctx.http,
-            CreateInteractionResponse::Message(
-                CreateInteractionResponseMessage::new()
-                    .embed(embed)
-                    .ephemeral(true),
-            ),
-        )
-        .await
+    create_response_embed!(ctx, command, embed, false);
+    Ok(())
 }
 
 pub fn register() -> CreateCommand {

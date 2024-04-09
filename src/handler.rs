@@ -1,4 +1,4 @@
-use crate::commands::{helpers, mission_making, recruitment, staff};
+use crate::commands::{helpers, mission_making, recruitment, staff, users};
 
 use serenity::{
     all::Interaction,
@@ -38,11 +38,13 @@ impl EventHandler for Handler {
                 "orientation" => recruitment::request_orientation::run(&ctx, &command).await,
                 // Staff commands
                 "armaserver" => staff::armaserver::run(&ctx, &command).await,
-                "aar_template" => staff::create_aar::run(&ctx, &command).await,
                 "rpt" => staff::get_rpt::run(&ctx, &command).await,
                 "serverstatus" => staff::serverstatus::run(&ctx, &command).await,
                 "update_mods" => staff::update_mods::run(&ctx, &command).await,
                 "update_servers" => staff::update_servers::run(&ctx, &command).await,
+                // Users management
+                "register" => users::register::run(&ctx, &command).await,
+                "user_update" => users::update::run(&ctx, &command).await,
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -80,11 +82,13 @@ impl EventHandler for Handler {
                     recruitment::request_orientation::register(),
                     // Staff commands
                     staff::armaserver::register(),
-                    staff::create_aar::register(),
                     staff::get_rpt::register(),
                     staff::serverstatus::register(),
                     staff::update_mods::register(),
                     staff::update_servers::register(),
+                    // User Commands
+                    users::register::register(),
+                    users::update::register(),
                 ],
             )
             .await;

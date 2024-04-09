@@ -1,4 +1,6 @@
 use chrono::NaiveDate;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::io::Error;
 use tracing::{error, info};
 
@@ -10,7 +12,7 @@ use serenity::{
 
 use crate::http::BotCache;
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct Message {
     message: String,
     channel: String,
@@ -18,10 +20,72 @@ struct Message {
     attachment: Option<String>,
 }
 
+impl Message {
+    pub fn new(payload: Vec<Value>) -> Message {
+        let mut message = Message {
+            message: String::new(),
+            channel: String::new(),
+            title: Some(String::new()),
+            attachment: Some(String::new()),
+        };
+        for value in payload {
+            match serde_json::to_string(&value).unwrap().as_str() {
+                "message" => {
+                    if let Value::String(val) = value {
+                        message.message = val;
+                    }
+                }
+                "channel" => {
+                    if let Value::String(val) = value {
+                        message.channel = val;
+                    }
+                }
+                "title" => {
+                    if let Value::String(val) = value {
+                        message.title = Some(val);
+                    }
+                }
+                "attachment" => {
+                    if let Value::String(val) = value {
+                        message.attachment = Some(val);
+                    }
+                }
+                _ => (),
+            }
+        }
+        message
+    }
+}
+
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 struct Mod {
     ws_name: String,
     ws_id: String,
+}
+
+impl Mod {
+    pub fn new(payload: Vec<Value>) -> Mod {
+        let mut mod_s = Mod {
+            ws_name: String::new(),
+            ws_id: String::new(),
+        };
+        for value in payload {
+            match serde_json::to_string(&value).unwrap().as_str() {
+                "ws_name" => {
+                    if let Value::String(val) = value {
+                        mod_s.ws_name = val;
+                    }
+                }
+                "ws_id" => {
+                    if let Value::String(val) = value {
+                        mod_s.ws_id = val;
+                    }
+                }
+                _ => (),
+            }
+        }
+        mod_s
+    }
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -57,11 +121,10 @@ fn get_target(target: String) -> Result<u64, Error> {
     Ok(target_u64)
 }
 
-pub async fn message(payload: String) -> String {
+pub async fn message(payload: Vec<Value>) -> String {
     info!("Received message request: {:?}", payload);
 
-    let request_contents: Message =
-        serde_json::from_str(payload.as_str()).expect("Unable to parse message");
+    let request_contents: Message = Message::new(payload);
 
     let target = get_target(request_contents.channel).expect("Unable to get valid target channel");
 
@@ -87,11 +150,10 @@ pub async fn message(payload: String) -> String {
     output
 }
 
-pub async fn embed(payload: String) -> String {
+pub async fn embed(payload: Vec<Value>) -> String {
     info!("Received embed request: {:?}", payload);
 
-    let request_contents: Message =
-        serde_json::from_str(payload.as_str()).expect("Unable to parse message");
+    let request_contents: Message = Message::new(payload);
 
     let target = get_target(request_contents.channel).expect("Unable to get valid target channel");
 
@@ -137,7 +199,7 @@ pub async fn embed(payload: String) -> String {
     output
 }
 
-pub async fn scheduled_session_message(payload: String) -> String {
+pub async fn scheduled_session_message(payload: Vec<Value>) -> String {
     info!("Received embed request: {:?}", payload);
 
     // TODO: Include the extra fun stuff here that will link to the session aar id etc
@@ -148,13 +210,13 @@ pub async fn scheduled_session_message(payload: String) -> String {
     let member_role_id = std::env::var("MEMBER_ROLE_ID").expect("MEMBER_ROLE_ID not found in env");
     let recruit_role_id =
         std::env::var("RECRUIT_ROLE_ID").expect("RECRUIT_ROLE_ID not found in env");
-    let description = format!(
-        "<@&{}> and <@&{}> session time starts in one hour.
-Make sure that you have updated your mods.",
-        member_role_id, recruit_role_id
-    );
+    let description = "Today's session starts in one hour.
+Make sure that you have updated your mods.";
+    let content = format!("<@&{}> and <@&{}>", member_role_id, recruit_role_id);
 
-    let message = CreateMessage::new().embed(
+    let message = CreateMessage::new()
+        .content(content)
+        .embed(
         CreateEmbed::new()
             .title(title)
             .description(description)
@@ -179,11 +241,10 @@ Make sure that you have updated your mods.",
     output
 }
 
-pub async fn mod_update_message(payload: String) -> String {
+pub async fn mod_update_message(payload: Vec<Value>) -> String {
     info!("Received embed request: {:?}", payload);
 
-    let request_contents: Mod =
-        serde_json::from_str(payload.as_str()).expect("Unable to parse message");
+    let request_contents: Mod = Mod::new(payload);
 
     let msg = format!(
         "# __**PSM Mod update: {0}**__

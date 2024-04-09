@@ -1,8 +1,25 @@
 use crate::{events, SOCKET};
 use futures_util::FutureExt;
 use rust_socketio::{asynchronous::ClientBuilder, Payload};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
+use serde_json::Value;
 use tracing::info;
+
+#[derive(Serialize, Deserialize)]
+pub struct Response {
+    success: bool,
+    json: Value,
+}
+
+impl Response {
+    pub fn new(success: bool, json: Vec<Value>) -> Response {
+        Response {
+            success,
+            json: serde_json::Value::Array(json),
+        }
+    }
+}
 
 pub async fn init() {
     info!("Initializing socketio client");
@@ -24,7 +41,7 @@ pub async fn init() {
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
                 async move {
                     let response = match args {
-                        Payload::String(string) => events::message::message(string).await,
+                        Payload::Text(string) => events::message::message(string).await,
                         _ => panic!("Invalid payload type"),
                     };
                     let _ = socket.emit("bot_result", json!(response)).await;
@@ -37,7 +54,7 @@ pub async fn init() {
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
                 async move {
                     let response = match args {
-                        Payload::String(string) => events::message::embed(string).await,
+                        Payload::Text(string) => events::message::embed(string).await,
                         _ => panic!("Invalid payload type"),
                     };
                     let _ = socket.emit("bot_result", json!(response)).await;
@@ -50,7 +67,7 @@ pub async fn init() {
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
                 async move {
                     let response = match args {
-                        Payload::String(string) => events::message::embed(string).await,
+                        Payload::Text(string) => events::message::embed(string).await,
                         _ => panic!("Invalid payload type"),
                     };
                     let _ = socket.emit("bot_result", json!(response)).await;
@@ -63,7 +80,7 @@ pub async fn init() {
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
                 async move {
                     let response = match args {
-                        Payload::String(string) => events::message::embed(string).await,
+                        Payload::Text(string) => events::message::embed(string).await,
                         _ => panic!("Invalid payload type"),
                     };
                     let _ = socket.emit("bot_result", json!(response)).await;
@@ -76,7 +93,7 @@ pub async fn init() {
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
                 async move {
                     let response = match args {
-                        Payload::String(string) => events::message::embed(string).await,
+                        Payload::Text(string) => events::message::embed(string).await,
                         _ => panic!("Invalid payload type"),
                     };
                     let _ = socket.emit("bot_result", json!(response)).await;
@@ -89,9 +106,7 @@ pub async fn init() {
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
                 async move {
                     let response = match args {
-                        Payload::String(string) => {
-                            events::message::mod_update_message(string).await
-                        }
+                        Payload::Text(string) => events::message::mod_update_message(string).await,
                         _ => panic!("Invalid payload type"),
                     };
                     let _ = socket.emit("bot_result", json!(response)).await;
@@ -104,7 +119,7 @@ pub async fn init() {
             |args: Payload, socket: rust_socketio::asynchronous::Client| {
                 async move {
                     let response = match args {
-                        Payload::String(string) => {
+                        Payload::Text(string) => {
                             events::message::scheduled_session_message(string).await
                         }
                         _ => panic!("Invalid payload type"),

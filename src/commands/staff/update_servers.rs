@@ -1,37 +1,20 @@
-use futures_util::FutureExt;
+use futures::FutureExt;
 use rust_socketio::Payload;
 use serde_json::json;
-use serenity::builder::CreateMessage;
-use serenity::{
-    all::{ButtonStyle, CommandInteraction},
-    builder::{
-        CreateButton, CreateCommand, CreateInteractionResponse, CreateInteractionResponseMessage,
-    },
-};
+use serenity::{all::CommandInteraction, builder::CreateCommand};
 use std::time::Duration;
 use tracing::{error, info};
 
 use serenity::prelude::*;
 
-use crate::SOCKET;
+use crate::{callback_and_response, confirm_action, emit_and_ack};
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let m = command
         .channel_id
         .send_message(
             &ctx,
-            CreateMessage::new()
-                .content("Are you sure?\n This will require shutting down all running servers")
-                .button(
-                    CreateButton::new("confirm")
-                        .style(ButtonStyle::Danger)
-                        .label("Do it"),
-                )
-                .button(
-                    CreateButton::new("cancel")
-                        .style(ButtonStyle::Primary)
-                        .label("Cancel"),
-                ),
+            confirm_action!("Are you sure?\n This will require shutting down all running servers"),
         )
         .await
         .unwrap();
@@ -52,36 +35,15 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         "confirm" => {
             let callback = |payload: Payload, _: rust_socketio::asynchronous::Client| {
                 async move {
-                    match payload {
-                        Payload::String(_) => info!("Successfully sent command to PSM"),
-                        Payload::Binary(_) => error!("Error sending message to PSM"),
-                    };
+                    callback_and_response!(payload);
                 }
                 .boxed()
             };
-            let output = command
-                .create_response(
-                    &ctx,
-                    CreateInteractionResponse::Message(
-                        CreateInteractionResponseMessage::default()
-                            .ephemeral(true)
-                            .content("Message has been sent to server to execute command"),
-                    ),
-                )
-                .await;
-            SOCKET
-                .get()
-                .expect("Unable to get socket")
-                .emit_with_ack(
-                    "update_arma_servers",
-                    json!({}),
-                    Duration::from_secs(60 * 3),
-                    callback,
-                )
-                .await
-                .expect("Error sending message to PSM");
+
+            emit_and_ack!(json!({}), "update_server", callback);
+
             m.delete(&ctx).await.unwrap();
-            output
+            Ok(())
         }
         _ => {
             m.delete(&ctx).await.unwrap();

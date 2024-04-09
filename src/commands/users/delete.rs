@@ -1,20 +1,24 @@
+use std::time::Duration;
+
 use futures::FutureExt;
 use rust_socketio::Payload;
 use serde_json::json;
-use serenity::{all::CommandInteraction, builder::CreateCommand};
-use std::time::Duration;
+use serenity::builder::{CreateInteractionResponse, CreateInteractionResponseMessage};
+use serenity::{
+    all::{CommandInteraction, CommandOptionType},
+    builder::{CreateCommand, CreateCommandOption},
+    prelude::*,
+};
 use tracing::{error, info};
 
-use serenity::prelude::*;
-
-use crate::{callback_and_response, confirm_action, emit_and_ack};
+use crate::{callback_and_response, confirm_action, emit_and_ack, sent_to_server};
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let m = command
         .channel_id
         .send_message(
             &ctx,
-            confirm_action!("Are you sure?\n This will require shutting down all running servers"),
+            confirm_action!("Are you sure?\n This will Delete all users information from PSM"),
         )
         .await
         .unwrap();
@@ -27,6 +31,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         Some(x) => x,
         None => {
             m.reply(&ctx, "Timed out").await.unwrap();
+            m.delete(&ctx).await.unwrap();
             panic!("Timed out");
         }
     };
@@ -40,8 +45,9 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
                 .boxed()
             };
 
-            emit_and_ack!(json!({}), "update_mods", callback);
+            emit_and_ack!(json!(command.data.options[0]), "delete_user", callback);
 
+            sent_to_server!(&ctx, &command);
             m.delete(&ctx).await.unwrap();
             Ok(())
         }
@@ -54,5 +60,10 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 }
 
 pub fn register() -> CreateCommand {
-    CreateCommand::new("update_mods").description("Update all mods on the server")
+    let user =
+        CreateCommandOption::new(CommandOptionType::User, "user", "User to Detele").required(true);
+
+    CreateCommand::new("user_delete")
+        .description("Delete a given user from PSM")
+        .add_option(user)
 }
