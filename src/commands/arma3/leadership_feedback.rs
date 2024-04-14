@@ -1,22 +1,45 @@
-use futures_util::StreamExt;
-use serenity::{
-    all::{ActionRowComponent::InputText, CreateInteractionResponse, InputTextStyle},
-    builder::{
-        CreateActionRow, CreateInputText, CreateInteractionResponseFollowup,
-        CreateInteractionResponseMessage,
-    },
-    collector::ModalInteractionCollector,
-};
-use tracing::{error, info};
+use crate::prelude::*;
 
-use std::fs::File;
-use std::{error::Error, io::Read};
+#[derive(Serialize)]
+struct TemplateInputs {
+    sustains: String,
+    improves: String,
+    overall: String,
+}
 
-use serenity::{
-    all::CommandInteraction,
-    builder::{CreateCommand, CreateEmbed, CreateModal},
-    prelude::*,
-};
+impl TemplateInputs {
+    // Function to create a HashMap from the struct
+    fn to_map(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("sustains".to_string(), self.sustains.clone());
+        map.insert("improves".to_string(), self.improves.clone());
+        map.insert("overall".to_string(), self.overall.clone());
+        map
+    }
+    fn new(inputs: Vec<&ActionRowComponent>) -> TemplateInputs {
+        let (mut sustain, mut improve, mut overall) = (None, None, None);
+        for input in inputs.iter() {
+            match input {
+                InputText(input) if input.custom_id == "sustains" => {
+                    sustain = input.value.clone();
+                }
+                InputText(input) if input.custom_id == "improves" => {
+                    improve = input.value.clone();
+                }
+                InputText(input) if input.custom_id == "overall" => {
+                    overall = input.value.clone();
+                }
+                _ => error!("No input collected"),
+            }
+        }
+        TemplateInputs {
+            sustains: sustain.unwrap(),
+            improves: improve.unwrap(),
+            overall: overall.unwrap(),
+        }
+    }
+}
+
 fn read_file_to_string(file_path: &str) -> Result<String, Box<dyn Error>> {
     // Open the file
     let mut file = File::open(file_path)?;
@@ -62,7 +85,6 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         .stream();
 
     let _ = collector.then(|input| async move {
-        let (mut sustain, mut improve, mut overall) = (None, None, None);
         let inputs: Vec<_> = input
             .data
             .components
@@ -70,20 +92,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
             .flat_map(|a| a.components.iter())
             .collect();
 
-        for input in inputs.iter() {
-            match input {
-                InputText(input) if input.custom_id == "sustains" => {
-                    sustain = Some(input.value.clone())
-                }
-                InputText(input) if input.custom_id == "improves" => {
-                    improve = Some(input.value.clone());
-                }
-                InputText(input) if input.custom_id == "overall" => {
-                    overall = Some(input.value.clone());
-                }
-                _ => return error!("No input collected"),
-            }
-        }
+        let template_input = TemplateInputs::new(inputs);
 
         match input
             .create_response(
@@ -96,34 +105,12 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
             Err(error) => error!("Failed: {}", error),
         }
 
-        let file_path = "./templates/leadership_feedback";
-
-        let description = match read_file_to_string(file_path) {
-            Ok(contents) => {
-                info!("File contents:\n{}", contents);
-                contents
-                    .replace(
-                        "[sustains]",
-                        sustain.unwrap().expect("No sustains string found").as_str(),
-                    )
-                    .replace(
-                        "[improves]",
-                        improve.unwrap().expect("No improve string found").as_str(),
-                    )
-                    .replace(
-                        "[overall]",
-                        overall.unwrap().expect("No overall string found").as_str(),
-                    )
-            }
-            Err(err) => {
-                error!("Error reading file: {}", err);
-                String::new()
-            }
-        };
+        let template_contents = read_file_to_string("./templates/leadership_feedback");
+        let filled_template = template_fill!(&template_contents.unwrap(), template_input.to_map());
 
         let embed = CreateEmbed::new()
             .title(format!("Feedback Template for {}", &command.user.name))
-            .description(description);
+            .description(filled_template);
 
         if let Err(why) = command
             .create_followup(

@@ -1,16 +1,4 @@
-use chrono::NaiveDate;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::io::Error;
-use tracing::{error, info};
-
-use serenity::{
-    all::Colour,
-    builder::{CreateAttachment, CreateEmbed, CreateMessage},
-    model::id::ChannelId,
-};
-
-use crate::http::BotCache;
+use crate::prelude::*;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Message {
@@ -94,7 +82,7 @@ struct Session {
     date: NaiveDate,
 }
 
-fn get_target(target: String) -> Result<u64, Error> {
+fn get_target(target: String) -> Result<u64, Box<dyn Error>> {
     let target_uid = match target.as_str() {
         "arma" => std::env::var("ARMA_GENERAL_CHANNEL_ID")
             .expect("ARMA_GENERAL_CHANNEL_ID not found in env"),
@@ -132,7 +120,7 @@ pub async fn message(payload: Vec<Value>) -> String {
 
     let response = channel_id
         .send_message(
-            &BotCache::get(),
+            http::BotCache::get(),
             CreateMessage::new().content(request_contents.message),
         )
         .await;
@@ -184,7 +172,9 @@ pub async fn embed(payload: Vec<Value>) -> String {
                 .description(request_contents.message),
         )
     };
-    let response = channel_id.send_message(&BotCache::get(), message).await;
+    let response = channel_id
+        .send_message(http::BotCache::get(), message)
+        .await;
 
     let output = match response {
         Ok(_) => {
@@ -226,7 +216,9 @@ Make sure that you have updated your mods.";
     let channel_id = ChannelId::from(
         get_target("arma".to_string()).expect("Unable to get valid target channel"),
     );
-    let response = channel_id.send_message(&BotCache::get(), message).await;
+    let response = channel_id
+        .send_message(http::BotCache::get(), message)
+        .await;
 
     let output = match response {
         Ok(_) => {
@@ -260,7 +252,7 @@ pub async fn mod_update_message(payload: Vec<Value>) -> String {
         let channel_id = ChannelId::from(target);
 
         let response = channel_id
-            .send_message(&BotCache::get(), CreateMessage::new().content(&msg))
+            .send_message(http::BotCache::get(), CreateMessage::new().content(&msg))
             .await;
 
         let o = match response {

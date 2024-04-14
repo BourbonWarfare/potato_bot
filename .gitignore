@@ -1,4 +1,5 @@
 .env
+.env_potbot
 /target
 src/commands/inProgress/
 log/

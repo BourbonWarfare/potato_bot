@@ -1,7 +1,4 @@
-use serde::Deserialize;
-use std::env;
-use std::fs;
-use toml;
+use crate::prelude::*;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {

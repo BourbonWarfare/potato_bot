@@ -1,15 +1,4 @@
-use serenity::{
-    all::{CommandInteraction, CommandOptionType, ResolvedOption, ResolvedValue},
-    builder::{
-        CreateCommand, CreateCommandOption, CreateEmbed, CreateInteractionResponse,
-        CreateInteractionResponseMessage,
-    },
-    prelude::*,
-    utils::CreateQuickModal,
-};
-use tracing::{error, info};
-
-use crate::functions::github_api::create_issue;
+use crate::prelude::*;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let options = command.data.options();
@@ -53,7 +42,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
             }
         };
 
-        let url = create_issue(&_project, &title, &description).await;
+        let url = functions::github_api::create_issue(&_project, &title, &description).await;
 
         let r_title = format!("Created new issue for {:#?}", &options.get(0));
         let embed = CreateEmbed::new()

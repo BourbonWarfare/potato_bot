@@ -1,16 +1,4 @@
-use tracing::{error, info};
-
-use serenity::{
-    all::{ChannelId, CommandInteraction, RoleId},
-    builder::{
-        CreateCommand, CreateEmbed, CreateInteractionResponse, CreateInteractionResponseMessage,
-        CreateMessage,
-    },
-    prelude::*,
-    utils::MessageBuilder,
-};
-
-use std::env;
+use crate::prelude::*;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let member = command.member.clone();
@@ -42,7 +30,6 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         .unwrap()
     {
         // Create the response to go to the recruit
-
         let embed = CreateEmbed::new()
             .title("📢 Calling an Orientor")
             .description(

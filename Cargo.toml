@@ -28,6 +28,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter", "time", "ch
 octocrab = "0.32.0"
 rust_socketio = { version = "0.5", features = ["async"] }
 toml = { version = "0.8.9", features = ["parse"] }
+thiserror = "1.0.58"
 
 [dependencies.serenity]
 default-features = false

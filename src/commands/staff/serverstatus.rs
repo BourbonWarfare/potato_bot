@@ -1,20 +1,4 @@
-use std::time::Duration;
-use tracing::info;
-
-use a2s::A2SClient;
-use regex::Regex;
-use serde::{Deserialize, Serialize};
-use serenity::{
-    all::{CommandInteraction, CommandOptionType, CreateCommand, ResolvedOption, ResolvedValue},
-    builder::{
-        CreateCommandOption, CreateEmbed, CreateInteractionResponse,
-        CreateInteractionResponseMessage,
-    },
-    prelude::*,
-};
-use tokio::time::timeout;
-
-use crate::CONFIG;
+use crate::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct EmbedData {

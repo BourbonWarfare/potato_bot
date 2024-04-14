@@ -1,10 +1,4 @@
-use serenity::{
-    all::CommandInteraction,
-    builder::{
-        CreateCommand, CreateEmbed, CreateInteractionResponse, CreateInteractionResponseMessage,
-    },
-    prelude::*,
-};
+use crate::prelude::*;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let content = "https://docs.bourbonwarfare.com/".to_string();

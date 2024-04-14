@@ -1,14 +1,4 @@
-use serde_json::json;
-use serenity::builder::{CreateInteractionResponse, CreateInteractionResponseMessage};
-use serenity::model::application::ResolvedValue;
-use serenity::{
-    all::{CommandInteraction, CommandOptionType, ResolvedOption},
-    builder::{CreateCommand, CreateCommandOption},
-    prelude::*,
-};
-use tracing::{error, info};
-
-use crate::SOCKET;
+use crate::prelude::*;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let options = &command.data.options();

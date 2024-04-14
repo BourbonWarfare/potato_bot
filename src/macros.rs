@@ -1,19 +1,4 @@
-use serenity::all::{CommandData, CommandDataOptionValue};
-
-pub fn _get_option<'a>(command: &'a CommandData, name: &str) -> Option<&'a CommandDataOptionValue> {
-    let option = command.options.iter().find(|option| option.name == name)?;
-    Some(&option.value)
-}
-
-#[macro_export]
-macro_rules! get_option {
-    ($data:expr, $name:expr, $typ:ident) => {
-        match $crate::macros::_get_option($data, $name) {
-            Some(CommandDataOptionValue::$typ(data)) => Some(data),
-            _ => None,
-        }
-    };
-}
+use crate::prelude::*;
 
 #[macro_export]
 macro_rules! confirm_action {
@@ -85,7 +70,7 @@ macro_rules! emit_and_ack {
 #[macro_export]
 macro_rules! sent_to_server {
     ($ctx:expr, $command:expr) => {
-        $command
+        let _ = $command
             .clone()
             .create_response(
                 $ctx,
@@ -111,7 +96,8 @@ macro_rules! create_response_message {
                         .ephemeral($ephemeral),
                 ),
             )
-            .await?;
+            .await
+            .map_err(DiscordError::CannotSendResponse)
     };
 }
 
@@ -127,6 +113,69 @@ macro_rules! create_response_embed {
                         .ephemeral($ephemeral),
                 ),
             )
-            .await?;
+            .await
+            .map_err(DiscordError::CannotSendResponse)
+    };
+}
+
+pub fn _replace_template(template: &String, values: HashMap<String, String>) -> String {
+    let mut result = template.to_string();
+
+    for (key, value) in values {
+        // Replace placeholders with the corresponding values
+        let placeholder = format!("[{}]", key);
+        result = result.replace(&placeholder, &value.to_string());
+    }
+
+    result
+}
+
+#[macro_export]
+macro_rules! template_fill {
+    ($contents:expr, $hash:expr) => {
+        crate::macros::_replace_template($contents, $hash)
+    };
+}
+
+pub fn _get_option<'a>(
+    command: &'a CommandData,
+    name: &str,
+) -> PotatoResult<CommandDataOptionValue> {
+    Ok(command
+        .options
+        .iter()
+        .find(|option| option.name == name)
+        .ok_or(PotatoError::Command(CommandError::CannotFindCommandOption))
+        .unwrap()
+        .value)
+}
+
+#[macro_export]
+macro_rules! get_option {
+    ($data:expr, $name:expr, $typ:ident) => {
+        match $crate::macros::_get_option($data, $name) {
+            Ok(CommandDataOptionValue::$typ(data)) => Ok(data),
+            _ => Err(PotatoError::Command(
+                CommandError::CannotRetrieveOptionValue,
+            )),
+        }
+    };
+}
+
+pub fn _get_attachment<'a>(
+    command: &'a CommandData,
+    id: AttachmentId,
+) -> PotatoResult<&Attachment> {
+    command
+        .resolved
+        .attachments
+        .get(&id)
+        .ok_or(PotatoError::Command(CommandError::CannotRetrieveAttachment))
+}
+
+#[macro_export]
+macro_rules! get_attachment_from_id {
+    ($command:expr, $id:expr) => {
+        $crate::macros::_get_attachment($command, $id)
     };
 }

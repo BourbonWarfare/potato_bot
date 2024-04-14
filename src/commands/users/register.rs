@@ -1,12 +1,4 @@
-use futures::FutureExt;
-use rust_socketio::Payload;
-use serde_json::json;
-use serenity::all::CreateQuickModal;
-use serenity::builder::{CreateInteractionResponse, CreateInteractionResponseMessage};
-use serenity::{all::CommandInteraction, builder::CreateCommand, prelude::*};
-use tracing::{error, info};
-
-use crate::{callback_and_response, create_response_message, emit_and_ack};
+use crate::prelude::*;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let modal = CreateQuickModal::new("About you")

@@ -1,14 +1,4 @@
-use crate::commands::{helpers, mission_making, recruitment, staff, users};
-
-use serenity::{
-    all::Interaction,
-    async_trait,
-    model::{gateway::Ready, id::GuildId},
-    prelude::*,
-};
-
-use std::env;
-use tracing::info;
+use crate::prelude::*;
 
 pub struct Handler;
 
@@ -23,16 +13,17 @@ impl EventHandler for Handler {
 
             let output: Result<(), SerenityError> = match command.data.name.as_str() {
                 // Helper commands
-                "imbatman" => helpers::batman::run(&ctx, &command).await,
-                "docs" => helpers::docs::run(&ctx, &command).await,
-                "help" => helpers::help::run(&ctx, &command).await,
-                "html" => helpers::html::run(&ctx, &command).await,
-                "issue" => helpers::issue::run(&ctx, &command).await,
-                "leadership_feedback" => helpers::leadership_feedback::run(&ctx, &command).await,
-                "sessiontime" => helpers::sessiontime::run(&ctx, &command).await,
+                "docs" => community::docs::run(&ctx, &command).await,
+                "help" => community::help::run(&ctx, &command).await,
+                "issue" => community::issue::run(&ctx, &command).await,
+                "sessiontime" => community::sessiontime::run(&ctx, &command).await,
+                // Arma 3 Commands
+                "html" => arma3::html::run(&ctx, &command).await,
+                "imbatman" => arma3::batman::run(&ctx, &command).await,
+                "leadership_feedback" => arma3::leadership_feedback::run(&ctx, &command).await,
                 // Mission making commands
-                "bwmf" => mission_making::get_bwmf::run(&ctx, &command).await,
-                "upload" => mission_making::upload_mission::run(&ctx, &command).await,
+                "bwmf" => arma3::mission_making::get_bwmf::run(&ctx, &command).await,
+                "upload" => arma3::mission_making::upload_mission::run(&ctx, &command).await,
                 // Recruitment commands
                 "handbook" => recruitment::handbook::run(&ctx, &command).await,
                 "orientation" => recruitment::request_orientation::run(&ctx, &command).await,
@@ -44,7 +35,8 @@ impl EventHandler for Handler {
                 "update_servers" => staff::update_servers::run(&ctx, &command).await,
                 // Users management
                 "register" => users::register::run(&ctx, &command).await,
-                "user_update" => users::update::run(&ctx, &command).await,
+                "update" => users::update::run(&ctx, &command).await,
+                "delete" => users::delete::run(&ctx, &command).await,
                 _ => Err(SerenityError::Other("No slash command by that name")),
             };
             info!("Executed command interaction: {:#?}", command.data.name);
@@ -67,16 +59,17 @@ impl EventHandler for Handler {
                 &ctx.http,
                 vec![
                     // Helper commands
-                    helpers::batman::register(),
-                    helpers::docs::register(),
-                    helpers::help::register(),
-                    helpers::html::register(),
-                    helpers::issue::register(),
-                    helpers::leadership_feedback::register(),
-                    helpers::sessiontime::register(),
+                    community::docs::register(),
+                    community::help::register(),
+                    community::issue::register(),
+                    community::sessiontime::register(),
+                    // Arma 3
+                    arma3::batman::register(),
+                    arma3::html::register(),
+                    arma3::leadership_feedback::register(),
                     // Mission making commands
-                    mission_making::get_bwmf::register(),
-                    mission_making::upload_mission::register(),
+                    arma3::mission_making::get_bwmf::register(),
+                    arma3::mission_making::upload_mission::register(),
                     // Recruitment commands
                     recruitment::handbook::register(),
                     recruitment::request_orientation::register(),
@@ -89,6 +82,7 @@ impl EventHandler for Handler {
                     // User Commands
                     users::register::register(),
                     users::update::register(),
+                    users::delete::register(),
                 ],
             )
             .await;

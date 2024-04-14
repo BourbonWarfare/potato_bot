@@ -1,17 +1,4 @@
-use chrono::{DateTime, Datelike, Duration, Local, TimeZone};
-
-use serenity::all::{ResolvedOption, ResolvedValue};
-use tracing::error;
-
-use crate::CONFIG;
-use serenity::{
-    all::{CommandInteraction, CommandOptionType},
-    builder::{
-        CreateCommand, CreateCommandOption, CreateEmbed, CreateInteractionResponse,
-        CreateInteractionResponseMessage,
-    },
-    prelude::*,
-};
+use crate::prelude::*;
 
 fn next_session(time: DateTime<Local>) -> DateTime<Local> {
     let session_hour = CONFIG.local_session_time;
@@ -66,10 +53,9 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
     {
         let relative_time = relative_time(*value);
         format!(
-            "The requested time relative to session time
-                <t:{}:t> [**{}**] is:
+            "The requested time relative to session time <t:{}:t> [**{}**] is:
 
-                **<t:{}:t>**",
+**<t:{}:t>**",
             next_session.timestamp(),
             value.to_string(),
             relative_time.timestamp()
@@ -77,10 +63,9 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
     } else {
         format!(
             "Next Session will be:
+**<t:{0}:F>**
 
-        **<t:{0}:F>**
-
-        *Roughly* <t:{0}:R>
+*Roughly* <t:{0}:R>
         ",
             next_session.timestamp()
         )

@@ -1,16 +1,4 @@
-use serenity::all::CommandDataOptionValue;
-use serenity::{
-    all::{CommandInteraction, CommandOptionType},
-    builder::{
-        CreateAttachment, CreateCommand, CreateCommandOption, CreateEmbed,
-        CreateInteractionResponse, CreateInteractionResponseMessage,
-    },
-    prelude::*,
-};
-use std::{env, fs, path::PathBuf, time::SystemTime};
-use tracing::info;
-
-use crate::{get_option, CONFIG};
+use crate::prelude::*;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     if let Some(server) = get_option!(&command.data, "server", String) {

@@ -1,15 +1,6 @@
-use serenity::{
-    all::{CommandInteraction, CreateAttachment},
-    builder::{
-        CreateCommand, CreateEmbed, CreateInteractionResponse, CreateInteractionResponseMessage,
-    },
-    prelude::*,
-};
-use std::{env, path::Path};
+use crate::prelude::*;
 
-use tracing::info;
-
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> PotatoResult {
     let bat_path = env::var("BAT_FILE_PATH").expect("BAT_FILE_PATH not found in env");
 
     let path = Path::new(bat_path.as_str());
@@ -31,6 +22,8 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
             ),
         )
         .await
+        .map_err(DiscordError::CannotSendResponse)?;
+    Ok(())
 }
 
 pub fn register() -> CreateCommand {

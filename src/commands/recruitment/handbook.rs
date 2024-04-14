@@ -1,14 +1,4 @@
-use serenity::{
-    all::{
-        CommandDataOptionValue, CommandInteraction, CommandOptionType, CreateInteractionResponse,
-        CreateInteractionResponseMessage,
-    },
-    builder::{CreateCommand, CreateCommandOption, CreateEmbed},
-    prelude::*,
-};
-use tracing::{error, info};
-
-use crate::{create_response_embed, get_option};
+use crate::prelude::*;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let url = if let Some(handbook) = get_option!(&command.data, "handbook", String) {

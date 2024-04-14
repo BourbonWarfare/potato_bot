@@ -1,4 +1,4 @@
 pub mod docs;
 pub mod help;
-pub mod batman;
-pub mod html;
+pub mod issue;
+pub mod sessiontime;
