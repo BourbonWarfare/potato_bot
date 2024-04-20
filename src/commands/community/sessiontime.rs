@@ -1,9 +1,15 @@
 use crate::prelude::*;
 
-fn next_session(time: DateTime<Local>) -> DateTime<Local> {
-    let session_hour = CONFIG.local_session_time;
+fn next_session(time: DateTime<Local>) -> PotatoResult<DateTime<Local>> {
     let session_time_today = Local
-        .with_ymd_and_hms(time.year(), time.month(), time.day(), session_hour, 0, 0)
+        .with_ymd_and_hms(
+            time.year(),
+            time.month(),
+            time.day(),
+            CONFIG.local_session_time,
+            0,
+            0,
+        )
         .unwrap();
     let weekday_num = time.weekday().num_days_from_sunday();
 
@@ -11,64 +17,51 @@ fn next_session(time: DateTime<Local>) -> DateTime<Local> {
     match weekday_num {
         0 => {
             if time > session_time_today {
-                session_time_today + Duration::days(3 - weekday_num as i64)
+                Ok(session_time_today + chrono::Duration::days(3 - weekday_num as i64))
             } else {
-                session_time_today
+                Ok(session_time_today)
             }
         }
-        1 | 2 => session_time_today + Duration::days(3 - weekday_num as i64),
+        1 | 2 => Ok(session_time_today + chrono::Duration::days(3 - weekday_num as i64)),
         3 => {
             if time > session_time_today {
-                session_time_today + Duration::days(7 - weekday_num as i64)
+                Ok(session_time_today + chrono::Duration::days(7 - weekday_num as i64))
             } else {
-                session_time_today
+                Ok(session_time_today)
             }
         }
-        4 | 5 | 6 => session_time_today + Duration::days(7 - weekday_num as i64),
+        4 | 5 | 6 => Ok(session_time_today + chrono::Duration::days(7 - weekday_num as i64)),
         _ => {
             error!("weekday_num = {} is outside of week", weekday_num);
-            session_time_today
+            Err(PotatoError::Session(SessionError::WeekdayOutsideOfRange))
         }
     }
 }
 
-fn relative_time(relative: f64) -> DateTime<Local> {
-    let session_hour = CONFIG.local_session_time;
+fn relative_time(relative: f64) -> PotatoResult<DateTime<Local>> {
     let session_time_today = Local
-        .with_ymd_and_hms(2022, 1, 1, session_hour, 0, 0)
+        .with_ymd_and_hms(2022, 1, 1, CONFIG.local_session_time, 0, 0)
         .unwrap();
     let seconds: i64 = (relative * 3600.0) as i64;
-    session_time_today + Duration::seconds(seconds)
+    Ok(session_time_today + chrono::Duration::seconds(seconds))
 }
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = command.data.options();
-    let local: DateTime<Local> = Local::now();
-    let next_session: DateTime<Local> = next_session(local);
-
-    let content = if let Some(ResolvedOption {
-        value: ResolvedValue::Number(value),
-        ..
-    }) = options.first()
-    {
-        let relative_time = relative_time(*value);
-        format!(
-            "The requested time relative to session time <t:{}:t> [**{}**] is:
-
-**<t:{}:t>**",
-            next_session.timestamp(),
-            value.to_string(),
-            relative_time.timestamp()
-        )
-    } else {
-        format!(
-            "Next Session will be:
-**<t:{0}:F>**
-
-*Roughly* <t:{0}:R>
-        ",
-            next_session.timestamp()
-        )
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
+    let content = match get_option!(&interaction.data, "time", Number) {
+        Ok(value) => {
+            format!(
+                "The requested time relative to session time <t:{}:t> [**{}**] is:\n**<t:{}:t>**",
+                next_session(Local::now()).unwrap().timestamp(),
+                value.to_string(),
+                relative_time(value).unwrap().timestamp()
+            )
+        }
+        _ => {
+            format!(
+                "Next Session will be:\n**<t:{0}:F>**\n*Roughly* <t:{0}:R>",
+                next_session(Local::now()).unwrap().timestamp()
+            )
+        }
     };
 
     let embed = CreateEmbed::new()
@@ -76,16 +69,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         .description(content)
         .colour(0xf31616);
 
-    command
-        .create_response(
-            &ctx.http,
-            CreateInteractionResponse::Message(
-                CreateInteractionResponseMessage::new()
-                    .add_embed(embed)
-                    .ephemeral(false),
-            ),
-        )
-        .await
+    if let Err(e) = create_response_embed!(ctx, interaction, embed, true) {
+        let _ = PotatoBotError::Discord(e)
+            .send_error_response(ctx, interaction)
+            .await;
+    };
+
+    Ok(())
 }
 
 pub fn register() -> CreateCommand {

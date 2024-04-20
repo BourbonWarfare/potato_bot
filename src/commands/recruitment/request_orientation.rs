@@ -1,131 +1,84 @@
-use crate::prelude::*;
+use crate::{give_user_new_role, prelude::*};
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let member = command.member.clone();
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
+    match check_user_has_role!(ctx, interaction.user, *RECRUIT_ROLE_ID) {
+        Ok(..) => {
+            // Create the response to go to the recruit
+            let embed = CreateEmbed::new()
+                .title("📢  Calling an Orientor")
+                .description(
+                    "A member will reach out to set up an orientation.
+                    Make sure that you have set up and tested your mods!
 
-    let orientor_role: u64 = env::var("ORIENTATION_ROLE_ID")
-        .expect("ORIENTATION_ROLE_ID not found in env")
-        .parse()
-        .expect("Expected a roleId integer");
+                    Details can be found in:
+                    https://forums.bourbonwarfare.com/viewtopic.php?t=6877
+                    
+                    Please provide some idea of your availability below.",
+                );
 
-    let awaiting_role: u64 = env::var("AWAITING_ORIENTATION_ROLE_ID")
-        .expect("AWAITING_ORIENTATION_ROLE_ID not found in env")
-        .parse()
-        .expect("Expected a roleId integer");
+            if let Err(e) = create_response_embed!(&ctx, interaction, embed, false) {
+                let _ = PotatoBotError::Discord(e)
+                    .send_error_response(ctx, interaction)
+                    .await;
+            };
 
-    // Check that caller is recruit
-    let recruit_role: u64 = env::var("RECRUIT_ROLE_ID")
-        .expect("RECRUIT_ROLE_ID not found in env")
-        .parse()
-        .expect("Expected a roleId integer");
+            // sends message to orientor role
+            let content = MessageBuilder::new()
+                .push("📣 ")
+                .role(*ORIENTATION_ROLE_ID)
+                .push_line_safe(" a new recruit is looking to get oriented.")
+                .push("Please reach out to ")
+                .user(interaction.user.id)
+                .push(" to arrange something.")
+                .build();
 
-    if command
-        .user
-        .has_role(
-            &ctx.http,
-            command.guild_id.unwrap(),
-            RoleId::new(recruit_role),
-        )
-        .await
-        .unwrap()
-    {
-        // Create the response to go to the recruit
-        let embed = CreateEmbed::new()
-            .title("📢 Calling an Orientor")
-            .description(
-                "A member will reach out to set up an orientation.
-                Make sure that you have set up and tested your mods!
+            let channel = ChannelId::new(*RECRUITMENT_CHANNEL_ID);
 
-                Details can be found in:
-                https://forums.bourbonwarfare.com/viewtopic.php?t=6877
-                
-                Please provide some idea of your availability below.",
-            );
+            if let Err(e) = channel
+                .send_message(&ctx.http, CreateMessage::new().content(content))
+                .await
+            {
+                let _ = PotatoBotError::Discord(DiscordError::CannotSendResponse(e))
+                    .send_error_response(ctx, interaction)
+                    .await;
+            };
 
-        if let Err(error) = command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .add_embed(embed)
-                        .ephemeral(false),
-                ),
-            )
-            .await
-        {
-            error!("{:#?}", error);
-        };
-
-        // sends message to orientor role
-
-        let content = MessageBuilder::new()
-            .push("📣 ")
-            .role(orientor_role)
-            .push_line_safe(" a new recruit is looking to get oriented.")
-            .push("Please reach out to ")
-            .user(command.user.id)
-            .push(" to arrange something.")
-            .build();
-
-        let channel = ChannelId::new(
-            env::var("RECRUITMENT_CHANNEL_ID")
-                .expect("RECRUITMENT_CHANNEL_ID not found in env")
-                .parse()
-                .expect("Expected a ChannelId integer"),
-        );
-
-        if let Err(error) = channel
-            .send_message(&ctx.http, CreateMessage::new().content(content))
-            .await
-        {
-            error!("{:#?}", error);
-        };
-
-        match &command
-            .user
-            .has_role(
-                &ctx.http,
-                command.guild_id.unwrap(),
-                RoleId::new(awaiting_role),
-            )
-            .await
-            .unwrap()
-        {
-            true => {
-                info!(
-                    "{} Already has the Awaiting orientation role.",
-                    command.user.name
-                )
+            match check_user_has_role!(ctx, interaction.user, *AWAITING_ORIENTATION_ROLE_ID) {
+                Ok(..) => {
+                    info!(
+                        "{} Already has the Awaiting orientation role.",
+                        interaction.user.name
+                    )
+                }
+                Err(_) => {
+                    if let Err(e) = give_user_new_role!(
+                        ctx,
+                        interaction.member.clone().unwrap(),
+                        *AWAITING_ORIENTATION_ROLE_ID
+                    ) {
+                        let _ = Err::<PotatoBotError, _>(
+                            PotatoBotError::Discord(DiscordError::CannotGiveUserRole(
+                                interaction.clone().user.name,
+                                RoleId::new(*AWAITING_ORIENTATION_ROLE_ID),
+                                e,
+                            ))
+                            .send_error_response(ctx, interaction),
+                        );
+                    };
+                }
             }
-            false => {
-                let _ = member.unwrap().add_role(&ctx.http, awaiting_role).await;
-                info!(
-                    "Added the Awaiting orientation role to {}",
-                    command.user.name
-                )
-            }
-        };
-    } else {
-        let embed = CreateEmbed::new()
-            .title("⚠ You are not a recruit")
-            .description("This is only intended for those with the recruit role");
 
-        if let Err(error) = command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .add_embed(embed)
-                        .ephemeral(true),
-                ),
-            )
+            Ok(())
+        }
+        Err(_) => {
+            PotatoBotError::Discord(DiscordError::UserDoesNotHaveRole(
+                interaction.user.clone().name,
+                RoleId::new(*RECRUIT_ROLE_ID),
+            ))
+            .send_error_response(ctx, interaction)
             .await
-        {
-            error!("{:#?}", error);
-        };
-    };
-
-    Ok(())
+        }
+    }
 }
 
 pub fn register() -> CreateCommand {

@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
     let embed = CreateEmbed::new()
         .title("Potato-Bot help")
         .description("A list of commands for Potato-Bot
@@ -49,16 +49,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         )
         .field("/leadership_feedback", "Fill in some fields and output a template for easy formatting", false);
 
-    command
-        .create_response(
-            &ctx.http,
-            CreateInteractionResponse::Message(
-                CreateInteractionResponseMessage::new()
-                    .embed(embed)
-                    .ephemeral(true),
-            ),
-        )
-        .await
+    if let Err(e) = create_response_embed!(ctx, interaction, embed, true) {
+        let _ = PotatoBotError::Discord(e)
+            .send_error_response(ctx, interaction)
+            .await;
+    };
+
+    Ok(())
 }
 
 pub fn register() -> CreateCommand {

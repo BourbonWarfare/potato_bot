@@ -1,70 +1,71 @@
 use crate::prelude::*;
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    if let Some(server) = get_option!(&command.data, "server", String) {
-        let server_config = CONFIG.get_server(server).unwrap();
-        let arma_base_path = env::var("ARMA_BASE_DIR").expect("ARMA_BASE_DIR not found in env");
-        let server_path = format!("{}/{}", arma_base_path, server_config.location.to_string());
-        let rpt_path = format!(
-            "{}/configs/{}/server/serverProfile/",
-            server_path,
-            server_config.name.to_string()
-        );
-        info!("rpt path: {}", rpt_path);
-        let path = match std::fs::read_dir(rpt_path) {
-            Ok(data) => {
-                let mut most_recent_file: Option<(SystemTime, PathBuf)> = None;
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
+    match get_option!(&interaction.data, "server", String) {
+        Ok(server) => {
+            let server_config = CONFIG.get_server(&server).unwrap();
+            let arma_base_path = env::var("ARMA_BASE_DIR").expect("ARMA_BASE_DIR not found in env");
+            let server_path = format!("{}/{}", arma_base_path, server_config.location.to_string());
+            let rpt_path = format!(
+                "{}/configs/{}/server/serverProfile/",
+                server_path,
+                server_config.name.to_string()
+            );
+            info!("rpt path: {}", rpt_path);
+            let path = match std::fs::read_dir(rpt_path) {
+                Ok(data) => {
+                    let mut most_recent_file: Option<(SystemTime, PathBuf)> = None;
 
-                // Read the directory entries
-                for entry in data {
-                    let entry = entry.unwrap();
-                    let path = entry.path();
+                    // Read the directory entries
+                    for entry in data {
+                        let entry = entry.unwrap();
+                        let path = entry.path();
 
-                    // Check if the entry is a file with the .rpt extension
-                    if path.is_file() && path.extension() == Some("rpt".as_ref()) {
-                        // Get the metadata (modification time) of the file
-                        let metadata = fs::metadata(&path).unwrap();
-                        let modified_time = metadata.modified().unwrap();
+                        // Check if the entry is a file with the .rpt extension
+                        if path.is_file() && path.extension() == Some("rpt".as_ref()) {
+                            // Get the metadata (modification time) of the file
+                            let metadata = fs::metadata(&path).unwrap();
+                            let modified_time = metadata.modified().unwrap();
 
-                        // Compare with the current most recent file
-                        if let Some((current_time, _)) = most_recent_file {
-                            if modified_time > current_time {
+                            // Compare with the current most recent file
+                            if let Some((current_time, _)) = most_recent_file {
+                                if modified_time > current_time {
+                                    most_recent_file = Some((modified_time, path));
+                                }
+                            } else {
                                 most_recent_file = Some((modified_time, path));
                             }
-                        } else {
-                            most_recent_file = Some((modified_time, path));
                         }
                     }
+                    most_recent_file.unwrap().1
                 }
-                most_recent_file.unwrap().1
-            }
-            Err(why) => panic!("Unable to read directory: {:?}", why),
-        };
-        let title = format!("🪵 RPT for server: {}", &server_config.name.as_str());
-        let embed = CreateEmbed::default().title(title);
+                Err(why) => panic!("Unable to read directory: {:?}", why),
+            };
+            let title = format!("🪵 RPT for server: {}", &server_config.name.as_str());
+            let embed = CreateEmbed::default().title(title);
+            let f_embed = embed_generics!(embed.clone(), "RPT");
 
-        command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .add_file(CreateAttachment::path(path).await.unwrap())
-                        .add_embed(embed)
-                        .ephemeral(false),
-                ),
-            )
-            .await
-    } else {
-        command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .content("No valid server provided")
-                        .ephemeral(false),
-                ),
-            )
-            .await
+            if let Err(e) = interaction
+                .create_response(
+                    &ctx.http,
+                    CreateInteractionResponse::Message(
+                        CreateInteractionResponseMessage::new()
+                            .add_file(CreateAttachment::path(path).await.unwrap())
+                            .embed(f_embed)
+                            .ephemeral(false),
+                    ),
+                )
+                .await
+                .map_err(DiscordError::CannotSendResponse)
+            {
+                let _ = PotatoBotError::Discord(e)
+                    .send_error_response(ctx, interaction)
+                    .await;
+            }
+
+            Ok(())
+        }
+        Err(e) => e.send_error_response(ctx, interaction).await,
     }
 }
 

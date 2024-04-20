@@ -1,59 +1,42 @@
 use crate::prelude::*;
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = &command.data.options();
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
+    match get_option!(&interaction.data, "servername", String) {
+        Ok(servername) => match get_option!(&interaction.data, "action", String) {
+            Ok(action) => {
+                info!("Action: {}", action);
+                let json = json!({ "name": servername, "action": action });
 
-    let content = if let Some(ResolvedOption {
-        value: ResolvedValue::String(servername),
-        ..
-    }) = options.first()
-    {
-        info!("Servername: {}", servername);
-        if let Some(ResolvedOption {
-            value: ResolvedValue::String(action),
-            ..
-        }) = options.get(1)
-        {
-            info!("Action: {}", action);
-            let json = json!({ "name": servername, "action": action });
+                let response = SOCKET_CLIENT
+                    .get()
+                    .expect("Unable to get socket")
+                    .emit("manage_arma_server", json)
+                    .await;
 
-            let response = SOCKET
-                .get()
-                .expect("Unable to get socket")
-                .emit("manage_arma_server", json)
-                .await;
+                let output = match response {
+                    Ok(_) => "Successfully sent command to PSM",
+                    Err(_) => "Error sending message to PSM",
+                };
 
-            let output = match response {
-                Ok(_) => "Successfully sent command to PSM",
-                Err(_) => "Error sending message to PSM",
-            };
+                let content = format!(
+                    "Performing action [{}] on server [{}]\n{}",
+                    action.to_uppercase(),
+                    servername.to_uppercase(),
+                    output
+                );
 
-            format!(
-                "Performing action [{}] on server [{}]\n{}",
-                action.to_uppercase(),
-                servername.to_uppercase(),
-                output
-            )
-        } else {
-            error!("Action not found");
-            "No action given".to_string()
-        }
-    } else {
-        error!("Server not found");
-        "Wasn't able to get servername".to_string()
-    };
+                if let Err(e) = create_response_message!(ctx, interaction, content, true) {
+                    let _ = PotatoBotError::Discord(e)
+                        .send_error_response(ctx, interaction)
+                        .await;
+                };
 
-    let _ = command
-        .create_response(
-            &ctx.http,
-            CreateInteractionResponse::Message(
-                CreateInteractionResponseMessage::new()
-                    .content(content)
-                    .ephemeral(true),
-            ),
-        )
-        .await;
-    Ok(())
+                Ok(())
+            }
+            Err(e) => e.send_error_response(ctx, interaction).await,
+        },
+        Err(e) => e.send_error_response(ctx, interaction).await,
+    }
 }
 
 pub fn register() -> CreateCommand {

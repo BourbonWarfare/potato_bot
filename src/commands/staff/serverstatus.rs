@@ -96,77 +96,60 @@ pub async fn get_server_status(
     }
 }
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = command.data.options();
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
+    match get_option!(&interaction.data, "server", String) {
+        Ok(server) => {
+            interaction
+                .defer(&ctx.http)
+                .await
+                .expect("Unable to defer interaction");
 
-    if let Some(ResolvedOption {
-        value: ResolvedValue::String(server),
-        ..
-    }) = options.first()
-    {
-        command
-            .defer(&ctx.http)
-            .await
-            .expect("Unable to defer interaction");
+            // Create empty list that we will iterate over
+            let mut _server_list = Vec::new();
 
-        // Create empty list that we will iterate over
-        let mut _server_list = Vec::new();
+            if server == "all" {
+                _server_list = CONFIG.servers.iter().collect();
+            } else {
+                _server_list = CONFIG
+                    .servers
+                    .iter()
+                    .filter(|e| e.name == server.to_string())
+                    .collect();
+            }
 
-        if *server == "all" {
-            _server_list = CONFIG.servers.iter().collect();
-        } else {
-            _server_list = CONFIG
-                .servers
-                .iter()
-                .filter(|e| e.name == server.to_string())
-                .collect();
+            let mut fields: Vec<(_, _, bool)> = Vec::new();
+
+            // Get all servers details
+            for server in _server_list {
+                let data = get_server_status(
+                    &server.name.to_string(),
+                    Some(&server.name_pretty.to_string()),
+                )
+                .await;
+
+                let field = EmbedData::new(&data);
+
+                fields.push((
+                    field.name,
+                    format!(
+                        "[{}] on [{}]\n[{}]\n[{}]",
+                        field.game, field.map, field.players, field.state
+                    ),
+                    true,
+                ));
+            }
+
+            let embed = CreateEmbed::new().title("Server Status").fields(fields);
+
+            if let Err(e) = create_response_embed!(ctx, interaction, embed, false) {
+                let _ = PotatoBotError::Discord(e)
+                    .send_error_response(ctx, interaction)
+                    .await;
+            };
+
+            Ok(())
         }
-
-        let mut fields: Vec<(_, _, bool)> = Vec::new();
-
-        // Get all servers details
-        for server in _server_list {
-            let data = get_server_status(
-                &server.name.to_string(),
-                Some(&server.name_pretty.to_string()),
-            )
-            .await;
-
-            let field = EmbedData::new(&data);
-
-            fields.push((
-                field.name,
-                format!(
-                    "[{}] on [{}]\n[{}]\n[{}]",
-                    field.game, field.map, field.players, field.state
-                ),
-                true,
-            ));
-        }
-
-        let embed = CreateEmbed::new().title("Server Status").fields(fields);
-
-        command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .embed(embed)
-                        .ephemeral(false),
-                ),
-            )
-            .await
-    } else {
-        command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .content("Not a vaild server")
-                        .ephemeral(false),
-                ),
-            )
-            .await
+        Err(e) => e.send_error_response(ctx, interaction).await,
     }
 }
 

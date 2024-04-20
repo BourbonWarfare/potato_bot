@@ -5,13 +5,12 @@ pub async fn create_issue(
     title: &str,
     description: &str,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let owner = std::env::var("GITHUB_OWNER").expect("GITHUB_OWNER not found in env");
     let octocrab = octocrab::Octocrab::builder()
-        .personal_token(std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN not found in env"))
+        .personal_token(GITHUB_TOKEN.to_string())
         .build()?;
 
     let response = octocrab
-        .issues(owner, project_name)
+        .issues(GITHUB_OWNER.to_string(), project_name)
         .create(title)
         // Optional Parameters
         .body(description)

@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> PotatoResult {
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult<String> {
     let content =
         "https://github.com/BourbonWarfare/bwmf/archive/refs/heads/master.zip".to_string();
 
@@ -12,9 +12,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> PotatoResult {
         )
         .url(content);
 
-    create_response_embed!(ctx, command, embed, true);
-
-    Ok(())
+    match create_response_embed!(ctx, interaction, embed, true) {
+        Ok(_) => interaction_successful!(interaction),
+        Err(e) => {
+            let err = PotatoBotError::Discord(e);
+            interaction_failed!(err, ctx, interaction)
+        }
+    }
 }
 
 pub fn register() -> CreateCommand {

@@ -40,3 +40,6 @@ features = ["model"
     ,"cache"
     ,"collector"]
 version = "0.12.1" 
+
+[dependencies.potato_server_manager]
+path = "../potato_server_manager"

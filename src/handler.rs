@@ -5,41 +5,43 @@ pub struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::Command(command) = interaction {
+        if let Interaction::Command(interaction) = interaction {
             info!(
                 "Received command interaction: {:#?} from: {:#?}",
-                command.data.name, command.user.name
+                interaction.data.name, interaction.user.name
             );
 
-            let output: Result<(), SerenityError> = match command.data.name.as_str() {
+            let output: PotatoBotResult<String> = match interaction.data.name.as_str() {
                 // Helper commands
-                "docs" => community::docs::run(&ctx, &command).await,
-                "help" => community::help::run(&ctx, &command).await,
-                "issue" => community::issue::run(&ctx, &command).await,
-                "sessiontime" => community::sessiontime::run(&ctx, &command).await,
-                // Arma 3 Commands
-                "html" => arma3::html::run(&ctx, &command).await,
-                "imbatman" => arma3::batman::run(&ctx, &command).await,
-                "leadership_feedback" => arma3::leadership_feedback::run(&ctx, &command).await,
+                // "docs" => community::docs::run(&ctx, &command).await,
+                // "help" => community::help::run(&ctx, &command).await,
+                // "issue" => community::issue::run(&ctx, &command).await,
+                // "sessiontime" => community::sessiontime::run(&ctx, &command).await,
+                // // Arma 3 Commands
+                "html" => arma3::html::run(&ctx, &interaction).await,
+                "imbatman" => arma3::batman::run(&ctx, &interaction).await,
+                "leadership_feedback" => arma3::leadership_feedback::run(&ctx, &interaction).await,
                 // Mission making commands
-                "bwmf" => arma3::mission_making::get_bwmf::run(&ctx, &command).await,
-                "upload" => arma3::mission_making::upload_mission::run(&ctx, &command).await,
-                // Recruitment commands
-                "handbook" => recruitment::handbook::run(&ctx, &command).await,
-                "orientation" => recruitment::request_orientation::run(&ctx, &command).await,
-                // Staff commands
-                "armaserver" => staff::armaserver::run(&ctx, &command).await,
-                "rpt" => staff::get_rpt::run(&ctx, &command).await,
-                "serverstatus" => staff::serverstatus::run(&ctx, &command).await,
-                "update_mods" => staff::update_mods::run(&ctx, &command).await,
-                "update_servers" => staff::update_servers::run(&ctx, &command).await,
-                // Users management
-                "register" => users::register::run(&ctx, &command).await,
-                "update" => users::update::run(&ctx, &command).await,
-                "delete" => users::delete::run(&ctx, &command).await,
-                _ => Err(SerenityError::Other("No slash command by that name")),
+                "bwmf" => arma3::mission_making::get_bwmf::run(&ctx, &interaction).await,
+                "upload" => arma3::mission_making::upload_mission::run(&ctx, &interaction).await,
+                // // Recruitment commands
+                // "handbook" => recruitment::handbook::run(&ctx, &command).await,
+                // "orientation" => recruitment::request_orientation::run(&ctx, &command).await,
+                // // Staff commands
+                // "armaserver" => staff::armaserver::run(&ctx, &command).await,
+                // "rpt" => staff::get_rpt::run(&ctx, &command).await,
+                // "serverstatus" => staff::serverstatus::run(&ctx, &command).await,
+                // "update_mods" => staff::update_mods::run(&ctx, &command).await,
+                // "update_servers" => staff::update_servers::run(&ctx, &command).await,
+                // // Users management
+                "register" => users::register::run(&ctx, &interaction).await,
+                // "update" => users::update::run(&ctx, &command).await,
+                // "user_delete" => users::delete::run(&ctx, &command).await,
+                _ => Err(PotatoBotError::Command(
+                    CommandError::CannotFindSlashCommand(),
+                )),
             };
-            info!("Executed command interaction: {:#?}", command.data.name);
+            info!("Executed command interaction: {:#?}", interaction.data.name);
             info!("Returned: {:?}", output)
         }
     }
@@ -47,14 +49,7 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
 
-        let guild_id = GuildId::new(
-            env::var("GUILD_ID")
-                .expect("GUILD_ID not found in env")
-                .parse()
-                .expect("GUILD_ID must be an integer"),
-        );
-
-        let commands = guild_id
+        let commands = GuildId::new(*GUILD_ID)
             .set_commands(
                 &ctx.http,
                 vec![

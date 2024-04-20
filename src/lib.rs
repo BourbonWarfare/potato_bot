@@ -1,5 +1,4 @@
 pub mod commands;
-pub mod config;
 pub mod error;
 pub mod events;
 pub mod functions;
@@ -32,8 +31,11 @@ pub async fn start_bot() -> Result<(), Box<dyn std::error::Error>> {
     info!("Metadata initialized");
 
     // Configure the client with your Discord bot token in the environment.
-    let token = env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN not found in env");
+    let token = &*DISCORD_TOKEN;
     info!("Token found");
+
+    // Start sqlite database
+    db::init().await;
 
     // Build our client.
     info!("Building discord bot client");

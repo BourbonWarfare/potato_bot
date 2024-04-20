@@ -1,66 +1,87 @@
-use crate::prelude::*;
+use crate::{check_attachment_filetype, prelude::*};
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> PotatoResult {
-    let env_path = env::var("MISSIONS_UPLOAD_DIR").expect("MISSIONS_UPLOAD_DIR env var expected");
-    let mut _full_path = String::new();
-    let mut _title = String::new();
-    let mut _description = String::new();
-
-    match get_option!(&command.data, "upload", String) {
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult<String> {
+    match get_option!(&interaction.data, "upload", String) {
         Ok(repo) => {
-            _full_path = format!("{}/{:?}", env_path, repo);
-            info!("Full_Path: {}", _full_path);
+            let full_path = format!("{}/{}", *ARMA_MISSIONS_BASE_DIR, repo);
+            info!("Full_Path: {}", full_path);
 
-            match get_option!(&command.data, "mission_file", Attachment) {
+            match get_option!(&interaction.data, "mission_file", Attachment) {
                 Ok(attachment_id) => {
-                    let attachment = get_attachment_from_id!(&command.data, attachment_id)?;
-                    if attachment.filename.contains(".pbo") {
-                        let final_path = format!("{}/{}", _full_path, &attachment.filename);
-                        info!("final_path: {}", final_path);
-                        info!("Attachment: {:?}", attachment);
-                        let content = attachment
-                            .download()
-                            .await
-                            .expect("Error downloading file.");
-
-                        let mut file = File::create(final_path)
-                            .await
-                            .expect("Unable to create file");
-                        file.write_all(&content).await;
-
-                        _title = format!(":white_check_mark: {}", &attachment.filename);
-
-                        _description = format!(
-                            "File uploaded by **{}** to **{}** mission repo",
-                            &command.user.name.as_str(),
-                            repo
-                        );
+                    if let Err(e) = create_defer_message!(ctx, interaction) {
+                        let err = PotatoBotError::Discord(e);
+                        interaction_failed!(err, ctx, interaction)
                     } else {
-                        _title = format!(":octagonal_sign: {}", &attachment.filename);
-                        _description = "File is not a pbo".to_string();
-                        error!("File is not a pbo");
+                        let attachment =
+                            get_attachment_from_id!(&interaction.data, attachment_id).unwrap();
+                        match check_attachment_filetype!(attachment, ".pbo") {
+                            Ok(attachment) => {
+                                let final_path = format!("{}/{}", full_path, &attachment.filename);
+                                info!("final_path: {}", final_path);
+                                info!("Attachment: {:?}", attachment);
+
+                                let content = match attachment.download().await {
+                                    Ok(o) => Ok(o),
+                                    Err(e) => {
+                                        let _ = PotatoBotError::Command(
+                                            CommandError::CannotDownloadAttachment,
+                                        )
+                                        .send_error_response(ctx, interaction)
+                                        .await;
+                                        Err(e)
+                                    }
+                                }
+                                .unwrap();
+
+                                let path = match File::create(final_path).await {
+                                    Ok(o) => Ok(o),
+                                    Err(e) => {
+                                        let err = PotatoBotError::PotatoError(PotatoError::System(
+                                            SystemError::CannotCreateFileAtPath(e),
+                                        ))
+                                        .send_error_response(ctx, interaction)
+                                        .await;
+                                        Err(err)
+                                    }
+                                };
+                                let _ = match path.unwrap().write_all(&content).await {
+                                    Ok(_) => Ok(()),
+                                    Err(_) => {
+                                        let err = PotatoBotError::Command(
+                                            CommandError::CannotRetrieveAttachment,
+                                        )
+                                        .send_error_response(ctx, interaction);
+                                        Err(err)
+                                    }
+                                };
+
+                                let title = format!(":white_check_mark: {}", &attachment.filename);
+
+                                let description = format!(
+                                    "File uploaded by **{}** to **{}** mission repo",
+                                    &interaction.user.name.as_str(),
+                                    repo
+                                );
+
+                                let embed =
+                                    CreateEmbed::new().title(title).description(description);
+
+                                match create_followup_embed!(ctx, interaction, embed, true) {
+                                    Ok(_) => interaction_successful!(interaction),
+                                    Err(e) => {
+                                        let err = PotatoBotError::Discord(e);
+                                        interaction_failed!(err, ctx, interaction)
+                                    }
+                                }
+                            }
+                            Err(e) => interaction_failed!(e, ctx, interaction),
+                        }
                     }
-                    command
-                        .defer(&ctx.http)
-                        .await
-                        .expect("Unable to defer interaction");
-
-                    let embed = CreateEmbed::new().title(_title).description(_description);
-
-                    create_response_embed!(ctx, command, embed, false);
-
-                    Ok(())
                 }
-                Err(e) => {
-                    e.send_error_response(ctx, command).await;
-                    Err(e)
-                }
+                Err(e) => interaction_failed!(e, ctx, interaction),
             }
         }
-        Err(e) => {
-            e.send_error_response(ctx, command).await;
-            Err(e)
-        }
+        Err(e) => interaction_failed!(e, ctx, interaction),
     }
 }
 

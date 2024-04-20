@@ -1,32 +1,34 @@
 use crate::prelude::*;
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let url = if let Some(handbook) = get_option!(&command.data, "handbook", String) {
-        info!("Getting link for handbook: {}", handbook);
-        let out = match handbook.as_str() {
-            "recruit" => "https://docs.bourbonwarfare.com/wiki/welcome-to-bw/recruit-handbook",
-            "member" => "https://forums.bourbonwarfare.com/viewtopic.php?t=579",
-            _ => {
-                error!("No handbook selected");
-                "https://docs.bourbonwarfare.com/wiki/"
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult<String> {
+    match get_option!(&interaction.data, "handbook", String) {
+        Ok(handbook) => {
+            info!("Getting link for handbook: {}", handbook);
+            let url = match handbook.as_str() {
+                "recruit" => "https://docs.bourbonwarfare.com/wiki/welcome-to-bw/recruit-handbook",
+                "member" => "https://forums.bourbonwarfare.com/viewtopic.php?t=579",
+                _ => {
+                    error!("No handbook selected");
+                    "https://docs.bourbonwarfare.com/wiki/"
+                }
+            };
+            let embed = CreateEmbed::new()
+                .title("📓 CLICK HERE to open handbook")
+                .description(
+                "Handbooks and other useful information can be found on our website:\nhttps://docs.bourbonwarfare.com/wiki/",
+                )
+                .url(url);
+
+            match create_response_embed!(&ctx, interaction, embed, true) {
+                Ok(_) => interaction_successful!(interaction),
+                Err(e) => {
+                    let err = PotatoBotError::Discord(e);
+                    interaction_failed!(err, ctx, interaction)
+                }
             }
-        };
-        out
-    } else {
-        error!("No handbook selected");
-        "https://docs.bourbonwarfare.com/wiki/"
-    };
-
-    let embed = CreateEmbed::new()
-        .title("📓 CLICK HERE to open handbook")
-        .description(
-            "Handbooks and other useful information can be found on our website:
-        https://docs.bourbonwarfare.com/wiki/",
-        )
-        .url(url);
-
-    create_response_embed!(ctx, command, embed, false);
-    Ok(())
+        }
+        Err(e) => interaction_failed!(e, ctx, interaction),
+    }
 }
 
 pub fn register() -> CreateCommand {

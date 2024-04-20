@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let m = command
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
+    let m = interaction
         .channel_id
         .send_message(
             &ctx,
@@ -24,14 +24,18 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 
     match interaction.data.custom_id.as_str() {
         "confirm" => {
-            let callback = |payload: Payload, _: rust_socketio::asynchronous::Client| {
+            let callback = |payload: Payload, _: SioClient| {
                 async move {
                     callback_and_response!(payload);
                 }
                 .boxed()
             };
 
-            emit_and_ack!(json!({}), "update_mods", callback);
+            emit_and_ack!(
+                json!({ "token":interaction.token }),
+                "update_arma_mods",
+                callback
+            );
 
             m.delete(&ctx).await.unwrap();
             Ok(())

@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
     let content = "https://docs.bourbonwarfare.com/".to_string();
 
     let embed = CreateEmbed::new()
@@ -8,16 +8,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         .description("Link to BWs documentation and resources")
         .url(content);
 
-    command
-        .create_response(
-            &ctx.http,
-            CreateInteractionResponse::Message(
-                CreateInteractionResponseMessage::new()
-                    .embed(embed)
-                    .ephemeral(true),
-            ),
-        )
-        .await
+    if let Err(e) = create_response_embed!(ctx, interaction, embed, true) {
+        let _ = PotatoBotError::Discord(e)
+            .send_error_response(ctx, interaction)
+            .await;
+    };
+
+    Ok(())
 }
 
 pub fn register() -> CreateCommand {

@@ -6,40 +6,50 @@ struct Data {
     action: String,
 }
 
-pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    if let Some(servername) = get_option!(&command.data, "server", String) {
-        info!("Servername: {}", servername);
+pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult {
+    match get_option!(&interaction.data, "server", String) {
+        Ok(servername) => {
+            info!("Servername: {}", servername);
 
-        if let Some(action) = get_option!(&command.data, "action", String) {
-            info!("Action: {}", action);
+            match get_option!(&interaction.data, "action", String) {
+                Ok(action) => {
+                    info!("Action: {}", action);
 
-            let data = Data {
-                server: servername.to_string(),
-                action: action.to_string(),
-            };
+                    let data = Data {
+                        server: servername.to_string(),
+                        action: action.to_string(),
+                    };
 
-            let callback = |payload: Payload, _: rust_socketio::asynchronous::Client| {
-                async move {
-                    callback_and_response!(payload);
+                    let callback = |payload: Payload, _: SioClient| {
+                        async move {
+                            callback_and_response!(payload);
+                        }
+                        .boxed()
+                    };
+
+                    emit_and_ack!(
+                        serde_json::to_string(&data).unwrap(),
+                        "manage_arma_server",
+                        callback
+                    );
+                    if let Err(e) = create_response_message!(
+                        ctx,
+                        interaction,
+                        "Sending your request to the server",
+                        true
+                    ) {
+                        let _ = PotatoBotError::Discord(e)
+                            .send_error_response(ctx, interaction)
+                            .await;
+                    };
+
+                    Ok(())
                 }
-                .boxed()
-            };
-
-            emit_and_ack!(
-                serde_json::to_string(&data).unwrap(),
-                "manage_arma_server",
-                callback
-            );
-        } else {
-            error!("Action not found");
+                Err(e) => e.send_error_response(ctx, interaction).await,
+            }
         }
-    } else {
-        error!("Server not found");
-    };
-
-    create_response_message!(ctx, command, "Sending your request to the server", true);
-
-    Ok(())
+        Err(e) => e.send_error_response(ctx, interaction).await,
+    }
 }
 
 pub fn register() -> CreateCommand {
