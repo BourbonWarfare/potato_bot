@@ -9,14 +9,8 @@ use serenity::{
 };
 use tracing::{error, info};
 
-use std::fs::File;
-use std::{error::Error, io::Read};
+use std::{fs::File,error::Error, io::Read};
 
-use serenity::{
-    all::CommandInteraction,
-    builder::{CreateCommand, CreateEmbed, CreateModal},
-    prelude::*,
-};
 fn read_file_to_string(file_path: &str) -> Result<String, Box<dyn Error>> {
     // Open the file
     let mut file = File::open(file_path)?;

@@ -5,13 +5,16 @@ use serenity::{
     },
     prelude::*,
 };
-use std::env;
-use std::path::Path;
+use std::{env, path::Path};
+
+use tracing::info;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let html_path = env::var("HTML_FILE_PATH").expect("HTML_FILE_PATH not found in env");
 
     let path = Path::new(html_path.as_str());
+
+    info!("html file found at: {}", html_path);
 
     let embed = CreateEmbed::new()
         .title("Latest HTML")
@@ -31,5 +34,6 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 }
 
 pub fn register() -> CreateCommand {
-    CreateCommand::new("html").description("Get the latest version of the BW Modlist HTML")
+    CreateCommand::new("html")
+        .description("Get the latest version of the BW Modlist HTML")
 }
