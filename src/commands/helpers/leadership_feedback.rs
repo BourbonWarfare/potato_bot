@@ -1,9 +1,9 @@
 use futures_util::StreamExt;
 use serenity::{
-    all::{ActionRowComponent::InputText, CreateInteractionResponse, InputTextStyle},
+    all::{CommandInteraction, ActionRowComponent::InputText, CreateInteractionResponse, InputTextStyle},
     builder::{
         CreateActionRow, CreateInputText, CreateInteractionResponseFollowup,
-        CreateInteractionResponseMessage,
+        CreateInteractionResponseMessage, CreateCommand, CreateEmbed, CreateModal
     },
     collector::ModalInteractionCollector,
 };
