@@ -3,8 +3,9 @@ use serenity::{
     all::{CommandInteraction, ActionRowComponent::InputText, CreateInteractionResponse, InputTextStyle},
     builder::{
         CreateActionRow, CreateInputText, CreateInteractionResponseFollowup,
-        CreateInteractionResponseMessage, CreateCommand, CreateEmbed, CreateModal
+        CreateInteractionResponseMessage, CreateCommand, CreateEmbed, CreateModal,
     },
+    prelude::*,
     collector::ModalInteractionCollector,
 };
 use tracing::{error, info};

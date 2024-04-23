@@ -39,7 +39,7 @@ fn get_target(target: String) -> Result<u64, Error> {
         "tech" => std::env::var("TECH_CHANNEL_ID").expect("TECH_STAFF_CHANNEL_ID not found in env"),
         "recruit" => std::env::var("RECRUITMENT_CHANNEL_ID").expect("RECRUITMENT_CHANNEL_ID not found in env"),
         "bot" => std::env::var("BOT_SPAM_CHANNEL_ID").expect("BOT_SPAM_CHANNEL_ID not found in env"),
-        "mod_update" => std::env::var("MOD_UPDATE_CHANNEL_ID").expect("MOD_UPDATE_CHANNEL_ID not found in env")
+        "mod_update" => std::env::var("MOD_UPDATE_CHANNEL_ID").expect("MOD_UPDATE_CHANNEL_ID not found in env"),
         _ => {
             error!("Not a valid target");
             "".to_string()
