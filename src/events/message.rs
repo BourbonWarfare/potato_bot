@@ -154,10 +154,10 @@ Make sure that you have updated your mods.",
         member_role_id, recruit_role_id
     );
 
-    let message = CreateMessage::new().embed(
-        CreateEmbed::new()
+    let message = CreateMessage::new()
+        .content(description)
+        .embed(CreateEmbed::new()
             .title(title)
-            .description(description)
             .image("https://cdn.discordapp.com/attachments/285837079139844096/724897893315641404/unknown.png?ex=661e3145&is=660bbc45&hm=e9a36f7f7af1f853e0d2188ebabd63575609d89fa07536f620742974b38121d5&")
             .colour(Colour::from_rgb(239, 79, 10)),
     );
