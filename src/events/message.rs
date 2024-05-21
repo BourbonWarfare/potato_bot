@@ -32,20 +32,14 @@ struct Session {
 
 fn get_target(target: String) -> Result<u64, Error> {
     let target_uid = match target.as_str() {
-        "arma" => std::env::var("ARMA_GENERAL_CHANNEL_ID")
-            .expect("ARMA_GENERAL_CHANNEL_ID not found in env"),
+        "arma" => std::env::var("ARMA_GENERAL_CHANNEL_ID").expect("ARMA_GENERAL_CHANNEL_ID not found in env"),
         "member" => std::env::var("MEMBER_CHANNEL_ID").expect("MEMBER_CHANNEL_ID not found in env"),
         "staff" => std::env::var("STAFF_CHANNEL_ID").expect("STAFF_CHANNEL_ID not found in env"),
         "admin" => std::env::var("ADMIN_CHANNEL_ID").expect("ADMIN_CHANNEL_ID not found in env"),
         "tech" => std::env::var("TECH_CHANNEL_ID").expect("TECH_STAFF_CHANNEL_ID not found in env"),
-        "recruit" => std::env::var("RECRUITMENT_CHANNEL_ID")
-            .expect("RECRUITMENT_CHANNEL_ID not found in env"),
-        "bot" => {
-            std::env::var("BOT_SPAM_CHANNEL_ID").expect("BOT_SPAM_CHANNEL_ID not found in env")
-        }
-        "mod_update" => {
-            std::env::var("MOD_UPDATE_CHANNEL_ID").expect("MOD_UPDATE_CHANNEL_ID not found in env")
-        }
+        "recruit" => std::env::var("RECRUITMENT_CHANNEL_ID").expect("RECRUITMENT_CHANNEL_ID not found in env"),
+        "bot" => std::env::var("BOT_SPAM_CHANNEL_ID").expect("BOT_SPAM_CHANNEL_ID not found in env"),
+        "mod_update" => std::env::var("MOD_UPDATE_CHANNEL_ID").expect("MOD_UPDATE_CHANNEL_ID not found in env"),
         _ => {
             error!("Not a valid target");
             "".to_string()
