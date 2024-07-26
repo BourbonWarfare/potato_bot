@@ -43,9 +43,6 @@ fn get_target(target: String) -> Result<u64, Error> {
         "bot" => {
             std::env::var("BOT_SPAM_CHANNEL_ID").expect("BOT_SPAM_CHANNEL_ID not found in env")
         }
-        "mod_update" => {
-            std::env::var("MOD_UPDATE_CHANNEL_ID").expect("MOD_UPDATE_CHANNEL_ID not found in env")
-        }
         _ => {
             error!("Not a valid target");
             "".to_string()
@@ -186,14 +183,14 @@ pub async fn mod_update_message(payload: String) -> String {
         serde_json::from_str(payload.as_str()).expect("Unable to parse message");
 
     let msg = format!(
-        "# __**PSM Mod update: {0}**__
-[{0} Workshop Page](https://steamcommunity.com/sharedfiles/filedetails/?id={1})",
+        "# __**Mod Updated: {0}**__
+[{0}](https://steamcommunity.com/sharedfiles/filedetails/?id={1})",
         request_contents.ws_name, request_contents.ws_id
     );
 
     let mut output_str = String::new();
 
-    for ws_mod in vec!["mod_update", "tech"] {
+    for ws_mod in vec!["tech"] {
         let target = get_target(ws_mod.to_string()).expect("Unable to get valid target channel");
 
         let channel_id = ChannelId::from(target);
