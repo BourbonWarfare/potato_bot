@@ -34,6 +34,7 @@ default-features = false
 features = ["model"
     ,"rustls_backend"
     ,"client"
+	,"model"
     ,"gateway"
     ,"builder"
     ,"cache"

@@ -173,16 +173,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
             )
             .await
     } else {
-        command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .content("Not a vaild server")
-                        .ephemeral(false),
-                ),
-            )
-            .await
+        panic!("Not a valid server")
     }
 }
 

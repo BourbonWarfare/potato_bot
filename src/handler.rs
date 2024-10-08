@@ -28,6 +28,7 @@ impl EventHandler for Handler {
                 "help" => helpers::help::run(&ctx, &command).await,
                 "html" => helpers::html::run(&ctx, &command).await,
                 "issue" => helpers::issue::run(&ctx, &command).await,
+				"ping" => helpers::ping::run(&ctx, &command).await,
                 "leadership_feedback" => helpers::leadership_feedback::run(&ctx, &command).await,
                 "sessiontime" => helpers::sessiontime::run(&ctx, &command).await,
                 // Mission making commands
@@ -71,6 +72,7 @@ impl EventHandler for Handler {
                     helpers::html::register(),
                     helpers::issue::register(),
                     helpers::leadership_feedback::register(),
+					helpers::ping::register(),
                     helpers::sessiontime::register(),
                     // Mission making commands
                     mission_making::get_bwmf::register(),
