@@ -8,13 +8,14 @@ pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotRe
         .description("Link to BWs documentation and resources")
         .url(content);
 
-    if let Err(e) = create_response_embed!(ctx, interaction, embed, true) {
-        let _ = PotatoBotError::Discord(e)
-            .send_error_response(ctx, interaction)
-            .await;
+    match create_response_embed!(ctx, interaction, embed, true) {
+        Ok(_) => interaction_successful!(interaction),
+        Err(e) => {
+            PotatoBotError::Discord(e)
+                .send_error_response(ctx, interaction)
+                .await;
+        }
     };
-
-    Ok(())
 }
 
 pub fn register() -> CreateCommand {

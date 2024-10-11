@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult<String> {
-    let path = Path::new(&*HTML_FILE_PATH);
+    let path = stdPath::new(&*HTML_FILE_PATH);
 
     let embed = CreateEmbed::new()
         .title("Latest HTML")

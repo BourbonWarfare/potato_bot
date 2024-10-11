@@ -1,7 +1,7 @@
 use crate::{create_followup_embed_attachment, prelude::*};
 
 pub async fn run(ctx: &Context, interaction: &CommandInteraction) -> PotatoBotResult<String> {
-    let path = Path::new(&*BAT_FILE_PATH);
+    let path = stdPath::new(&*BAT_FILE_PATH);
 
     let embed = CreateEmbed::new()
         .title("🦇 batman")
