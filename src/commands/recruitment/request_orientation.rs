@@ -46,13 +46,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         let embed = CreateEmbed::new()
             .title("📢 Calling an Orientor")
             .description(
-                "A member will reach out to set up an orientation.
+                "A member will reach out to set up an Orientation.
                 Make sure that you have set up and tested your mods!
 
-                Details can be found in:
-                https://forums.bourbonwarfare.com/viewtopic.php?t=6877
+                The Recruit Handbook can be found here:
+                https://docs.bourbonwarfare.com/wiki/welcome-to-bw/recruit-handbook
                 
-                Please provide some idea of your availability below.",
+                Please provide some idea of your availability below for an Orientation!",
             );
 
         if let Err(error) = command
