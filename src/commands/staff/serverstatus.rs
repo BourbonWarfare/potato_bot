@@ -161,8 +161,8 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         }
 
         let embed = CreateEmbed::new().title("Server Status").fields(fields);
-
-        command
+        info!("serverstatus - Sending response - Start");
+        let ret = command
             .create_response(
                 &ctx.http,
                 CreateInteractionResponse::Message(
@@ -171,7 +171,9 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
                         .ephemeral(false),
                 ),
             )
-            .await
+            .await;
+            info!("serverstatus - Sending response - Done {:?}", ret);
+            ret
     } else {
         panic!("Not a valid server")
     }
