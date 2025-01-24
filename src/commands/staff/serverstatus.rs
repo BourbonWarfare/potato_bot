@@ -120,10 +120,10 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         ..
     }) = options.first()
     {
-        command
-            .defer(&ctx.http)
-            .await
-            .expect("Unable to defer interaction");
+        // command
+        //     .defer(&ctx.http)
+        //     .await
+        //     .expect("Unable to defer interaction");
 
         // Create empty list that we will iterate over
         let mut _server_list = Vec::new();
