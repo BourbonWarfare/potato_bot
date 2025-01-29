@@ -9,9 +9,7 @@ use serenity::{
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let embed = CreateEmbed::new()
         .title("Pong!")
-        .description(
-            "the bot works",
-        );
+        .description("the bot works");
     command
         .create_response(
             &ctx.http,

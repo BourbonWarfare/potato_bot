@@ -102,9 +102,9 @@ pub async fn get_server_status(
             extended_server_info: Some(response.extended_server_info),
         },
         Err(why) => ServerData {
-            name: why.to_string(),
-            game: "N/A".to_string(),
-            map: "N/A".to_string(),
+            name: target_server_pn.unwrap().to_string(),
+            game: "OFFLINE".to_string(),
+            map: why.to_string()[..8].into(),
             players: 0,
             max_players: 0,
             extended_server_info: None,
@@ -120,10 +120,10 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         ..
     }) = options.first()
     {
-        command
-            .defer(&ctx.http)
-            .await
-            .expect("Unable to defer interaction");
+        // command
+        //     .defer(&ctx.http)
+        //     .await
+        //     .expect("Unable to defer interaction");
 
         // Create empty list that we will iterate over
         let mut _server_list = Vec::new();
@@ -161,7 +161,6 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
         }
 
         let embed = CreateEmbed::new().title("Server Status").fields(fields);
-
         command
             .create_response(
                 &ctx.http,
