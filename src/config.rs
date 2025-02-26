@@ -3,6 +3,7 @@ use std::env;
 use std::fs;
 use toml;
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub locations: Vec<String>,
@@ -13,6 +14,7 @@ pub struct Config {
     pub mods: Vec<ModsList>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct A3ServerConfig {
     pub name: String,
@@ -26,18 +28,21 @@ pub struct A3ServerConfig {
     pub cron_job: Option<CronJob>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct CronJob {
     pub cron: String,
     pub action: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct ModsList {
     pub name: String,
     pub list: Vec<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct Mod {
     pub name: String,
