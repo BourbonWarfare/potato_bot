@@ -1,9 +1,11 @@
 use chrono::NaiveDate;
 use std::io::Error;
+use tokio::sync::Mutex;
 use tracing::{error, info};
 
+use lazy_static::lazy_static;
 use serenity::{
-    all::Colour,
+    all::{Colour, Mention, MessageId, ReactionType, UserId},
     builder::{CreateAttachment, CreateEmbed, CreateMessage},
     model::id::ChannelId,
 };
@@ -28,6 +30,11 @@ struct Mod {
 struct Session {
     thread_id: uuid::Uuid,
     date: NaiveDate,
+}
+
+lazy_static! {
+    /// static var containing the last session reminder message id
+    static ref SESSION_MESSAGE: Mutex<Option<MessageId>> = Mutex::new(None);
 }
 
 fn get_target(target: String) -> Result<u64, Error> {
@@ -100,6 +107,10 @@ pub async fn embed(payload: String) -> String {
         panic!("Title is required for an embed")
     };
 
+    if title.to_lowercase() == "mission end: tvt" {
+        coop_ping_tvt_finished().await
+    }
+
     let message = if request_contents.attachment.is_some() {
         let attachment = CreateAttachment::path(request_contents.attachment.unwrap())
             .await
@@ -164,7 +175,8 @@ Make sure that you have updated your mods.",
     let response = channel_id.send_message(&BotCache::get(), message).await;
 
     let output = match response {
-        Ok(_) => {
+        Ok(message) => {
+            coop_ping_save_session_reminder(&message.id).await;
             info!("Message sent successfully");
             "Discord Bot Embed sent successfully".to_string()
         }
@@ -212,4 +224,39 @@ pub async fn mod_update_message(payload: String) -> String {
         output_str.push_str(&o)
     }
     output_str
+}
+
+/// Saves message id from session reminder ping
+async fn coop_ping_save_session_reminder(id: &MessageId) {
+    info!("coop_ping_save_session_reminder: {:?}", id);
+    let mut lock = SESSION_MESSAGE.lock().await;
+    *lock = Some(*id);
+}
+/// Sends mention ping to all users who reacted with specific emoji
+async fn coop_ping_tvt_finished() {
+    let mut lock = SESSION_MESSAGE.lock().await;
+    info!("coop_ping_tvt_finished: {:?}", *lock);
+    let Some(message_id) = *lock else { return };
+    *lock = None;
+    let channel_id = ChannelId::from(
+        get_target("arma".to_string()).expect("Unable to get valid target channel"),
+    );
+    let reaction_type = ReactionType::from('🍎');
+    let reaction_users = channel_id
+        .reaction_users(&BotCache::get(), message_id, reaction_type, None, None)
+        .await;
+    let Ok(reaction_users) = reaction_users else {
+        return;
+    };
+
+    let mut message = String::from("CO-OP Slotting Now");
+    for user in &reaction_users {
+        info!(" -reacted by {}", user); // testing
+        message += &format!(" {}", Mention::from(UserId::from(user)));
+    }
+
+    let response = channel_id
+        .send_message(&BotCache::get(), CreateMessage::new().content(message))
+        .await;
+    info!("coop_ping_tvt_finished sent {:?}", response);
 }
