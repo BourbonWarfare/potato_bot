@@ -4,6 +4,7 @@ use tracing::info;
 use a2s::A2SClient;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+#[allow(unused_imports)]
 use serenity::{
     all::{CommandInteraction, CommandOptionType, CreateCommand, ResolvedOption, ResolvedValue},
     builder::{
@@ -113,78 +114,76 @@ pub async fn get_server_status(
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
-    let options = command.data.options();
+    // let options = command.data.options();
+    // let Some(ResolvedOption {
+    //     value: ResolvedValue::String(server),
+    //     ..
+    // }) = options.first() else {
+    //     panic!("Not a valid server")
+    // };
 
-    if let Some(ResolvedOption {
-        value: ResolvedValue::String(server),
-        ..
-    }) = options.first()
-    {
-        // command
-        //     .defer(&ctx.http)
-        //     .await
-        //     .expect("Unable to defer interaction");
+    // command
+    //     .defer(&ctx.http)
+    //     .await
+    //     .expect("Unable to defer interaction");
 
-        // Create empty list that we will iterate over
-        let mut _server_list = Vec::new();
+    // Create empty list that we will iterate over
+    let mut _server_list = Vec::new();
 
-        if *server == "all" {
-            _server_list = CONFIG.servers.iter().collect();
-        } else {
-            _server_list = CONFIG
-                .servers
-                .iter()
-                .filter(|e| e.name == server.to_string())
-                .collect();
-        }
+    // if *server == "all" {
+    _server_list = CONFIG.servers.iter().collect();
+    // } else {
+    //     _server_list = CONFIG
+    //         .servers
+    //         .iter()
+    //         .filter(|e| e.name == server.to_string())
+    //         .collect();
+    // }
 
-        let mut fields: Vec<(_, _, bool)> = Vec::new();
+    let mut fields: Vec<(_, _, bool)> = Vec::new();
 
-        // Get all servers details
-        for server in _server_list {
-            let data = get_server_status(
-                &server.name.to_string(),
-                Some(&server.name_pretty.to_string()),
-            )
-            .await;
+    // Get all servers details
+    for server in _server_list {
+        let data = get_server_status(
+            &server.name.to_string(),
+            Some(&server.name_pretty.to_string()),
+        )
+        .await;
 
-            let field = EmbedData::new(&data);
+        let field = EmbedData::new(&data);
 
-            fields.push((
-                field.name,
-                format!(
-                    "[{}] on [{}]\n[{}]\n[{}]",
-                    field.game, field.map, field.players, field.state
-                ),
-                true,
-            ));
-        }
-
-        let embed = CreateEmbed::new().title("Server Status").fields(fields);
-        command
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .embed(embed)
-                        .ephemeral(false),
-                ),
-            )
-            .await
-    } else {
-        panic!("Not a valid server")
+        fields.push((
+            field.name,
+            format!(
+                "[{}] on [{}]\n[{}]\n[{}]",
+                field.game, field.map, field.players, field.state
+            ),
+            true,
+        ));
     }
+
+    let embed = CreateEmbed::new().title("Server Status").fields(fields);
+    command
+        .create_response(
+            &ctx.http,
+            CreateInteractionResponse::Message(
+                CreateInteractionResponseMessage::new()
+                    .embed(embed)
+                    .ephemeral(false),
+            ),
+        )
+        .await
 }
 
 pub fn register() -> CreateCommand {
-    let option = CreateCommandOption::new(CommandOptionType::String, "server", "Select the Server")
-        .required(true)
-        .add_string_choice("All Servers", "all")
-        .add_string_choice("Main Server", "main")
-        .add_string_choice("Training Server", "training")
-        .add_string_choice("Alternate/Off Night Server", "alternate");
+    // let option =
+    //     CreateCommandOption::new(CommandOptionType::String, "server", "Select the Server")
+    //         .required(true)
+    //         .add_string_choice("All Servers", "all")
+    //         .add_string_choice("Main Server", "main")
+    //         .add_string_choice("Training Server", "training")
+    //         .add_string_choice("Alternate/Off Night Server", "alternate");
 
-    CreateCommand::new("serverstatus")
-        .description("Get arma servers status")
-        .add_option(option)
+    CreateCommand::new("serverstatus").description("Get arma servers status")
+    // .add_option(option)
 }
