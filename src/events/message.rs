@@ -32,6 +32,7 @@ struct Session {
     date: NaiveDate,
 }
 
+const COOP_PING_EMOJI: &str = "<:customemoji:1359935427041165423>";
 lazy_static! {
     /// static var containing the last session reminder message id
     static ref SESSION_MESSAGE: Mutex<Option<MessageId>> = Mutex::new(None);
@@ -158,7 +159,7 @@ pub async fn scheduled_session_message(payload: String) -> String {
         std::env::var("RECRUIT_ROLE_ID").expect("RECRUIT_ROLE_ID not found in env");
     let description = format!(
         "<@&{}> and <@&{}> session time starts in one hour.
-Make sure that you have updated your mods.",
+Make sure that you have updated your mods. Use the bell to be pinged for coop slotting.",
         member_role_id, recruit_role_id
     );
 
@@ -178,6 +179,10 @@ Make sure that you have updated your mods.",
         Ok(message) => {
             coop_ping_save_session_reminder(&message.id).await;
             info!("Message sent successfully");
+            if let Ok(reaction_type) = ReactionType::try_from(COOP_PING_EMOJI) {
+                message.react(&BotCache::get(), reaction_type).await.expect("Unable to react to message");
+                info!("Reacted to message successfully");
+            }
             "Discord Bot Embed sent successfully".to_string()
         }
         Err(err) => {
@@ -241,7 +246,10 @@ async fn coop_ping_tvt_finished() {
     let channel_id = ChannelId::from(
         get_target("arma".to_string()).expect("Unable to get valid target channel"),
     );
-    let reaction_type = ReactionType::from('🍎');
+    let Ok(reaction_type) = ReactionType::try_from(COOP_PING_EMOJI) else {
+        error!("Unable to find custom emoji: pingMe");
+        return;
+    };
     let reaction_users = channel_id
         .reaction_users(&BotCache::get(), message_id, reaction_type, None, None)
         .await;
