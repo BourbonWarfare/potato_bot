@@ -25,7 +25,7 @@ axum = "0.8.1"
 regex = "1.10.2"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "time", "chrono"] }
-octocrab = "0.43.0"
+octocrab = "0.44.0"
 rust_socketio = { version = "0.4.4", features = ["async"] }
 toml = { version = "0.8.9", features = ["parse"] }
 
