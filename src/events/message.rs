@@ -159,7 +159,9 @@ pub async fn scheduled_session_message(payload: String) -> String {
         std::env::var("RECRUIT_ROLE_ID").expect("RECRUIT_ROLE_ID not found in env");
     let description = format!(
         "<@&{}> and <@&{}> session time starts in one hour.
-Make sure that you have updated your mods. Use the bell to be pinged for coop slotting.",
+Make sure that you have updated your mods.
+
+Use the bell to be pinged for coop slotting.",
         member_role_id, recruit_role_id
     );
 
