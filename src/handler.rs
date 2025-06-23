@@ -40,7 +40,7 @@ impl EventHandler for Handler {
                 // Staff commands
                 "armaserver" => staff::armaserver::run(&ctx, &command).await,
                 "aar_template" => staff::create_aar::run(&ctx, &command).await,
-                "rpt" => staff::get_rpt::run(&ctx, &command).await,
+                "serverrpt" => staff::get_rpt::run(&ctx, &command).await,
                 "serverstatus" => staff::serverstatus::run(&ctx, &command).await,
                 "update_mods" => staff::update_mods::run(&ctx, &command).await,
                 "update_servers" => staff::update_servers::run(&ctx, &command).await,
