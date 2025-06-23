@@ -96,7 +96,7 @@ pub fn register() -> CreateCommand {
         .add_string_choice("Training Server", "training")
         .add_string_choice("Alternate/Off Night Server", "alternate");
 
-    CreateCommand::new("rpt")
+    CreateCommand::new("serverrpt")
         .description("Fetch the RPT for a given server")
         .add_option(option)
 }
