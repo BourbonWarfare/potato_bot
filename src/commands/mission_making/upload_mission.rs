@@ -80,7 +80,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
 
 pub fn register() -> CreateCommand {
     CreateCommand::new("upload")
-        .description("Create a github issue")
+        .description("Upload a mission.pbo")
         .add_option(
             CreateCommandOption::new(
                 CommandOptionType::String,
