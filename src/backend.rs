@@ -32,7 +32,7 @@ impl Interface {
 
         let request = response::mission_upload::Request {
             location,
-            mission_path,
+            pbo_path: mission_path,
             changelog,
         };
 

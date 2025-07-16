@@ -11,7 +11,7 @@ pub trait RequestTrait<ResponseType>: Serialize where Self: Sized {
     async fn send(self, token: Option<String>) -> Response<ResponseType> where for<'a> ResponseType: Deserialize<'a> {
         let backend_url = std::env::var("POTATO_BACKEND_URL")
             .expect("POTATO_BACKEND_URL environment variable is not set");
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder().danger_accept_invalid_certs(true).build().unwrap();
         let url = format!("{}{}", backend_url, self.api_url());
 
         let mut request = client.post(&url).json(&self);
@@ -63,7 +63,7 @@ pub mod login_bot {
 
     impl RequestTrait<Response> for Request {
         fn api_url(&self) -> String {
-            "/api/v1/users/login/bot".to_string()
+            "/api/v1/users/auth/bot".to_string()
         }
     }
 }
@@ -78,7 +78,7 @@ pub mod mission_upload {
     pub struct Request {
         #[serde(skip_serializing)]
         pub location: String,
-        pub mission_path: String,
+        pub pbo_path: String,
         pub changelog: HashMap<String, String>,
     }
 
