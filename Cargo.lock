@@ -571,6 +571,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "exponential-backoff"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "020662aa57307d8884be79fca464cce073745cfe6ac70805770972113ca6ee95"
+dependencies = [
+ "fastrand",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1705,6 +1714,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "env_logger",
+ "exponential-backoff",
  "futures",
  "futures-util",
  "lazy_static",

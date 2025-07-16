@@ -5,6 +5,7 @@ use tokio::sync::OnceCell;
 use tracing::{error, info, Level};
 use tracing_subscriber::fmt::time::ChronoLocal;
 
+mod backend;
 mod commands;
 mod config;
 pub mod events;

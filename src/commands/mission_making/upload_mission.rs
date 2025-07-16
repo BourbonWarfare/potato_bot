@@ -4,10 +4,12 @@ use serenity::{
     model::application::{ResolvedOption, ResolvedValue},
     prelude::*,
 };
-use std::env;
+use std::{collections::HashMap, env};
 use tracing::{error, info};
 
 use tokio::{fs::File, io::AsyncWriteExt};
+
+use crate::backend::Interface;
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), SerenityError> {
     let options = &command.data.options();
@@ -38,7 +40,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
                     .await
                     .expect("Error downloading file.");
 
-                let mut file = File::create(final_path).await?;
+                let mut file = File::create(final_path.clone()).await?;
                 file.write_all(&content).await?;
 
                 _title = format!(":white_check_mark: {}", &attachment.filename);
@@ -48,6 +50,19 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> Result<(), Sere
                     &command.user.name.as_str(),
                     repo
                 );
+
+                let mut interface = Interface::new(
+            env::var("POTATO_BOT_TOKEN")
+                        .expect("POTATO_BOT_TOKEN env var expected")
+                );
+                interface.upload(
+                    repo.to_string(),
+                    final_path.clone(),
+                    HashMap::from([
+                        ("author".to_string(), command.user.name.clone()),
+                        ("changelog".to_string(), "Initial upload".to_string()),
+                    ])
+                ).await;
             } else {
                 _title = format!(":octagonal_sign: {}", &attachment.filename);
                 _description = "File is not a pbo".to_string();
