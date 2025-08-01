@@ -1,0 +1,78 @@
+import discord
+import logging
+from enum import StrEnum
+from discord import app_commands
+from discord.ext import commands
+
+from bw.environment import ENVIRONMENT
+from bw.embeds import get_recruit_handbook, get_member_handbook, get_generic_handbook, call_orientator, not_a_recruit
+from bw.utils import strip_emoji
+
+logger = logging.getLogger('bw.potbot.command')
+
+
+class Handbooks(StrEnum):
+    RECRUIT = '📘 Recruit Handbook 😕'
+    MEMBER = '📗 Member Handbook 🔫'
+
+    @classmethod
+    def list(cls) -> list[str]:
+        return [item.value for item in cls]
+
+
+class Recruitment(commands.Cog, name='Recruitment'):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(
+        name='handbook',
+        description='Links to our handbooks.',
+    )
+    @app_commands.autocomplete(
+        handbook=lambda _, current: [
+            app_commands.Choice(name=choice.value, value=choice)
+            for choice in Handbooks
+            if strip_emoji(current.lower()) in strip_emoji(choice.value.lower()) or current.lower() in choice.value.lower()
+        ]
+    )
+    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice) for choice in Handbooks])
+    @app_commands.describe(handbook='The handbook you want to view.')
+    async def handbook(self, interaction: discord.Interaction, handbook: app_commands.Choice[Handbooks]):
+        logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
+        if handbook.value == Handbooks.RECRUIT:
+            logger.debug('fetching recruit handbook')
+            await interaction.response.send_message(embed=get_recruit_handbook(), ephemeral=True)
+        elif handbook.value == Handbooks.MEMBER:
+            logger.debug('fetching member handbook')
+            await interaction.response.send_message(embed=get_member_handbook(), ephemeral=True)
+        else:
+            logger.debug('fetching generic handbook')
+            await interaction.response.send_message(embed=get_generic_handbook(), ephemeral=True)
+
+    @app_commands.command(name='orientation', description='Request an orientation')
+    async def orientation(self, interaction: discord.Interaction, member: discord.Member):
+        if member.get_role(ENVIRONMENT.recruit_role()) is not None:
+            logger.info(f'{member} requested an orientation.')
+            orientation = interaction.response.send(embed=call_orientator(), ephemeral=True)
+
+            channel = self.bot.get_channel(ENVIRONMENT.recruitment_channel())
+            ping = channel.send(
+rf"""📣 {interaction.guild.get_role(ENVIRONMENT.orientor_role()).mention} a new recruit is requesting to get orientated.
+Please reach out to {member.nick} ({member.global_name}) to arrange an orientation.""",
+                allowed_mentions=discord.AllowedMentions(
+                    everyone=False, users=False, replied_user=False, roles=[ENVIRONMENT.orientor_role()]
+                ),
+            )
+
+            await orientation
+            await ping
+
+            if member.get_role(ENVIRONMENT.awaiting_orientation_role()) is None:
+                logger.info(f'Adding awaiting orientation role to {member}.')
+                await member.add_roles(
+                    interaction.guild.get_role(ENVIRONMENT.awaiting_orientation_role()), reason='Requested an orientation.'
+                )
+            else:
+                logger.info(f'{member} already has the awaiting orientation role.')
+        else:
+            await interaction.response.send_message(embed=not_a_recruit(), ephemeral=True)

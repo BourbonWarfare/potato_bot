@@ -1,0 +1,28 @@
+name: Test Runner
+
+on:
+  pull_request:
+    types: [ opened, edited, synchronize ]
+  push:
+    branches:
+      - main
+
+jobs:
+  runner:
+    runs-on: ubuntu-latest
+        # Service containers to run with `runner-job`
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml" 
+      - name: install project
+        run: uv sync --locked --extra tests --dev
+      - name: run tests
+        run: |
+          echo "${{ secrets.TEST_CONF }}" >> .env
+          uv run pytest --cov=bw
+      

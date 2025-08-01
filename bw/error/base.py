@@ -1,0 +1,2 @@
+class BwDiscordError(Exception):
+    pass
