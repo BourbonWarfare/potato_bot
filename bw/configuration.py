@@ -3,6 +3,7 @@ import os
 from enum import StrEnum
 from pathlib import Path
 from typing import Self, Any
+from collections.abc import Sequence
 from collections.abc import Callable
 
 from bw.error import (
@@ -20,12 +21,12 @@ def enforce_lowercase_keys(func: Callable[..., 'Configuration']):
         config = func(self, *args, **kwargs)
 
         to_delete = []
-        for key, value in config.items():
+        for key in config.keys():
             if key.lower() != key:
-                config[key.lower()] = value
                 to_delete.append(key)
 
         for key in to_delete:
+            config[key.lower()] = config[key]
             del config[key]
 
         return config
@@ -43,9 +44,9 @@ class ConfigType(StrEnum):
 
 
 class ConfigContext:
-    def __init__(self, config: 'Configuration', keys: list[str]):
+    def __init__(self, config: 'Configuration', keys: Sequence[str]):
         self._config = config
-        self._keys = keys
+        self._keys = list(keys)
 
     def get(self) -> tuple[Any] | Any:
         if len(self._keys) == 1:
@@ -68,26 +69,28 @@ class Configuration(dict):
                 raise ConfigurationKeyNotPresent(key=key)
         return ConfigContext(self, keys)
 
-    @enforce_lowercase_keys
     @classmethod
+    @enforce_lowercase_keys
     def load_env(cls, configuration_file: Path) -> Self:
-        if 'env' not in configuration_file.suffixes:
+        if ConfigType.ENV not in configuration_file.suffixes:
             raise ConfigIsNotEnv(actual='.'.join(configuration_file.suffixes))
         config = cls(
-            **dotenv_values('.env'),
-            **dotenv_values('.env.secret'),
-            **dotenv_values('.env.shared'),
-            **dotenv_values(configuration_file),
-            **os.environ,
+            {
+                **dotenv_values('.env'),
+                **dotenv_values('.env.secret'),
+                **dotenv_values('.env.shared'),
+                **dotenv_values(configuration_file),
+                **os.environ,
+            }
         )
         config.file = configuration_file
         config.file_type = ConfigType.ENV
         return config
 
-    @enforce_lowercase_keys
     @classmethod
+    @enforce_lowercase_keys
     def load_kv(cls, configuration_file: Path) -> Self:
-        if configuration_file.suffix != '.kv':
+        if configuration_file.suffix != ConfigType.KEY_VALUE:
             raise ConfigIsNotKeyValue(actual=configuration_file.suffix)
 
         config = cls()
@@ -117,9 +120,9 @@ class Configuration(dict):
         if isinstance(configuration_file, str):
             configuration_file = Path(configuration_file)
 
-        if configuration_file.suffix == '.env':
+        if configuration_file.suffix == ConfigType.ENV:
             return Configuration.load_env(configuration_file)
-        elif configuration_file.suffix == '.kv':
+        elif configuration_file.suffix == ConfigType.KEY_VALUE:
             return Configuration.load_kv(configuration_file)
         else:
             raise UnknownConfigFileType(configuration_file.suffix, *ConfigType.list())

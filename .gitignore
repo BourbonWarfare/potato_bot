@@ -3,6 +3,7 @@ conf.txt*
 auth.txt*
 server.log*
 .env*
+*.env
 logs/
 bin/
 temp/

@@ -10,12 +10,13 @@ from bw.error import ConfigurationKeyNotPresent
 logger = logging.getLogger('bw')
 
 
-def config_fetch(entry: str, type_converter: type = str) -> Callable:
+def config_fetch(entry: str, type_converter: type = str, require: bool = True) -> Callable:
     def decorator(func: Callable[[str], str]) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
             try:
-                GC.require(entry)
+                if require:
+                    GC.require(entry)
                 return type_converter(func(entry))
             except ConfigurationKeyNotPresent as e:
                 logger.error(f'Configuration entry "{entry}" not present in configuration.')
@@ -48,6 +49,18 @@ class Environment:
 
     @config_fetch('recruitment_channel_id', int)
     def recruitment_channel(self, key: str) -> str:
+        return GC[key]
+
+    @config_fetch('backend_address', str, require=False)
+    def backend_address(self, key: str) -> str:
+        return GC.get(key, 'localhost')
+
+    @config_fetch('backend_port', int)
+    def backend_port(self, key: str) -> str:
+        return GC[key]
+
+    @config_fetch('backend_token', str)
+    def backend_token(self, key: str) -> str:
         return GC[key]
 
     def local_session_time(self) -> datetime.timedelta:
