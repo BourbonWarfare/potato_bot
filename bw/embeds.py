@@ -120,3 +120,24 @@ def relative_session_time(
 **<t:{relative_time.timestamp()}:t>**""",
         colour=ENVIRONMENT.embed_colour_member(),
     )
+
+def start_server_result(server: str, success: bool) -> discord.Embed:
+    return discord.Embed(
+        title = f'START {server}',
+        description = 'The server has been started successfully.' if success else 'Failed to start the server.',
+        colour = ENVIRONMENT.embed_colour_staff(),
+    )
+
+def stop_server_result(server: str, success: bool) -> discord.Embed:
+    return discord.Embed(
+        title = f'STOP {server}',
+        description = 'The server has been stopped successfully.' if success else 'Failed to stop the server.',
+        colour = ENVIRONMENT.embed_colour_staff(),
+    )
+
+def restart_server_result(server: str, success: bool) -> discord.Embed:
+    return discord.Embed(
+        title = f'STOP {server}',
+        description = 'The server has been stopped successfully.' if success else 'Failed to stop the server.',
+        colour = ENVIRONMENT.embed_colour_staff(),
+    )

@@ -8,7 +8,8 @@ dependencies = [
     "aiodns",
     "beautifulsoup4",
     "discord.py",
-    "python-dotenv"
+    "python-dotenv",
+    "potatolib",
 ]
 authors = [
     {name="Bailey Danyluk"}
@@ -144,3 +145,6 @@ python = "./.venv"
 include = [
     "bw",
 ]
+
+[tool.uv.sources]
+potatolib = { git = "https://github.com/BourbonWarfare/potato_lib.git" }

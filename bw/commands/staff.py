@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw.embeds import get_bwmf
+from bw.interface import Interface
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -20,6 +21,13 @@ class Command(StrEnum):
     START = 'Start'
     STOP = 'Stop'
     RESTART = 'Restart'
+    UPDATE = 'Update'
+    MOD_UPDATE = 'Update Mods'
+
+
+def server_operation(command: Command, server: str):
+    if command == Command.START:
+        return Interface().start_arma_server(server)
 
 
 class Staff(commands.Cog, name='Staff Commands'):
@@ -47,13 +55,12 @@ class Staff(commands.Cog, name='Staff Commands'):
     )
     async def server_management(self, interaction: discord.Interaction, server: Server, option: Command):
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
-        raise NotImplementedError()
-        if option == Command.START:
-            pass
-        elif option == Command.STOP:
-            pass
-        elif option == Command.RESTART:
-            pass
+        if server == Server.ALL:
+            results = []
+            for server in Server:
+                if server == Server.ALL:
+                    continue
+                results.append(server_operation(option, server.value))
+            return results
         else:
-            raise NotImplementedError()
-        await interaction.response.send_message(embed=get_bwmf(), ephemeral=True)
+            return server_operation(option, server.value)

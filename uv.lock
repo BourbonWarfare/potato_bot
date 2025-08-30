@@ -299,6 +299,16 @@ wheels = [
 ]
 
 [[package]]
+name = "potatolib"
+version = "1.0.0"
+source = { git = "https://github.com/BourbonWarfare/potato_lib.git#d02fd377c57f967c53d58621ec54665a1bd14bfd" }
+dependencies = [
+    { name = "aiodns" },
+    { name = "aiohttp" },
+    { name = "python-dotenv" },
+]
+
+[[package]]
 name = "potatos"
 version = "1.0.0"
 source = { virtual = "." }
@@ -307,6 +317,7 @@ dependencies = [
     { name = "aiohttp" },
     { name = "beautifulsoup4" },
     { name = "discord-py" },
+    { name = "potatolib" },
     { name = "python-dotenv" },
 ]
 
@@ -329,6 +340,7 @@ requires-dist = [
     { name = "aiohttp" },
     { name = "beautifulsoup4" },
     { name = "discord-py" },
+    { name = "potatolib", git = "https://github.com/BourbonWarfare/potato_lib.git" },
     { name = "pre-commit", marker = "extra == 'development'" },
     { name = "pytest", marker = "extra == 'tests'" },
     { name = "pytest-asyncio", marker = "extra == 'tests'" },
