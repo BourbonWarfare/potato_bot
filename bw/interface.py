@@ -41,19 +41,30 @@ class Client:
         self.bot_token = ENVIRONMENT.backend_token()
         self.session_token = None
 
-    @backoff
-    async def _refresh_session(self):
-        async with aiohttp.ClientSession() as session:
+    @backoff(delay=0.5, retries=5)
+    async def refresh_session(self, session: None | aiohttp.ClientSession = None):
+        async def refresh(session: aiohttp.ClientSession):
             async with session.get(self.session_url, json={'bot_token': self.bot_token}) as response:
                 if response.status != 200:
                     self.session_token = None
                 else:
                     self.session_token = (await response.json()).get('session_token')
 
+        if session is None:
+            async with aiohttp.ClientSession() as session:
+                await refresh(session)
+        else:
+            await refresh(session)
+
     @asynccontextmanager
-    async def api_session(self):
-        await self._refresh_session()
-        yield {'Authorization': f'Bearer {self.session_token}'}
+    async def api_session(self, session: aiohttp.ClientSession | None = None):
+        if self.session_token is None:
+            await self.refresh_session(session)
+        yield self
+
+    @property
+    def auth_header(self) -> dict[str, str]:
+        return {'Authorization': f'Bearer {self.session_token}'} if self.session_token else {}
 
 
 class Interface:
@@ -70,4 +81,52 @@ class Interface:
     async def healthcheck(self) -> bool:
         async with aiohttp.ClientSession() as session:
             async with session.get(self.url(Root.get().api.v1.healthcheck.resolve())) as response:
+                return response.status == 200
+
+    async def start_arma_server(self, server: str) -> bool:
+        async with aiohttp.ClientSession() as session:
+            async with self.client.api_session(session) as client:
+                async with session.post(
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve()), headers=client.auth_header
+                ) as response:
+                    return response.status == 200
+
+    async def stop_arma_server(self, server: str) -> bool:
+        async with aiohttp.ClientSession() as session:
+            async with self.client.api_session(session) as client:
+                async with session.post(
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve()), headers=client.auth_header
+                ) as response:
+                    return response.status == 200
+
+    async def restart_arma_server(self, server: str) -> bool:
+        async with aiohttp.ClientSession() as session:
+            async with self.client.api_session(session) as client:
+                async with session.post(
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve()), headers=client.auth_header
+                ) as response:
+                    return response.status == 200
+
+    async def update_arma_server(self, server: str) -> bool:
+        async with aiohttp.ClientSession() as session:
+            async with self.client.api_session(session) as client:
+                async with session.post(
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve()), headers=client.auth_header
+                ) as response:
+                    return response.status == 200
+
+    async def update_arma_server_mods(self, server: str) -> bool:
+        async with aiohttp.ClientSession() as session:
+            async with self.client.api_session(session) as client:
+                async with session.post(
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
+                    headers=client.auth_header,
+                ) as response:
+                    return response.status == 200
+
+    async def arma_server_healthcheck(self, server: str) -> bool:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                self.url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
+            ) as response:
                 return response.status == 200
