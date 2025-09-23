@@ -1,2 +1,1 @@
-class BwDiscordError(Exception):
-    pass
+from potlib.error import ServerError as BwDiscordError

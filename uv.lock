@@ -300,8 +300,8 @@ wheels = [
 
 [[package]]
 name = "potatolib"
-version = "1.0.1"
-source = { git = "https://github.com/BourbonWarfare/potato_lib.git?branch=release#895735c00a384c45a492bae6d7dbe20a590f6f91" }
+version = "1.0.2"
+source = { git = "https://github.com/BourbonWarfare/potato_lib.git?branch=release#146786a9ff4ea88e46ddfeda161eea4af56b0ab7" }
 dependencies = [
     { name = "aiodns" },
     { name = "aiohttp" },

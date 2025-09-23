@@ -1,6 +1,6 @@
-from bw.error.base import BaseError
+from bw.error.base import BwDiscordError
 
-class InterfaceError(BaseError):
+class InterfaceError(BwDiscordError):
     def __init__(self, message: str):
         super().__init__(f'An error occured talking to the backend: {message}')
 
