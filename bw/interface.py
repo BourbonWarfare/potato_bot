@@ -3,12 +3,14 @@ import asyncio
 import functools
 import random
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
-from enum import StrEnum
 from bw.environment import ENVIRONMENT
 from bw.endpoints import Root
+<<<<<<< HEAD
 from bw.error import StartError, StopError, RestartError, UpdateError, UpdateModsError
 from potlib.arma.status import Status
+=======
+
+>>>>>>> parent of 5cad596 (add potato lib)
 
 def backoff(delay=2, retries=3):
     def decorator(func):
@@ -86,62 +88,54 @@ class Interface:
             async with session.get(self.url(Root.get().api.v1.healthcheck.resolve())) as response:
                 return response.status == 200
 
-    async def start_arma_server(self, server: str) -> Status:
+    async def start_arma_server(self, server: str) -> bool:
         async with aiohttp.ClientSession() as session:
             async with self.client.api_session(session) as client:
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve()), headers=client.auth_header
                 ) as response:
-                    if response.status != 200:
-                        raise StartError(response.status, await response.text())
-                    return Status(**await response.json())
+                    return response.status == 200
 
-    async def stop_arma_server(self, server: str) -> Status:
+    async def stop_arma_server(self, server: str) -> bool:
         async with aiohttp.ClientSession() as session:
             async with self.client.api_session(session) as client:
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve()), headers=client.auth_header
                 ) as response:
-                    if response.status != 200:
-                        raise StopError(response.status, await response.text())
-                    return Status(**await response.json())
+                    return response.status == 200
 
-    async def restart_arma_server(self, server: str) -> Status:
+    async def restart_arma_server(self, server: str) -> bool:
         async with aiohttp.ClientSession() as session:
             async with self.client.api_session(session) as client:
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve()), headers=client.auth_header
                 ) as response:
-                    if response.status != 200:
-                        raise RestartError(response.status, await response.text())
-                    return Status(**await response.json())
+                    return response.status == 200
 
-    async def update_arma_server(self, server: str) -> Status:
+    async def update_arma_server(self, server: str) -> bool:
         async with aiohttp.ClientSession() as session:
             async with self.client.api_session(session) as client:
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve()), headers=client.auth_header
                 ) as response:
-                    if response.status != 200:
-                        raise UpdateError(response.status, await response.text())
-                    return Status(**await response.json())
+                    return response.status == 200
 
+<<<<<<< HEAD
     async def update_arma_server_mods(self, server: str) -> dict[str, Status]:
+=======
+    async def update_arma_server_mods(self, server: str) -> bool:
+>>>>>>> parent of 5cad596 (add potato lib)
         async with aiohttp.ClientSession() as session:
             async with self.client.api_session(session) as client:
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
                     headers=client.auth_header,
                 ) as response:
-                    if response.status != 200:
-                        raise UpdateError(response.status, await response.text())
-                    return Status(**await response.json())
+                    return response.status == 200
 
-    async def arma_server_healthcheck(self, server: str) -> Status:
+    async def arma_server_healthcheck(self, server: str) -> bool:
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 self.url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
             ) as response:
-                if response.status != 200:
-                    raise UpdateError(response.status, await response.text())
-                return Status(**await response.json())
+                return response.status == 200
