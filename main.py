@@ -1,5 +1,5 @@
 import bw.log
-import logging
+import logging.config
 from bw.environment import ENVIRONMENT
 from bw.bot import PotatoBot
 
