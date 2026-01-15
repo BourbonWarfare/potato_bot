@@ -7,9 +7,9 @@ from typing import Any
 PRODUCTION_LOG_CONFIG = {
     'root': 'INFO',
     'discord': 'INFO',
-    'bw': 'INFO',
-    'bw.potbot': 'INFO',
-    'bw.potbot.command': 'INFO',
+    'bw': 'DEBUG',
+    'bw.potbot': 'DEBUG',
+    'bw.potbot.command': 'DEBUG'
 }
 
 
