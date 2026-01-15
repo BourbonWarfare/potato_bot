@@ -28,17 +28,18 @@ class PotatoBot(discord.ext.commands.Bot):
         logger.info(f'Setup as {self.user}. Ready to go! :3')
 
     async def on_ready(self):
-        if Path('state.settings').exists():
-            with open('state.settings', mode='r') as f:
+        path = Path('version.txt')
+        if path.exists():
+            with open(path, mode='r') as f:
                 current_version = Version.from_string(f.read())
         else:
             current_version = Version(0, 0, 0)
-        with open('state.settings', mode='w') as f:
+        with open(path, mode='w') as f:
             f.write(f'version={VERSION}')
         
         logger.info(f'Current version: {current_version}')
         if current_version != VERSION:
             logger.info(f'A new version detected, re-syncing')
             logger.debug(f'current_version{current_version}, VERSION={VERSION}')
-            self.tree.sync()
+            await self.tree.sync()
         logger.info(f'Session ready for {self.user}')
