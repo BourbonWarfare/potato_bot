@@ -5,12 +5,6 @@ import random
 from contextlib import asynccontextmanager
 from bw.environment import ENVIRONMENT
 from bw.endpoints import Root
-<<<<<<< HEAD
-from bw.error import StartError, StopError, RestartError, UpdateError, UpdateModsError
-from potlib.arma.status import Status
-=======
-
->>>>>>> parent of 5cad596 (add potato lib)
 
 def backoff(delay=2, retries=3):
     def decorator(func):
@@ -120,11 +114,7 @@ class Interface:
                 ) as response:
                     return response.status == 200
 
-<<<<<<< HEAD
-    async def update_arma_server_mods(self, server: str) -> dict[str, Status]:
-=======
     async def update_arma_server_mods(self, server: str) -> bool:
->>>>>>> parent of 5cad596 (add potato lib)
         async with aiohttp.ClientSession() as session:
             async with self.client.api_session(session) as client:
                 async with session.post(
