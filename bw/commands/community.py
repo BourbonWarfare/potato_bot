@@ -53,7 +53,7 @@ class Community(commands.Cog, name='Community'):
                 if len(possible_script.contents) > 0:
                     script = possible_script.contents[0]
                     break
-            modlist_match = re.match('MOD_LIST_FILE ?= ?"(.*)"', script)
+            modlist_match = re.search('MOD_LIST_FILE ?= ?"(.*)"', script)
             if modlist_match is None or len(modlist_match.groups()) <= 1:
                 logger.warning('No modlist name found in HTML, using default name')
                 logger.debug(f'script={script}')
