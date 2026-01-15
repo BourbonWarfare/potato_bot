@@ -1,1 +1,3 @@
-from potlib.error import ServerError as BwDiscordError
+class BwDiscordError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)

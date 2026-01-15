@@ -10,6 +10,13 @@ from bw.utils import strip_emoji
 
 logger = logging.getLogger('bw.potbot.command')
 
+async def handbook_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
+    return [
+        app_commands.Choice(name=choice.value, value=choice.value)
+        for choice in Handbooks
+        if strip_emoji(current.lower()) in strip_emoji(choice.value.lower())
+            or current.lower() in choice.value.lower()
+    ]
 
 class Handbooks(StrEnum):
     RECRUIT = '📘 Recruit Handbook 😕'
@@ -19,26 +26,22 @@ class Handbooks(StrEnum):
     def list(cls) -> list[str]:
         return [item.value for item in cls]
 
-
 class Recruitment(commands.Cog, name='Recruitment'):
     def __init__(self, bot):
         self.bot = bot
 
     @app_commands.command(
         name='handbook',
-        description='Links to our handbooks.',
+        description='Links to our handbooks.'
     )
     @app_commands.autocomplete(
-        handbook=lambda _, current: [
-            app_commands.Choice(name=choice.value, value=choice)
-            for choice in Handbooks
-            if strip_emoji(current.lower()) in strip_emoji(choice.value.lower()) or current.lower() in choice.value.lower()
-        ]
+        handbook=handbook_autocomplete
     )
-    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice) for choice in Handbooks])
+    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Handbooks])
     @app_commands.describe(handbook='The handbook you want to view.')
-    async def handbook(self, interaction: discord.Interaction, handbook: app_commands.Choice[Handbooks]):
+    async def handbook(self, interaction: discord.Interaction, handbook: str):
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
+        logger.debug(f'handbook given: name={handbook.name}, value={handbook.value}')
         if handbook.value == Handbooks.RECRUIT:
             logger.debug('fetching recruit handbook')
             await interaction.response.send_message(embed=get_recruit_handbook(), ephemeral=True)
