@@ -4,6 +4,7 @@ import logging
 import discord
 
 from bw.commands import community, helpers, mission_making, recruitment
+from bw.version import VERSION, Version
 
 logger = logging.getLogger('bw.potbot')
 
@@ -26,4 +27,11 @@ class PotatoBot(discord.ext.commands.Bot):
         logger.info(f'Setup as {self.user}. Ready to go! :3')
 
     async def on_ready(self):
+        with open('state.settings', mode='r') as f:
+            current_version = Version.from_string(f.read())
+        with open('state.settings', mode='w') as f:
+            f.write(f'version={VERSION}')
+        
+        if current_version != VERSION:
+            pass
         logger.info(f'Session ready for {self.user}')
