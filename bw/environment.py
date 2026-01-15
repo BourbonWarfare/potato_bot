@@ -86,8 +86,11 @@ class Production(Environment):
 
 
 if GC.get('environment', 'local') == 'prod':
+    logger.info('Using production environment')
     ENVIRONMENT = Production()
 elif GC.get('environment', 'local') == 'test':
+    logger.info('Using staging envrioment')
     ENVIRONMENT = Test()
 else:
+    logger.info('Using local envrioment')
     ENVIRONMENT = Local()
