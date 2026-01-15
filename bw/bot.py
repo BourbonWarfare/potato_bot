@@ -1,4 +1,5 @@
 from typing import Self
+from pathlib import Path
 
 import logging
 import discord
@@ -27,8 +28,11 @@ class PotatoBot(discord.ext.commands.Bot):
         logger.info(f'Setup as {self.user}. Ready to go! :3')
 
     async def on_ready(self):
-        with open('state.settings', mode='r') as f:
-            current_version = Version.from_string(f.read())
+        if Path('state.settings').exists():
+            with open('state.settings', mode='r') as f:
+                current_version = Version.from_string(f.read())
+        else:
+            current_version = Version(0, 0, 0)
         with open('state.settings', mode='w') as f:
             f.write(f'version={VERSION}')
         
