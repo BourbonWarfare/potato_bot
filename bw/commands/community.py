@@ -41,11 +41,7 @@ class Community(commands.Cog, name='Community'):
             )
             return
 
-        modlist_div = soup.body.div.get('modListContainer')
-        if len(modlist_div.contents) > 0:
-            modlist = modlist.contents[0]
-        else:
-            modlist = 'none'
+        modlist = ''
         logger.info('HTML modlist fetched successfully, wrapping and sending')
 
         modlist_name = 'latest_modlist.html'
@@ -64,7 +60,7 @@ class Community(commands.Cog, name='Community'):
             else:
                 modlist_name = modlist_match[1]
 
-        logger.debug(f'Found modlist (unencoded) {modlist}')
+        logger.debug(f'Found modlist (unencoded) "{modlist}"')
         modlist = io.BytesIO(modlist.encode('utf-8'))
         file = discord.File(modlist, filename=modlist_name)
 
