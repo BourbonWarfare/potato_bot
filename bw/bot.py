@@ -32,6 +32,9 @@ class PotatoBot(discord.ext.commands.Bot):
         with open('state.settings', mode='w') as f:
             f.write(f'version={VERSION}')
         
+        logger.info(f'Current version: {current_version}')
         if current_version != VERSION:
-            pass
+            logger.info(f'A new version detected, re-syncing')
+            logger.debug(f'current_version{current_version}, VERSION={VERSION}')
+            self.tree.sync()
         logger.info(f'Session ready for {self.user}')
