@@ -41,7 +41,7 @@ class Community(commands.Cog, name='Community'):
             )
             return
 
-        modlist_div = soup.get('modListContainer')
+        modlist_div = soup.body.div.get('modListContainer')
         if len(modlist_div.contents) > 0:
             modlist = modlist.contents[0]
         else:
