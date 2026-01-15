@@ -17,7 +17,7 @@ class PotatoBot(discord.Client):
             command_prefix='!',
         )
 
-    async def on_setup(self):
+    async def setup_hook(self):
         await self.add_cog(community.Community(self))
         await self.add_cog(helpers.Helpers(self))
         await self.add_cog(mission_making.MissionMaking(self))
