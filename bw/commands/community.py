@@ -51,7 +51,7 @@ class Community(commands.Cog, name='Community'):
             script = ''
             for possible_script in soup.head.find_all('script'):
                 if len(possible_script.contents) > 0:
-                    script = possible_script.contents
+                    script = possible_script.contents[0]
                     break
             modlist_match = re.match('MOD_LIST_FILE ?= ?"(.*)"', script)
             if len(modlist_match.groups()) <= 1:
