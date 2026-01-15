@@ -8,7 +8,7 @@ from bw.commands import community, helpers, mission_making, recruitment
 logger = logging.getLogger('bw.potbot')
 
 
-class PotatoBot(discord.Client):
+class PotatoBot(discord.ext.commands.Bot):
     @classmethod
     def setup(cls) -> Self:
         intents = discord.Intents.default()
