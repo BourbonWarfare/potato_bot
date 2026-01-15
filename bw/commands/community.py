@@ -48,8 +48,9 @@ class Community(commands.Cog, name='Community'):
         if soup.head.find('script') is None:
             logger.warning('No script tag found in HTML, using default modlist name')
         else:
-            logger.debug(f'{soup.head}, {soup.head.script}, {soup.head.script.contents}')
-            modlist_match = re.match('MOD_LIST_FILE ?= ?"(.*)"', soup.head.script.contents[0])
+            script = soup.head.script[1]
+            logger.debug(f'{script}, {script.contents}')
+            modlist_match = re.match('MOD_LIST_FILE ?= ?"(.*)"', script.contents[0])
             if len(modlist_match.groups()) <= 1:
                 logger.warning('No modlist name found in HTML, using default name')
             else:
