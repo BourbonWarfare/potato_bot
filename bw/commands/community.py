@@ -61,6 +61,7 @@ class Community(commands.Cog, name='Community'):
                 modlist_name = modlist_match[1]
 
         modlist = io.BytesIO(modlist.encode('utf-8'))
+        logger.debug(f'Found modlist (encoded) {modlist}')
         file = discord.File(modlist, filename=modlist_name)
 
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
