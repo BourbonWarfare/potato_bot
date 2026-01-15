@@ -19,8 +19,8 @@ async def handbook_autocomplete(_, current: str) -> list[app_commands.Choice[str
     ]
 
 class Handbooks(StrEnum):
-    RECRUIT = '📘 Recruit Handbook 😕'
-    MEMBER = '📗 Member Handbook 🔫'
+    RECRUIT = 'Recruit Handbook'
+    MEMBER = 'Member Handbook'
 
     @classmethod
     def list(cls) -> list[str]:
@@ -33,6 +33,9 @@ class Recruitment(commands.Cog, name='Recruitment'):
     @app_commands.command(
         name='handbook',
         description='Links to our handbooks.'
+    )
+    @app_commands.autocomplete(
+        handbook=handbook_autocomplete
     )
     @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Handbooks])
     @app_commands.describe(handbook='The handbook you want to view.')
