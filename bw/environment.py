@@ -17,7 +17,7 @@ def config_fetch(entry: str, type_converter: type = str, require: bool = True) -
             try:
                 if require:
                     GC.require(entry)
-                return type_converter(func(entry))
+                return type_converter(func(*args, **kwargs, key=entry))
             except ConfigurationKeyNotPresent as e:
                 logger.error(f'Configuration entry "{entry}" not present in configuration.')
                 raise e
