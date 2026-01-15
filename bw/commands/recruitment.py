@@ -39,7 +39,7 @@ class Recruitment(commands.Cog, name='Recruitment'):
     )
     @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Handbooks])
     @app_commands.describe(handbook='The handbook you want to view.')
-    async def handbook(self, interaction: discord.Interaction, handbook: app_commands.Choice[str]):
+    async def handbook(self, interaction: discord.Interaction, handbook: str):
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
         logger.debug(f'handbook given: name={handbook.name}, value={handbook.value}')
         if handbook.value == Handbooks.RECRUIT:
