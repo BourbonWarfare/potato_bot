@@ -41,7 +41,7 @@ class Community(commands.Cog, name='Community'):
             )
             return
 
-        modlist = soup.get(id='modListContainer')
+        modlist = soup.get('modListContainer')
         logger.info('HTML modlist fetched successfully, wrapping and sending')
 
         modlist_name = 'latest_modlist.html'
