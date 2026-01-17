@@ -60,7 +60,7 @@ class Recruitment(commands.Cog, name='Recruitment'):
             orientation = interaction.response.send_message(embed=call_orientator(), ephemeral=True)
 
             channel = self.bot.get_channel(ENVIRONMENT.recruitment_channel())
-            ping = channel.send_message(
+            ping = channel.send(
                 rf"""📣 {interaction.guild.get_role(ENVIRONMENT.orientor_role()).mention} a new recruit is requesting orientation.
 Please reach out to {member.nick} ({member.global_name}) to arrange an orientation.""",
                 allowed_mentions=discord.AllowedMentions(
