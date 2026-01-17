@@ -32,7 +32,8 @@ class Community(commands.Cog, name='Community'):
                 logger.info('HTML modlist fetched successfully')
 
         soup = BeautifulSoup(html, 'html.parser')
-        if soup.find(id='modListContainer') is None:
+        container = soup.find(id='modListContainer')
+        if container is None:
             logger.error('No modlist container found in HTML')
             await interaction.response.send_message(
                 'Cannot fetch modlist due to an error in the HTML structure. Please try again later.',
@@ -41,7 +42,9 @@ class Community(commands.Cog, name='Community'):
             )
             return
 
-        modlist = ' '.join([str(e) for e in soup.find(id='modListContainer').children])
+        logger.debug(f'contents={container.contents}, str={str(container)}')
+
+        modlist = '' + ' '.join([str(e) for e in container.children])
         logger.debug(f'Found modlist (unencoded) "{modlist}"')
         logger.info('HTML modlist fetched successfully, wrapping and sending')
 
@@ -54,8 +57,8 @@ class Community(commands.Cog, name='Community'):
                 if len(possible_script.contents) > 0:
                     script = str(possible_script.contents[0])
                     break
-            modlist_match = re.match('MOD_LIST_FILE ?= ?"(.*)"', script)
-            if modlist_match is None or len(modlist_match.groups()) <= 0:
+            modlist_match = re.search('MOD_LIST_FILE ?= ?"(.*)"', script)
+            if modlist_match is None or len(modlist_match.groups()) == 0:
                 logger.warning('No modlist name found in HTML, using default name')
                 logger.debug(f'script={script}, match={modlist_match}')
                 if modlist_match is not None:
