@@ -41,7 +41,8 @@ class Community(commands.Cog, name='Community'):
             )
             return
 
-        modlist = ''
+        modlist = str(soup.find(id='modListContainer'))
+        logger.debug(f'Found modlist (unencoded) "{modlist}"')
         logger.info('HTML modlist fetched successfully, wrapping and sending')
 
         modlist_name = 'latest_modlist.html'
@@ -51,7 +52,7 @@ class Community(commands.Cog, name='Community'):
             script = ''
             for possible_script in soup.head.find_all('script'):
                 if len(possible_script.contents) > 0:
-                    script = possible_script.contents[0]
+                    script = str(possible_script.contents[0])
                     break
             modlist_match = re.search('MOD_LIST_FILE ?= ?"(.*)"', script)
             if modlist_match is None or len(modlist_match.groups()) <= 1:
@@ -60,7 +61,6 @@ class Community(commands.Cog, name='Community'):
             else:
                 modlist_name = modlist_match[1]
 
-        logger.debug(f'Found modlist (unencoded) "{modlist}"')
         modlist = io.BytesIO(modlist.encode('utf-8'))
         file = discord.File(modlist, filename=modlist_name)
 
