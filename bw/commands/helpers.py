@@ -2,6 +2,7 @@ import discord
 import logging
 import datetime
 import math
+from zoneinfo import ZoneInfo
 from discord import app_commands
 from discord.ext import commands
 
@@ -37,7 +38,7 @@ class Helpers(commands.Cog, name='Helpers'):
         LOCAL_SESSION_TIME = ENVIRONMENT.local_session_time()
         hour = LOCAL_SESSION_TIME.seconds // 60 // 60
 
-        today = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-5)))
+        today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
         today_weekday = today.weekday()
         if today_weekday == SUNDAY:
             if today > today.replace(hour=hour, minute=0, second=0, microsecond=0):
