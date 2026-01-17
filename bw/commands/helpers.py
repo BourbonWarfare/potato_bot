@@ -35,11 +35,12 @@ class Helpers(commands.Cog, name='Helpers'):
         WEDNESDAY = 2
         SUNDAY = 6
         LOCAL_SESSION_TIME = ENVIRONMENT.local_session_time()
+        hour = LOCAL_SESSION_TIME.seconds // 60 // 60
 
         today = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-5)))
         today_weekday = today.weekday()
         if today_weekday == SUNDAY:
-            if today > today.replace(hour=LOCAL_SESSION_TIME, minute=0, second=0, microsecond=0):
+            if today > today.replace(hour=hour, minute=0, second=0, microsecond=0):
                 # if we are past the session time on Sunday => the next session is Wednesday
                 next_session = today + datetime.timedelta(days=3)
             else:
@@ -53,13 +54,13 @@ class Helpers(commands.Cog, name='Helpers'):
             # Note: we checked if today was sunday already
             next_session = today + datetime.timedelta(days=(WEDNESDAY - today_weekday))
         else:
-            if today > today.replace(hour=LOCAL_SESSION_TIME, minute=0, second=0, microsecond=0):
+            if today > today.replace(hour=hour, minute=0, second=0, microsecond=0):
                 # If we are past the session time on Wednesday => next session is Sunday
                 next_session = today + datetime.timedelta(days=4)
             else:
                 # Next session is today => later in the day
                 next_session = today
-        next_session = next_session.replace(hour=LOCAL_SESSION_TIME.hour, minute=0, second=0, microsecond=0)
+        next_session = next_session.replace(hour=hour, minute=0, second=0, microsecond=0)
 
         if offset is None:
             await interaction.response.send_message(
