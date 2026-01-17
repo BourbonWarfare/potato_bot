@@ -60,8 +60,10 @@ class Recruitment(commands.Cog, name='Recruitment'):
             await interaction.response.send_message(embed=call_orientator(), ephemeral=True)
 
             channel = self.bot.get_channel(ENVIRONMENT.recruitment_channel())
+            role = interaction.guild.get_role(ENVIRONMENT.orientor_role())
+            logger.debug(f'{role.mention}, {member.nick}, {member.global_name}')
             await channel.send(
-                rf"""📣 {interaction.guild.get_role(ENVIRONMENT.orientor_role()).mention} a new recruit is requesting orientation.
+                rf"""📣 {role.mention} a new recruit is requesting orientation.
 Please reach out to {member.nick} ({member.global_name}) to arrange an orientation."""
             )
 
