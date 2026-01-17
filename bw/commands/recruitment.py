@@ -57,16 +57,13 @@ class Recruitment(commands.Cog, name='Recruitment'):
         member = interaction.user
         if member.get_role(ENVIRONMENT.recruit_role()) is not None:
             logger.info(f'{member} requested an orientation.')
-            orientation = interaction.followup.send(embed=call_orientator(), ephemeral=True)
+            await interaction.followup.send(embed=call_orientator(), ephemeral=True)
 
             channel = self.bot.get_channel(ENVIRONMENT.recruitment_channel())
-            ping = channel.send(
+            await channel.send(
                 rf"""📣 {interaction.guild.get_role(ENVIRONMENT.orientor_role()).mention} a new recruit is requesting orientation.
 Please reach out to {member.nick} ({member.global_name}) to arrange an orientation."""
             )
-
-            await orientation
-            await ping
 
             if member.get_role(ENVIRONMENT.awaiting_orientation_role()) is None:
                 logger.info(f'Adding awaiting orientation role to {member}.')
