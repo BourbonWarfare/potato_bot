@@ -64,7 +64,7 @@ class Recruitment(commands.Cog, name='Recruitment'):
                 rf"""📣 {interaction.guild.get_role(ENVIRONMENT.orientor_role()).mention} a new recruit is requesting orientation.
 Please reach out to {member.nick} ({member.global_name}) to arrange an orientation.""",
                 allowed_mentions=discord.AllowedMentions(
-                    everyone=False, users=False, replied_user=False, roles=[ENVIRONMENT.orientor_role()]
+                    everyone=False, users=False, replied_user=False, roles=True
                 ),
             )
 
