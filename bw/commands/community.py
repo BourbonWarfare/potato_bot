@@ -41,7 +41,7 @@ class Community(commands.Cog, name='Community'):
             )
             return
 
-        modlist = str(soup.find(id='modListContainer'))
+        modlist = ' '.join([e for e in soup.find(id='modListContainer').children])
         logger.debug(f'Found modlist (unencoded) "{modlist}"')
         logger.info('HTML modlist fetched successfully, wrapping and sending')
 
