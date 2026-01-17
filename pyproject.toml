@@ -8,7 +8,8 @@ dependencies = [
     "aiodns",
     "beautifulsoup4",
     "discord.py",
-    "python-dotenv"
+    "python-dotenv",
+    "tzdata"
 ]
 authors = [
     {name="Bailey Danyluk"}
