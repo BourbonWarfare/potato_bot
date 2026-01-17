@@ -53,7 +53,8 @@ class Recruitment(commands.Cog, name='Recruitment'):
             await interaction.response.send_message(embed=get_generic_handbook(), ephemeral=True)
 
     @app_commands.command(name='orientation', description='Request an orientation')
-    async def orientation(self, interaction: discord.Interaction, member: discord.Member):
+    async def orientation(self, interaction: discord.Interaction):
+        member = interaction.user
         if member.get_role(ENVIRONMENT.recruit_role()) is not None:
             logger.info(f'{member} requested an orientation.')
             orientation = interaction.response.send(embed=call_orientator(), ephemeral=True)
