@@ -41,7 +41,7 @@ class Community(commands.Cog, name='Community'):
             )
             return
 
-        modlist = str(soup.find(id='modListContainer'))
+        modlist = str(soup.find(id='modListContainer').contents)
         logger.debug(f'Found modlist (unencoded) "{modlist}"')
         logger.info('HTML modlist fetched successfully, wrapping and sending')
 
@@ -57,7 +57,9 @@ class Community(commands.Cog, name='Community'):
             modlist_match = re.search('MOD_LIST_FILE ?= ?"(.*)"', script)
             if modlist_match is None or len(modlist_match.groups()) <= 1:
                 logger.warning('No modlist name found in HTML, using default name')
-                logger.debug(f'script={script}')
+                logger.debug(f'script={script}, match={modlist_match}')
+                if modlist_match is not None:
+                    logger.debug(f'groups={modlist_match.groups()}')
             else:
                 modlist_name = modlist_match[1]
 
