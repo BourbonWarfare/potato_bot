@@ -97,7 +97,7 @@ def ping() -> discord.Embed:
 
 
 def next_session_time(time: datetime.datetime) -> discord.Embed:
-    timestamp = time.timestamp()
+    timestamp = int(time.timestamp())
     return discord.Embed(
         title='🕓 Session Time Helper',
         description=f"""Next session will be:
@@ -115,8 +115,8 @@ def relative_session_time(
     return discord.Embed(
         title='🕓 Session Time Helper',
         description=f"""The requested time relative to session time
-<t:{default_session_time.timestamp()}:t> **{'+' if offset >= 0.0 else '-'}{abs(offset)}** is:
+<t:{int(default_session_time.timestamp())}:t> **{'+' if offset >= 0.0 else '-'}{abs(offset)}** is:
 
-**<t:{relative_time.timestamp()}:t>**""",
+**<t:{int(relative_time.timestamp())}:t>**""",
         colour=ENVIRONMENT.embed_colour_member(),
     )
