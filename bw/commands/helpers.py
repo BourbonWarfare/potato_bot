@@ -59,7 +59,7 @@ class Helpers(commands.Cog, name='Helpers'):
             else:
                 # Next session is today => later in the day
                 next_session = today
-        next_session = next_session.replace(hour=LOCAL_SESSION_TIME.hours, minute=0, second=0, microsecond=0)
+        next_session = next_session.replace(hour=LOCAL_SESSION_TIME.hour, minute=0, second=0, microsecond=0)
 
         if offset is None:
             await interaction.response.send_message(

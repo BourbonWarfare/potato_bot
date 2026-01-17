@@ -67,7 +67,7 @@ class Community(commands.Cog, name='Community'):
                 xml = await response.text()
                 logger.info('XML modlist fetched successfully')
 
-        logger.debug(f'Found modlist "{modlist_name}"={xml}')
+        logger.debug(f'Found modlist "{modlist_name}"={len(xml)}')
         modlist = io.BytesIO(xml.encode('utf-8'))
         file = discord.File(modlist, filename=modlist_name)
 
