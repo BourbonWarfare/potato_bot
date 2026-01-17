@@ -57,7 +57,7 @@ class Recruitment(commands.Cog, name='Recruitment'):
         member = interaction.user
         if member.get_role(ENVIRONMENT.recruit_role()) is not None:
             logger.info(f'{member} requested an orientation.')
-            orientation = interaction.response.send_message(embed=call_orientator(), ephemeral=True)
+            orientation = interaction.followup.send(embed=call_orientator(), ephemeral=True)
 
             channel = self.bot.get_channel(ENVIRONMENT.recruitment_channel())
             ping = channel.send(
