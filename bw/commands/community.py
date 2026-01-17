@@ -32,19 +32,6 @@ class Community(commands.Cog, name='Community'):
                 logger.info('HTML modlist fetched successfully')
 
         soup = BeautifulSoup(html, 'html.parser')
-        container = soup.find(id='modListContainer')
-        if container is None:
-            logger.error('No modlist container found in HTML')
-            await interaction.response.send_message(
-                'Cannot fetch modlist due to an error in the HTML structure. Please try again later.',
-                embed=modlist_website(),
-                ephemeral=False,
-            )
-            return
-
-        logger.debug(f'contents={container.contents}, str={str(container)}')
-
-        modlist = '' + ' '.join([str(e) for e in container.children])
         logger.debug(f'Found modlist (unencoded) "{modlist}"')
         logger.info('HTML modlist fetched successfully, wrapping and sending')
 
@@ -66,8 +53,18 @@ class Community(commands.Cog, name='Community'):
             else:
                 modlist_name = modlist_match[1]
 
-        logger.debug(f'Found modlist "{modlist_name}"={modlist}')
-        modlist = io.BytesIO(modlist.encode('utf-8'))
+        logger.debug(f'Fetching XML modlist at "/{modlist_name}"')
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'{html_url}/{modlist_name}') as response:
+                if response.status != 200:
+                    logger.error(f'Failed to fetch XML modlist: {response.status}')
+                    await interaction.response.send_message(embed=modlist_website(), ephemeral=False)
+                    return
+                xml = await response.text()
+                logger.info('XML modlist fetched successfully')
+
+        logger.debug(f'Found modlist "{modlist_name}"={xml}')
+        modlist = io.BytesIO(xml.encode('utf-8'))
         file = discord.File(modlist, filename=modlist_name)
 
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
