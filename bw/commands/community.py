@@ -32,10 +32,9 @@ class Community(commands.Cog, name='Community'):
                 logger.info('HTML modlist fetched successfully')
 
         soup = BeautifulSoup(html, 'html.parser')
-        logger.debug(f'Found modlist (unencoded) "{modlist}"')
-        logger.info('HTML modlist fetched successfully, wrapping and sending')
+        logger.info('HTML modlist fetched successfully, attempting to find XML')
 
-        modlist_name = 'latest_modlist.html'
+        modlist_name = ''
         if soup.head.find('script') is None:
             logger.warning('No script tag found in HTML, using default modlist name')
         else:
@@ -52,6 +51,11 @@ class Community(commands.Cog, name='Community'):
                     logger.debug(f'groups={modlist_match.groups()}')
             else:
                 modlist_name = modlist_match[1]
+
+        if modlist_name == '':
+            logger.error(f'Failed to fetch modlist filename')
+            await interaction.response.send_message(embed=modlist_website(), ephemeral=False)
+            return
 
         logger.debug(f'Fetching XML modlist at "/{modlist_name}"')
         async with aiohttp.ClientSession() as session:
