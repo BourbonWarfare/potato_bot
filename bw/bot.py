@@ -17,6 +17,9 @@ class PotatoBot(discord.ext.commands.Bot):
         return cls(
             intents=intents,
             command_prefix='!',
+            allowed_mentions=discord.AllowedMentions(
+                everyone=True, users=True, replied_user=True, roles=True
+            ),
         )
 
     async def setup_hook(self):
