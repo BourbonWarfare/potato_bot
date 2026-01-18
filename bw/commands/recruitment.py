@@ -34,9 +34,6 @@ class Recruitment(commands.Cog, name='Recruitment'):
         name='handbook',
         description='Links to our handbooks.'
     )
-    @app_commands.autocomplete(
-        handbook=handbook_autocomplete
-    )
     @app_commands.describe(handbook='The handbook you want to view.')
     async def handbook(self, interaction: discord.Interaction, handbook: Handbooks):
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
