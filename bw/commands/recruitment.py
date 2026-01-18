@@ -14,6 +14,14 @@ class Handbooks(StrEnum):
     RECRUIT = 'Recruit Handbook'
     MEMBER = 'Member Handbook'
 
+async def handbook_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
+    return [
+        app_commands.Choice(name=choice.value, value=choice.value)
+        for choice in Handbooks
+        if strip_emoji(current.lower()) in strip_emoji(choice.value.lower())
+            or current.lower() in choice.value.lower()
+    ]
+
 class Recruitment(commands.Cog, name='Recruitment'):
     def __init__(self, bot):
         self.bot = bot
@@ -22,7 +30,10 @@ class Recruitment(commands.Cog, name='Recruitment'):
         name='handbook',
         description='Links to our handbooks.'
     )
-    @app_commands.choices(handbook=[app_commands.Choice(name=choice.name, value=choice.value) for choice in Handbooks])
+    @app_commands.autocomplete(
+        handbook=handbook_autocomplete
+    )
+    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Handbooks])
     @app_commands.describe(handbook='The handbook you want to view.')
     async def handbook(self, interaction: discord.Interaction, handbook: str):
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
