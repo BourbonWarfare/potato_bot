@@ -34,8 +34,12 @@ class Recruitment(commands.Cog, name='Recruitment'):
         name='handbook',
         description='Links to our handbooks.'
     )
+    @app_commands.autocomplete(
+        handbook=handbook_autocomplete
+    )
+    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=idx) for idx, choice in enumerate(Handbooks)])
     @app_commands.describe(handbook='The handbook you want to view.')
-    async def handbook(self, interaction: discord.Interaction, handbook: Handbooks):
+    async def handbook(self, interaction: discord.Interaction, handbook: str):
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
         logger.debug(f'handbook given: name={handbook.name}, value={handbook.value}')
         if handbook.value == Handbooks.RECRUIT:
