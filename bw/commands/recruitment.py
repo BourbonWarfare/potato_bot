@@ -16,7 +16,7 @@ class Handbooks(StrEnum):
 
 async def handbook_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
     return [
-        app_commands.Choice(name=choice.value, value=choice.value)
+        app_commands.Choice(name=choice.name, value=choice.value)
         for choice in Handbooks
         if strip_emoji(current.lower()) in strip_emoji(choice.value.lower())
             or current.lower() in choice.value.lower()
@@ -33,7 +33,7 @@ class Recruitment(commands.Cog, name='Recruitment'):
     @app_commands.autocomplete(
         handbook=handbook_autocomplete
     )
-    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Handbooks])
+    @app_commands.choices(handbook=[app_commands.Choice(name=choice.name, value=choice.value) for choice in Handbooks])
     @app_commands.describe(handbook='The handbook you want to view.')
     async def handbook(self, interaction: discord.Interaction, handbook: str):
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
