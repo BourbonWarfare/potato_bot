@@ -37,7 +37,7 @@ class Recruitment(commands.Cog, name='Recruitment'):
     @app_commands.autocomplete(
         handbook=handbook_autocomplete
     )
-    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=idx) for idx, choice in enumerate(Handbooks)])
+    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=idx) for idx, choice in enumerate(Handbooks, start=1)])
     @app_commands.describe(handbook='The handbook you want to view.')
     async def handbook(self, interaction: discord.Interaction, handbook: int):
         handbook = Handbooks.list()[handbook]
