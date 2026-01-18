@@ -59,6 +59,14 @@ class Recruitment(commands.Cog, name='Recruitment'):
             logger.info(f'{member} requested an orientation.')
             await interaction.response.send_message(embed=call_orientator(), ephemeral=True)
 
+            if member.get_role(ENVIRONMENT.awaiting_orientation_role()) is None:
+                logger.info(f'Adding awaiting orientation role to {member}.')
+                await member.add_roles(
+                    interaction.guild.get_role(ENVIRONMENT.awaiting_orientation_role()), reason='Requested an orientation.'
+                )
+            else:
+                logger.info(f'{member} already has the awaiting orientation role.')
+
             channel = self.bot.get_channel(ENVIRONMENT.recruitment_channel())
             role = interaction.guild.get_role(ENVIRONMENT.orientor_role())
             logger.debug(f'{role.mention}, {member.nick}, {member.global_name}')
@@ -73,13 +81,5 @@ class Recruitment(commands.Cog, name='Recruitment'):
                     rf"""📣 {role.mention} a new recruit is requesting orientation.
     Please reach out to {member.global_name} to arrange an orientation."""
                 )
-
-            if member.get_role(ENVIRONMENT.awaiting_orientation_role()) is None:
-                logger.info(f'Adding awaiting orientation role to {member}.')
-                await member.add_roles(
-                    interaction.guild.get_role(ENVIRONMENT.awaiting_orientation_role()), reason='Requested an orientation.'
-                )
-            else:
-                logger.info(f'{member} already has the awaiting orientation role.')
         else:
             await interaction.response.send_message(embed=not_a_recruit(), ephemeral=True)
