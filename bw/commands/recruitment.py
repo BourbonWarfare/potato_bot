@@ -12,8 +12,8 @@ logger = logging.getLogger('bw.potbot.command')
 
 async def handbook_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
     return [
-        app_commands.Choice(name=choice.value, value=choice.value)
-        for choice in Handbooks
+        app_commands.Choice(name=choice.value, value=idx)
+        for idx, choice in enumerate(Handbooks, start=1)
         if strip_emoji(current.lower()) in strip_emoji(choice.value.lower())
             or current.lower() in choice.value.lower()
     ]
