@@ -10,21 +10,17 @@ from bw.utils import strip_emoji
 
 logger = logging.getLogger('bw.potbot.command')
 
-async def handbook_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
-    return [
-        app_commands.Choice(name=choice.value, value=idx)
-        for idx, choice in enumerate(Handbooks, start=1)
-        if strip_emoji(current.lower()) in strip_emoji(choice.value.lower())
-            or current.lower() in choice.value.lower()
-    ]
-
 class Handbooks(StrEnum):
     RECRUIT = 'Recruit Handbook'
     MEMBER = 'Member Handbook'
 
-    @classmethod
-    def list(cls) -> list[str]:
-        return [item.value for item in cls]
+async def handbook_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
+    return [
+        app_commands.Choice(name=choice.value, value=choice.value)
+        for choice in Handbooks
+        if strip_emoji(current.lower()) in strip_emoji(choice.value.lower())
+            or current.lower() in choice.value.lower()
+    ]
 
 class Recruitment(commands.Cog, name='Recruitment'):
     def __init__(self, bot):
@@ -37,10 +33,9 @@ class Recruitment(commands.Cog, name='Recruitment'):
     @app_commands.autocomplete(
         handbook=handbook_autocomplete
     )
-    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=idx) for idx, choice in enumerate(Handbooks, start=1)])
+    @app_commands.choices(handbook=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Handbooks])
     @app_commands.describe(handbook='The handbook you want to view.')
-    async def handbook(self, interaction: discord.Interaction, handbook: int):
-        handbook = Handbooks.list()[handbook]
+    async def handbook(self, interaction: discord.Interaction, handbook: str):
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
         logger.debug(f'handbook given: name={handbook.name}, value={handbook.value}')
         if handbook.value == Handbooks.RECRUIT:
