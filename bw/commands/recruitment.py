@@ -61,9 +61,12 @@ class Recruitment(commands.Cog, name='Recruitment'):
 
             if member.get_role(ENVIRONMENT.awaiting_orientation_role()) is None:
                 logger.info(f'Adding awaiting orientation role to {member}.')
-                await member.add_roles(
-                    interaction.guild.get_role(ENVIRONMENT.awaiting_orientation_role()), reason='Requested an orientation.'
-                )
+                try:
+                    await member.add_roles(
+                        interaction.guild.get_role(ENVIRONMENT.awaiting_orientation_role()), reason='Requested an orientation.'
+                    )
+                except discord.Forbidden as e:
+                    logger.warning(f'Cannot add role: {e}')
             else:
                 logger.info(f'{member} already has the awaiting orientation role.')
 
@@ -71,15 +74,18 @@ class Recruitment(commands.Cog, name='Recruitment'):
             role = interaction.guild.get_role(ENVIRONMENT.orientor_role())
             logger.debug(f'{role.mention}, {member.nick}, {member.global_name}')
             logger.debug(f'{channel}, {channel.name}, {channel.id}, {channel.type}')
-            if member.nick:
-                await channel.send(
-                    rf"""📣 {role.mention} a new recruit is requesting orientation.
-    Please reach out to {member.nick} ({member.global_name}) to arrange an orientation."""
-                )
-            else:
-                await channel.send(
-                    rf"""📣 {role.mention} a new recruit is requesting orientation.
-    Please reach out to {member.global_name} to arrange an orientation."""
-                )
+            try:
+                if member.nick:
+                    await channel.send(
+                        rf"""📣 {role.mention} a new recruit is requesting orientation.
+        Please reach out to {member.nick} ({member.global_name}) to arrange an orientation."""
+                    )
+                else:
+                    await channel.send(
+                        rf"""📣 {role.mention} a new recruit is requesting orientation.
+        Please reach out to {member.global_name} to arrange an orientation."""
+                    )
+            except discord.Forbidden as e:
+                logger.warning(f'Could not send message: {e}')
         else:
             await interaction.response.send_message(embed=not_a_recruit(), ephemeral=True)
