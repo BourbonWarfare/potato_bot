@@ -27,7 +27,7 @@ class Recruitment(commands.Cog, name='Recruitment'):
     async def handbook(self, interaction: discord.Interaction, handbook: str):
         handbook = Handbooks(handbook)
         logger.info(f'{interaction.user} requested the handbook "{strip_emoji(handbook.name)}".')
-        logger.debug(f'handbook given: name={handbook.name}, value={handbook.value}')
+        logger.debug(f'handbook given: name={strip_emoji(handbook.name)}, value={strip_emoji(handbook.value)}')
         if handbook.value == Handbooks.RECRUIT:
             logger.debug('fetching recruit handbook')
             await interaction.response.send_message(embed=get_recruit_handbook(), ephemeral=True)
