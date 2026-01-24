@@ -63,6 +63,16 @@ class Environment:
     def backend_token(self, key: str) -> str:
         return GC[key]
 
+    @config_fetch('discord_client_id', str)
+    def discord_client_id(self, key: str) -> str:
+        return GC[key]
+    @config_fetch('discord_client_secret', str)
+    def discord_client_secret(self, key: str) -> str:
+        return GC[key]
+    @config_fetch('discord_oauth_url', str)
+    def discord_oauth_url(self, key: str) -> str:
+        return GC[key]
+
     def local_session_time(self) -> datetime.timedelta:
         return datetime.timedelta(hours=GC.get('local_session_time', 12 + 7))
 

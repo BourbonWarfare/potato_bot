@@ -30,22 +30,16 @@ class Staff(commands.Cog, name='Staff Commands'):
         name='armaserver',
         description='Manage an ARMA server.',
     )
-    @app_commands.autocomplete(
-        server=lambda _, current: [
-            app_commands.Choice(name=choice.value, value=choice) for choice in Server if current.lower() in choice.value.lower()
-        ],
-        option=lambda _, current: [
-            app_commands.Choice(name=choice.value, value=choice) for choice in Command if current.lower() in choice.value.lower()
-        ],
-    )
     @app_commands.choices(
-        server=[app_commands.Choice(name=choice.value, value=choice) for choice in Server],
-        option=[app_commands.Choice(name=choice.value, value=choice) for choice in Command],
+        server=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Server],
+        option=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Command],
     )
     @app_commands.describe(
         server='The server which to perform the operation on.', option='The operation you wish to perform on the server.'
     )
-    async def server_management(self, interaction: discord.Interaction, server: Server, option: Command):
+    async def server_management(self, interaction: discord.Interaction, server: str, option: str):
+        server = Server(server)
+        option = Command(option)
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
         raise NotImplementedError()
         if option == Command.START:
