@@ -6,8 +6,8 @@ from bw.state import State
 
 
 def main():
-    _state = State()
     logging.config.dictConfig(bw.log.config())
+    _state = State()
     client = PotatoBot.setup()
     client.run(ENVIRONMENT.discord_token())
 

@@ -8,6 +8,7 @@ PRODUCTION_LOG_CONFIG = {
     'root': 'INFO',
     'discord': 'INFO',
     'bw': 'DEBUG',
+    'bw.state': 'DEBUG',
     'bw.potbot': 'DEBUG',
     'bw.potbot.command': 'DEBUG'
 }
@@ -46,6 +47,10 @@ def config() -> dict[str, Any]:
             },
             'bw': {
                 'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else PRODUCTION_LOG_CONFIG['bw'],
+                'handlers': ['stdout', 'file'],
+            },
+            'bw.state': {
+                'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else PRODUCTION_LOG_CONFIG['bw.state'],
                 'handlers': ['stdout', 'file'],
             },
             'bw.potbot': {
