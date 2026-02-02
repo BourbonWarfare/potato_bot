@@ -26,6 +26,7 @@ class Authentication(commands.Cog, name='Authentication'):
         description='Login to POTBOT with Discord.',
     )
     async def login_oauth(self, interaction: discord.Interaction):
+        await interaction.followup.send(embed=login_with_discord('foobar'), ephemeral=True)
         try:
             await self.internal_login_oauth(interaction)
         except CannotLogin:
@@ -34,10 +35,10 @@ class Authentication(commands.Cog, name='Authentication'):
             await interaction.response.send_message(embed=logged_in_with_discord(), ephemeral=True)
 
     async def internal_login_oauth(self, interaction: discord.Interaction):
-        logger.info(f'Attempting new loging for {interaction.user.id}')
+        logger.info(f'Attempting new login for {interaction.user.id}')
         state = secrets.token_urlsafe(16).encode('utf-8')
         logger.info('sending login link')
-        await interaction.followup.send(embed=login_with_discord(state),ephemeral=True)
+        await interaction.followup.send(embed=login_with_discord(state), ephemeral=True)
         await interaction.respose.defer(ephemeral=True, thinking=True)
 
         logger.info('waiting for user...')
