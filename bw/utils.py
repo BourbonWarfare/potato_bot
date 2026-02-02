@@ -21,7 +21,7 @@ def backoff(delay=2, retries=3, max_delay=float('inf')):
                         raise e
                     await asyncio.sleep(current_delay + random.random() * delay)
                     current_delay *= 2
-                    current_delay = min(delay, max_delay)
+                    current_delay = min(current_delay, max_delay)
 
         return wrapper
 

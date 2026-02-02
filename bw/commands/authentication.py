@@ -29,8 +29,10 @@ class Authentication(commands.Cog, name='Authentication'):
         try:
             await self.internal_login_oauth(interaction)
         except CannotLogin:
+            logger.info('failed to login')
             await interaction.followup.send(embed=failed_to_login_with_discord(), ephemeral=True)
         else:
+            logger.info('successfully logged in')
             await interaction.followup.send(embed=logged_in_with_discord(), ephemeral=True)
 
     async def internal_login_oauth(self, interaction: discord.Interaction):
