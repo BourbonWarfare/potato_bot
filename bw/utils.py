@@ -8,7 +8,7 @@ def backoff(delay=2, retries=3, max_delay=float('inf')):
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
             current_retry = 0
-            current_delay = min(delay, max_delay)
+            current_delay = delay
             while current_retry < retries:
                 try:
                     if asyncio.iscoroutinefunction(func):
@@ -21,6 +21,7 @@ def backoff(delay=2, retries=3, max_delay=float('inf')):
                         raise e
                     await asyncio.sleep(current_delay + random.random() * delay)
                     current_delay *= 2
+                    current_delay = min(delay, max_delay)
 
         return wrapper
 
