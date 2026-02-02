@@ -51,10 +51,11 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         try:
             session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
+            interaction.response.defer()
         except NoSuchSession:
-            Authentication(self.bot).login_oauth(interaction)
+            await Authentication(self.bot).login_oauth(interaction)
+            session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
 
-        raise NotImplementedError()
         if option == Command.START:
             pass
         elif option == Command.STOP:
@@ -67,4 +68,4 @@ class Staff(commands.Cog, name='Staff Commands'):
             pass
         else:
             raise NotImplementedError()
-        await interaction.response.send_message(embed=get_bwmf(), ephemeral=True)
+        await interaction.followup.send(embed=get_bwmf(), ephemeral=True)
