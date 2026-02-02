@@ -1,4 +1,4 @@
-from sqlalchemy.orm import select
+from sqlalchemy import select
 
 from bw.state import State
 from bw.error import RefreshFailed, NoSuchSession, CannotLogin
