@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import sessionmaker, Session
@@ -5,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from bw.environment import ENVIRONMENT
 from bw.settings import GLOBAL_CONFIGURATION
 
+logger = logging.getLogger('bw.state')
 
 class DatabaseConnection:
     def __init__(self, engine):
@@ -19,6 +21,7 @@ class State:
         return ENVIRONMENT.db_connection()
 
     def _setup_engine(self, echo, db_name: str):
+        logger.info(f'creating DB engine "{db_name}"')
         return create_engine(f'{self._connection()}/{db_name}', echo=echo)
 
     def __init__(self):
