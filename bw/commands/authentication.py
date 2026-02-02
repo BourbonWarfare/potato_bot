@@ -34,14 +34,18 @@ class Authentication(commands.Cog, name='Authentication'):
             await interaction.response.send_message(embed=logged_in_with_discord(), ephemeral=True)
 
     async def internal_login_oauth(self, interaction: discord.Interaction):
+        logger.info(f'Attempting new loging for {interaction.user.id}')
         state = secrets.token_urlsafe(16).encode('utf-8')
+        logger.info('sending login link')
         await interaction.followup.send(embed=login_with_discord(state),ephemeral=True)
         await interaction.respose.defer(ephemeral=True, thinking=True)
 
-        await asyncio.sleep(3)
+        logger.info('waiting for user...')
+        await asyncio.sleep(8)
 
         @backoff(delay=1, retries=10, max_delay=9)
         async def get_code(state: str) -> str:
+            logger.info('attempting getting access code')
             return await Interface().auth_get_access_code(state)
     
         try:
