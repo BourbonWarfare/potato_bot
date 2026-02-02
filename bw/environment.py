@@ -109,13 +109,16 @@ class Test(Environment):
     def db_echo(self) -> bool:
         return True
 
+    def discord_oauth_redirect_uri(self):
+        return f'localhost:{self.backend_port()}%2Fauth%2Flogin%2Fdiscord'
+
 
 class Production(Environment):
     def db_echo(self) -> bool:
         return False
 
     def discord_oauth_redirect_uri(self):
-        return 'https://discord.com/oauth2/authorize?client_id=1404581303936090192&response_type=code&redirect_uri=https%3A%2F%2Fbourbonwarfare.com%2Fauth%2Flogin%2Fdiscord&scope=identify'
+        return 'https%3A%2F%2Fbourbonwarfare.com%2Fauth%2Flogin%2Fdiscord'
 
 
 if GC.get('environment', 'local') == 'prod':
