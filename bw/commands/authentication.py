@@ -37,7 +37,7 @@ class Authentication(commands.Cog, name='Authentication'):
         logger.info(f'Attempting new login for {interaction.user.id}')
         state = secrets.token_urlsafe(16).encode('utf-8')
         logger.info('sending login link')
-        await interaction.respose.defer(ephemeral=True, thinking=True)
+        await interaction.response.defer(ephemeral=True, thinking=True)
         await interaction.followup.send(embed=login_with_discord(state), ephemeral=True)
 
         logger.info('waiting for user...')
