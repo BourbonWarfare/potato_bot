@@ -72,7 +72,7 @@ class SessionApi:
         with state.Session.begin() as session:
             query = (
                 select(Session)
-                .values(refresh_token=oauth_session.refresh_token)
+                .where(refresh_token=oauth_session.refresh_token)
             )
             existing_session: Session = session.scalar(query)
             existing_session.token = access_token['access_token']
@@ -94,7 +94,7 @@ class SessionApi:
         with state.Session.begin() as session:
             query = (
                 select(Session)
-                .values(discord_id=discord_id)
+                .where(discord_id=discord_id)
             )
             existing_session = session.scalar(query)
             if existing_session is None:
@@ -105,7 +105,7 @@ class SessionApi:
         with state.Session.begin() as session:
             query = (
                 select(Session)
-                .values(discord_id=discord_id)
+                .where(discord_id=discord_id)
             )
             existing_session = session.scalar(query)
             if existing_session is None:
