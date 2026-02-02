@@ -120,3 +120,24 @@ def relative_session_time(
 **<t:{int(relative_time.timestamp())}:t>**""",
         colour=ENVIRONMENT.embed_colour_member(),
     )
+
+
+def login_with_discord(state: str) -> discord.Embed:
+    return discord.Embed(
+        title='Login to POTBOT with Discord',
+        description='Logs into POTBOT to perform restricted commands.',
+        url=f'https://discord.com/oauth2/authorize?client_id={ENVIRONMENT.discord_client_id()}&response_type=code&redirect_uri={ENVIRONMENT.discord_oauth_redirect_uri()}&scope=identify&state={state}',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+def logged_in_with_discord() -> discord.Embed:
+    return discord.Embed(
+        title='You\'ve successfully logged in!',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+def failed_to_login_with_discord() -> discord.Embed:
+    return discord.Embed(
+        title='An error occured, you have not been logged in.',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )

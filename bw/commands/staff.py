@@ -5,6 +5,11 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw.embeds import get_bwmf
+from bw.error import NoSuchSession
+from bw.interface import User
+from bw.session.api import SessionApi
+from bw.state import State
+from bw.commands.authentication import Authentication
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -20,6 +25,8 @@ class Command(StrEnum):
     START = 'Start'
     STOP = 'Stop'
     RESTART = 'Restart'
+    UPDATE_GAME = 'Update Server'
+    UPDATE_MODS = 'Update Mods'
 
 
 class Staff(commands.Cog, name='Staff Commands'):
@@ -41,12 +48,22 @@ class Staff(commands.Cog, name='Staff Commands'):
         server = Server(server)
         option = Command(option)
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
+
+        try:
+            session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
+        except NoSuchSession:
+            Authentication(self.bot).login_oauth(interaction)
+
         raise NotImplementedError()
         if option == Command.START:
             pass
         elif option == Command.STOP:
             pass
         elif option == Command.RESTART:
+            pass
+        elif option == Command.UPDATE_GAME:
+            pass
+        elif option == Command.UPDATE_MODS:
             pass
         else:
             raise NotImplementedError()

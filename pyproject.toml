@@ -9,7 +9,9 @@ dependencies = [
     "beautifulsoup4",
     "discord.py",
     "python-dotenv",
-    "tzdata"
+    "tzdata",
+    "sqlalchemy",
+    "alembic"
 ]
 authors = [
     {name="Bailey Danyluk"}

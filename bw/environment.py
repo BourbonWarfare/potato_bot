@@ -69,9 +69,23 @@ class Environment:
     @config_fetch('discord_client_secret', str)
     def discord_client_secret(self, key: str) -> str:
         return GC[key]
-    @config_fetch('discord_oauth_url', str)
-    def discord_oauth_url(self, key: str) -> str:
-        return GC[key]
+    @config_fetch('discord_api_url', str)
+    def discord_api_url(self, key: str) -> str:
+        return GC[key].strip('/')
+
+    def discord_oauth_redirect_uri(self) -> str:
+        NotImplementedError()
+
+    def db_connection(self) -> str:
+        db_driver = GC.require('db_driver').get()
+        if db_driver.split('+')[0] == 'sqlite':
+            db_filepath = GC.require('db_filepath').get()
+            return f'{db_driver}:///{db_filepath}'
+        else:
+            db_username, db_password, db_address = GC.require(
+                'db_username', 'db_password', 'db_address'
+            ).get()
+            return f'{db_driver}://{db_username}:{db_password}@{db_address}'
 
     def local_session_time(self) -> datetime.timedelta:
         return datetime.timedelta(hours=GC.get('local_session_time', 12 + 7))
@@ -81,18 +95,27 @@ class Environment:
 
     def embed_colour_staff(self) -> discord.Color:
         return discord.Color.blue()
+    
+    def db_echo(self) -> bool:
+        raise NotImplementedError()
 
 
 class Local(Environment):
-    pass
+    def db_echo(self) -> bool:
+        return True
 
 
 class Test(Environment):
-    pass
+    def db_echo(self) -> bool:
+        return True
 
 
 class Production(Environment):
-    pass
+    def db_echo(self) -> bool:
+        return False
+
+    def discord_oauth_redirect_uri(self):
+        return 'https://discord.com/oauth2/authorize?client_id=1404581303936090192&response_type=code&redirect_uri=https%3A%2F%2Fbourbonwarfare.com%2Fauth%2Flogin%2Fdiscord&scope=identify'
 
 
 if GC.get('environment', 'local') == 'prod':

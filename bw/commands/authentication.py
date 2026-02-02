@@ -1,0 +1,51 @@
+import discord
+import logging
+import secrets
+import aiohttp
+import asyncio
+from discord import app_commands
+from discord.ext import commands
+
+from bw.environment import ENVIRONMENT
+from bw.embeds import login_with_discord, logged_in_with_discord, failed_to_login_with_discord
+from bw.utils import backoff
+from bw.interface import Interface
+from bw.session.api import SessionApi
+from bw.state import State
+from bw.error import CannotLogin
+
+logger = logging.getLogger('bw.potbot.command')
+
+
+class Authentication(commands.Cog, name='Authentication'):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(
+        name='login',
+        description='Login to POTBOT with Discord.',
+    )
+    async def login_oauth(self, interaction: discord.Interaction):
+        try:
+            await self.internal_login_oauth(interaction)
+        except CannotLogin:
+            await interaction.response.send_message(embed=failed_to_login_with_discord(), ephemeral=True)
+        else:
+            await interaction.response.send_message(embed=logged_in_with_discord(), ephemeral=True)
+
+    async def internal_login_oauth(self, interaction: discord.Interaction):
+        state = secrets.token_urlsafe(16).encode('utf-8')
+        await interaction.followup.send(embed=login_with_discord(state),ephemeral=True)
+        await interaction.respose.defer(ephemeral=True, thinking=True)
+
+        await asyncio.sleep(3)
+
+        @backoff(delay=1, retries=10, max_delay=9)
+        async def get_code(state: str) -> str:
+            return await Interface().auth_get_access_code(state)
+    
+        try:
+            access_code = await get_code(state)
+        except aiohttp.ClientResponseError:
+            raise CannotLogin()
+        await SessionApi().start_oauth_session(State.state, discord_id=interaction.user.id, access_code=access_code)
