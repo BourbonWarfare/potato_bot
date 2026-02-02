@@ -1,7 +1,7 @@
 import discord
 import logging
 import datetime
-import urllib
+import urllib.parse
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
@@ -111,7 +111,7 @@ class Test(Environment):
         return True
 
     def discord_oauth_redirect_uri(self):
-        return urllib.quote('https://staging.bourbonwarfare.com/auth/login/discord')
+        return urllib.parse.quote('https://staging.bourbonwarfare.com/auth/login/discord')
 
 
 class Production(Environment):
@@ -119,7 +119,7 @@ class Production(Environment):
         return False
 
     def discord_oauth_redirect_uri(self):
-        return urllib.quote('https://bourbonwarfare.com/auth/login/discord')
+        return urllib.parse.quote('https://bourbonwarfare.com/auth/login/discord')
 
 
 if GC.get('environment', 'local') == 'prod':
