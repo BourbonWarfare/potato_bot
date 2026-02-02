@@ -35,7 +35,7 @@ class Authentication(commands.Cog, name='Authentication'):
 
     async def internal_login_oauth(self, interaction: discord.Interaction):
         logger.info(f'Attempting new login for {interaction.user.id}')
-        state = secrets.token_urlsafe(16).encode('utf-8')
+        state = secrets.token_urlsafe(16)
         logger.info('sending login link')
         await interaction.response.defer(ephemeral=True, thinking=True)
         await interaction.followup.send(embed=login_with_discord(state), ephemeral=True)
