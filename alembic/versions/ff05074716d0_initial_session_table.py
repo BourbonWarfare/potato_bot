@@ -25,7 +25,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('discord_id', sa.String(), nullable=False),
     sa.Column('session_start', sa.DateTime(), nullable=False),
-    sa.Column('token', sa.String(), nullable=False),
+    sa.Column('session_token', sa.String(), nullable=False),
     sa.Column('refresh_token', sa.String(), nullable=False),
     sa.Column('expires_seconds', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
