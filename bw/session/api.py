@@ -98,7 +98,7 @@ class SessionApi:
             )
             existing_session = session.scalar(query)
             if existing_session is None:
-                return BwSession.null()
+                raise NoSuchSession
             return BwSession.from_session(existing_session)
 
     def get_discord_session_from_discord_id(self, state: State, discord_id: int) -> OAuthSession:

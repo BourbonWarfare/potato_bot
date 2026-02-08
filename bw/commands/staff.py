@@ -51,7 +51,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         try:
             session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
-            interaction.response.defer()
+            await interaction.response.defer()
         except NoSuchSession:
             await Authentication(self.bot).internal_login_oauth(interaction)
             session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
