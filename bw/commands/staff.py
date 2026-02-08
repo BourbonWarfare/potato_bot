@@ -53,7 +53,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
             interaction.response.defer()
         except NoSuchSession:
-            await Authentication(self.bot).login_oauth(interaction)
+            await Authentication(self.bot).internal_login_oauth(interaction)
             session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
 
         if option == Command.START:
