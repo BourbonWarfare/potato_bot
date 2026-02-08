@@ -1,11 +1,7 @@
 from bw.endpoints.endpoint import Endpoint, VariableEndpoint, VariableResolver
 
-class State(Endpoint):
-    endpoint = VariableEndpoint()
-
 class Discord(Endpoint):
     endpoint = 'discord'
-    state = State()
 
 class Bot(Endpoint):
     endpoint = 'bot'

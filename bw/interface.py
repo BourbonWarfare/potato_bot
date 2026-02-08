@@ -100,9 +100,10 @@ class Interface:
                 return response.status == 200
     
     async def auth_get_access_code(self, state: str) -> str:
-        async with aiohttp.ClientSession() as session:
+        headers = {'Authorization': f'Bearer {state}'}
+        async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(
-                self.url(Root.get().api.v1.auth.login.discord.state.var(state).resolve())
+                self.url(Root.get().api.v1.auth.login.discord.resolve())
             ) as response:
                 response.raise_for_status()
                 return await response.text(encoding='utf-8')
