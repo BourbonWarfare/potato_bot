@@ -6,7 +6,7 @@ class Permission(Endpoint):
 
 
 class Create(Endpoint):
-    endpoint = 'create/'
+    endpoint = 'create'
     permission = Permission()
 
 
@@ -19,7 +19,7 @@ class Leave(Endpoint):
 
 
 class Group(Endpoint):
-    endpoint = 'group/'
+    endpoint = 'group'
     create = Create()
     join = Join()
     leave = Leave()

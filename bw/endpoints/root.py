@@ -10,7 +10,7 @@ class Healthcheck(Endpoint):
 
 
 class V1(Endpoint):
-    endpoint = 'v1/'
+    endpoint = 'v1'
     server_ops = ServerOps()
     auth = Auth()
     user = User()
@@ -19,16 +19,16 @@ class V1(Endpoint):
 
 
 class Local(Endpoint):
-    endpoint = 'local/'
+    endpoint = 'local'
     user = User()
 
 
 class Api(Endpoint):
-    endpoint = 'api/'
+    endpoint = 'api'
     v1 = V1()
     local = Local()
 
 
 class Root(Endpoint):
-    endpoint = '/'
+    endpoint = ''
     api = Api()

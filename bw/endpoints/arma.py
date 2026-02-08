@@ -36,10 +36,10 @@ class Server(Endpoint):
 
 
 class Arma(Endpoint):
-    endpoint = 'arma/'
+    endpoint = 'arma'
     server = Server()
 
 
 class ServerOps(Endpoint):
-    endpoint = 'server_ops/'
+    endpoint = 'server_ops'
     arma = Arma()

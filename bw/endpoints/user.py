@@ -10,7 +10,7 @@ class Assign(Endpoint):
 
 
 class Role(Endpoint):
-    endpoint = 'role/'
+    endpoint = 'role'
     create = RoleCreate()
     assign = Assign()
 
@@ -20,11 +20,11 @@ class Bot(Endpoint):
 
 
 class UserCreate(Endpoint):
-    endpoint = 'create/'
+    endpoint = 'create'
     bot = Bot()
 
 
 class User(Endpoint):
-    endpoint = 'user/'
+    endpoint = 'user'
     role = Role()
     create = UserCreate()

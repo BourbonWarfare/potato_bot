@@ -42,4 +42,4 @@ class Resolver:
         return self
 
     def resolve(self) -> str:
-        return ''.join(self.path)
+        return '/'.join(self.path)

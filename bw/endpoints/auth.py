@@ -12,11 +12,11 @@ class Bot(Endpoint):
 
 
 class Login(Endpoint):
-    endpoint = 'login/'
+    endpoint = 'login'
     discord = Discord()
     bot = Bot()
 
 
 class Auth(Endpoint):
-    endpoint = 'auth/'
+    endpoint = 'auth'
     login = Login()

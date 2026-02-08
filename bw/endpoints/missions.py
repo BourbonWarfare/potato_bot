@@ -2,9 +2,9 @@ from bw.endpoints.endpoint import Endpoint
 
 
 class Upload(Endpoint):
-    endpoint = 'upload/'
+    endpoint = 'upload'
 
 
 class Missions(Endpoint):
-    endpoint = 'missions/'
+    endpoint = 'missions'
     upload = Upload()
