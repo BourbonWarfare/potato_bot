@@ -22,8 +22,7 @@ class State:
 
     def _setup_engine(self, echo, db_name: str):
         logger.info(f'creating DB engine "{db_name}"')
-        logger.debug(f'{self._connection()}/{db_name}')
-        return create_engine(f'{self._connection()}/{db_name}', echo=echo)
+        return create_engine(f'{self._connection()}', echo=echo)
 
     def __init__(self):
         self.engine_map = {}
