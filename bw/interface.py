@@ -73,7 +73,7 @@ class UserClient:
 
     @property
     def auth_header(self) -> dict[str, str]:
-        return {'Authorization': f'Bearer {self.bw_session.token}'}
+        return self.bw_session.as_header()
 
 
 class Interface:
@@ -116,39 +116,39 @@ class User(Interface):
         super().__init__()
 
     async def start_arma_server(self, server: str) -> bool:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.user_session() as client:
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve()), headers=client.auth_header
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve())
                 ) as response:
                     return response.status == 200
 
     async def stop_arma_server(self, server: str) -> bool:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.user_session() as client:
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve()), headers=client.auth_header
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve())
                 ) as response:
                     return response.status == 200
 
     async def restart_arma_server(self, server: str) -> bool:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.user_session() as client:
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve()), headers=client.auth_header
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve())
                 ) as response:
                     return response.status == 200
 
     async def update_arma_server(self, server: str) -> bool:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.user_session() as client:
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve()), headers=client.auth_header
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
                     return response.status == 200
 
     async def update_arma_server_mods(self, server: str) -> bool:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.user_session() as client:
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
