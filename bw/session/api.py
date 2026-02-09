@@ -13,13 +13,12 @@ import datetime
 class SessionApi:
     async def start_oauth_session(self, state: State, discord_id: int, access_code: str) -> OAuthSession:
         data = {
-            'client_id': ENVIRONMENT.discord_client_id(),
-            'client_secret': ENVIRONMENT.discord_client_secret(),
             'grant_type': 'authorization_code',
             'code': access_code,
             'redirect_uri': ENVIRONMENT.discord_oauth_redirect_uri()
         }
-        async with aiohttp.ClientSession() as session:
+        auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
+        async with aiohttp.ClientSession(auth=auth) as session:
             async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data) as response:
                 try:
                     response.raise_for_status()
