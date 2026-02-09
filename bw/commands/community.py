@@ -53,7 +53,7 @@ class Community(commands.Cog, name='Community'):
                 modlist_name = modlist_match[1]
 
         if modlist_name == '':
-            logger.error(f'Failed to fetch modlist filename')
+            logger.error('Failed to fetch modlist filename')
             await interaction.response.send_message(embed=modlist_website(), ephemeral=False)
             return
 

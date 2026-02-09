@@ -1,7 +1,4 @@
 import aiohttp
-import asyncio
-import functools
-import random
 import datetime
 from contextlib import asynccontextmanager
 from bw.environment import ENVIRONMENT
@@ -9,8 +6,8 @@ from bw.endpoints import Root
 from bw.session.api import SessionApi
 from bw.state import State
 from bw.session.oauth import OAuthSession, BwSession
-from bw.error import RefreshFailed
 from bw.utils import backoff
+
 
 class ApiClient:
     session_url: str
@@ -49,16 +46,16 @@ class ApiClient:
 
 
 class UserClient:
-    discord_session: OAuthSession
     bw_session: BwSession
+    discord_session: OAuthSession
 
-    def __init__(self, oauth_session: OAuthSession):
+    def __init__(self, bw_session: BwSession, oauth_session: OAuthSession):
+        self.bw_session = bw_session
         self.discord_session = oauth_session
-        self.bw_session = BwSession.null()
 
     @backoff(delay=0.5, retries=5)
     async def refresh_session(self):
-        self.discord_session = await SessionApi().refresh_oauth_session(State.state, self.refresh_token)
+        self.discord_session = await SessionApi().refresh_oauth_session(State.state, self.discord_session)
         self.bw_session = await SessionApi().login_to_backend(State.state, self.discord_session)
 
     @asynccontextmanager
@@ -98,27 +95,24 @@ class Interface:
                 self.url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
             ) as response:
                 return response.status == 200
-    
+
     async def auth_get_access_code(self, state: str) -> dict:
         headers = {'Authorization': f'Bearer {state}'}
         async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(
-                self.url(Root.get().api.v1.auth.login.discord.resolve())
-            ) as response:
+            async with session.get(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
                 response.raise_for_status()
                 return await response.json()
 
     async def login_to_backend(self, oauth_session: OAuthSession) -> dict:
         async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
-            async with session.post(
-                self.url(Root.get().api.v1.auth.login.discord.resolve())
-            ) as response:
+            async with session.post(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
                 response.raise_for_status()
                 return await response.json()
 
+
 class User(Interface):
-    def __init__(self, oauth_session: OAuthSession):
-        self.client = UserClient(oauth_session)
+    def __init__(self, bw_session: BwSession, oauth_session: OAuthSession):
+        self.client = UserClient(bw_session, oauth_session)
         super().__init__()
 
     async def start_arma_server(self, server: str) -> bool:

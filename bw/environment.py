@@ -1,7 +1,6 @@
 import discord
 import logging
 import datetime
-import urllib.parse
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
@@ -67,9 +66,11 @@ class Environment:
     @config_fetch('discord_client_id', str)
     def discord_client_id(self, key: str) -> str:
         return GC[key]
+
     @config_fetch('discord_client_secret', str)
     def discord_client_secret(self, key: str) -> str:
         return GC[key]
+
     @config_fetch('discord_api_url', str)
     def discord_api_url(self, key: str) -> str:
         return GC[key].strip('/')
@@ -83,9 +84,7 @@ class Environment:
             db_filepath = GC.require('db_filepath').get()
             return f'{db_driver}:///{db_filepath}'
         else:
-            db_username, db_password, db_address = GC.require(
-                'db_username', 'db_password', 'db_address'
-            ).get()
+            db_username, db_password, db_address = GC.require('db_username', 'db_password', 'db_address').get()
             return f'{db_driver}://{db_username}:{db_password}@{db_address}'
 
     def local_session_time(self) -> datetime.timedelta:
@@ -96,7 +95,7 @@ class Environment:
 
     def embed_colour_staff(self) -> discord.Color:
         return discord.Color.blue()
-    
+
     def db_echo(self) -> bool:
         raise NotImplementedError()
 

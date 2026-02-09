@@ -4,6 +4,14 @@ import urllib
 from bw.environment import ENVIRONMENT
 
 
+def default() -> discord.Embed:
+    return discord.Embed(
+        title="Someone hasn't configured something",
+        description="This is the default embed that occurs when we don't know what to put yet",
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
 def get_bwmf() -> discord.Embed:
     return discord.Embed(
         title='📂 CLICK HERE to download',
@@ -132,14 +140,30 @@ def login_with_discord(state: str) -> discord.Embed:
         colour=ENVIRONMENT.embed_colour_member(),
     )
 
+
 def logged_in_with_discord() -> discord.Embed:
     return discord.Embed(
-        title='You\'ve successfully logged in!',
+        title="You've successfully logged in!",
         colour=ENVIRONMENT.embed_colour_member(),
     )
+
 
 def failed_to_login_with_discord() -> discord.Embed:
     return discord.Embed(
         title='An error occured, you have not been logged in.',
         colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
+def successful_arma_server_operation(user: discord.User, operation: str, server: str) -> discord.Embed:
+    return discord.Embed(
+        title='Success!',
+        description=f'{user.mention} has succesfully performed "{operation}" on server {server}',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+
+
+def failed_arma_server_operation(user: discord.User, operation: str, server: str) -> discord.Embed:
+    return discord.Embed(
+        title='Failure :(', description=f'{user.mention} tried "{operation}" but it has failed on server {server}', colour=ENVIRONMENT.embed_colour_staff()
     )

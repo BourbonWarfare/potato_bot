@@ -2,7 +2,7 @@ import os
 
 from enum import StrEnum
 from pathlib import Path
-from typing import Self, Any
+from typing import Self
 from collections.abc import Sequence
 from collections.abc import Callable
 

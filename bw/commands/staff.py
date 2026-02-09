@@ -4,7 +4,7 @@ from enum import StrEnum
 from discord import app_commands
 from discord.ext import commands
 
-from bw.embeds import get_bwmf
+from bw import embeds
 from bw.error import NoSuchSession
 from bw.interface import User
 from bw.session.api import SessionApi
@@ -50,22 +50,32 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
 
         try:
-            session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
+            logger.info(f'Loading session for {interaction.user}')
+            bw_session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
+            oauth_session = SessionApi().get_discord_session_from_discord_id(State.state, interaction.user.id)
             await interaction.response.defer()
         except NoSuchSession:
-            await Authentication(self.bot).internal_login_oauth(interaction)
-            session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
+            logger.info(f'No session found for {interaction.user}, creating new one')
+            oauth_session = await Authentication(self.bot).internal_login_oauth(interaction)
+            bw_session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
 
-        if option == Command.START:
-            pass
-        elif option == Command.STOP:
-            pass
-        elif option == Command.RESTART:
-            pass
-        elif option == Command.UPDATE_GAME:
-            pass
-        elif option == Command.UPDATE_MODS:
-            pass
+        interface = User(oauth_session, bw_session)
+
+        async def perform(option: str, server: str) -> bool:
+            if option == Command.START:
+                return await interface.start_arma_server(server)
+            elif option == Command.STOP:
+                return await interface.stop_arma_server(server)
+            elif option == Command.RESTART:
+                return await interface.restart_arma_server(server)
+            elif option == Command.UPDATE_GAME:
+                return await interface.update_arma_server(server)
+            elif option == Command.UPDATE_MODS:
+                return await interface.update_arma_server_mods(server)
+            return False
+
+        if perform(option=option, server=server):
+            embed = embeds.successful_arma_server_operation(interaction.user, option, server)
         else:
-            raise NotImplementedError()
-        await interaction.followup.send(embed=get_bwmf(), ephemeral=True)
+            embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+        await interaction.followup.send(embed=embed)

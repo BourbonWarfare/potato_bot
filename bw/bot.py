@@ -17,9 +17,7 @@ class PotatoBot(discord.ext.commands.Bot):
         return cls(
             intents=intents,
             command_prefix='!',
-            allowed_mentions=discord.AllowedMentions(
-                everyone=True, users=True, replied_user=True, roles=True
-            ),
+            allowed_mentions=discord.AllowedMentions(everyone=True, users=True, replied_user=True, roles=True),
         )
 
     async def setup_hook(self):
@@ -35,16 +33,16 @@ class PotatoBot(discord.ext.commands.Bot):
     async def on_ready(self):
         path = Path('version.txt')
         if path.exists():
-            with open(path, mode='r') as f:
+            with open(path) as f:
                 current_version = Version.from_string(f.read())
         else:
             current_version = Version(0, 0, 0)
         with open(path, mode='w') as f:
             f.write(f'{VERSION}')
-        
+
         logger.info(f'Current version: {current_version}')
         if current_version != VERSION:
-            logger.info(f'A new version detected, re-syncing')
+            logger.info('A new version detected, re-syncing')
             logger.debug(f'current_version={current_version}, VERSION={VERSION}')
             await self.tree.sync()
         logger.info(f'Session ready for {self.user}')

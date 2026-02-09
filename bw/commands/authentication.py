@@ -6,12 +6,12 @@ import asyncio
 from discord import app_commands
 from discord.ext import commands
 
-from bw.environment import ENVIRONMENT
 from bw.embeds import login_with_discord, logged_in_with_discord, failed_to_login_with_discord
 from bw.utils import backoff
 from bw.interface import Interface
 from bw.session.api import SessionApi
 from bw.session.types import DiscordSnowflake
+from bw.session.oauth import OAuthSession
 from bw.state import State
 from bw.error import CannotLogin
 
@@ -36,7 +36,7 @@ class Authentication(commands.Cog, name='Authentication'):
             logger.info('successfully logged in')
             await interaction.followup.send(embed=logged_in_with_discord(), ephemeral=True)
 
-    async def internal_login_oauth(self, interaction: discord.Interaction):
+    async def internal_login_oauth(self, interaction: discord.Interaction) -> OAuthSession:
         logger.info(f'Attempting new login for {interaction.user.id}')
         state = secrets.token_urlsafe(64)[:32]
         logger.info('sending login link')
@@ -50,9 +50,11 @@ class Authentication(commands.Cog, name='Authentication'):
         async def get_code(state: str) -> str:
             logger.info('attempting getting access code')
             return (await Interface().auth_get_access_code(state)).get('access_code')
-    
+
         try:
             access_code = await get_code(state)
         except aiohttp.ClientResponseError as e:
             raise CannotLogin(e)
-        await SessionApi().start_oauth_session(State.state, discord_id=DiscordSnowflake(interaction.user.id), access_code=access_code)
+        return await SessionApi().start_oauth_session(
+            State.state, discord_id=DiscordSnowflake(interaction.user.id), access_code=access_code
+        )
