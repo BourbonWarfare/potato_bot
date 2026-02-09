@@ -14,5 +14,8 @@ class NoSuchSession(SessionError):
         super().__init__('No such session exists')
 
 class CannotLogin(SessionError):
-    def __init__(self):
-        super().__init__('An error has occured while logging in')
+    def __init__(self, context: str = ''):
+        if context != '':
+            super().__init__(f'An error has occured while logging in: {context}')
+        else:
+            super().__init__('An error has occured while logging in')

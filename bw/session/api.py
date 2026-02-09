@@ -25,8 +25,8 @@ class SessionApi:
             async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data, auth=auth) as response:
                 try:
                     response.raise_for_status()
-                except aiohttp.ClientResponseError:
-                    raise CannotLogin()
+                except aiohttp.ClientResponseError as e:
+                    raise CannotLogin(e)
                 
                 access_token_response = await response.json()
         

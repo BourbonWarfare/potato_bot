@@ -28,8 +28,8 @@ class Authentication(commands.Cog, name='Authentication'):
     async def login_oauth(self, interaction: discord.Interaction):
         try:
             await self.internal_login_oauth(interaction)
-        except CannotLogin:
-            logger.info('failed to login')
+        except CannotLogin as e:
+            logger.info(e)
             await interaction.followup.send(embed=failed_to_login_with_discord(), ephemeral=True)
         else:
             logger.info('successfully logged in')
@@ -53,6 +53,5 @@ class Authentication(commands.Cog, name='Authentication'):
         try:
             access_code = await get_code(state)
         except aiohttp.ClientResponseError as e:
-            logger.warning(f'Could not login: {e}')
-            raise CannotLogin()
+            raise CannotLogin(e)
         await SessionApi().start_oauth_session(State.state, discord_id=interaction.user.id, access_code=access_code)
