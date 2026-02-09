@@ -1,11 +1,8 @@
 from dataclasses import dataclass
-from typing import NewType, Self
+from typing import Self
 from bw.models.session import Session
+from bw.session.types import OAuthToken, OAuthRefreshToken, SessionToken
 import datetime
-
-OAuthToken = NewType('OAuthToken', str)
-OAuthRefreshToken = NewType('OAuthRefreshToken', str)
-SessionToken = NewType('SessionToken', str)
 
 @dataclass
 class OAuthSession:

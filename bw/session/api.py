@@ -5,13 +5,14 @@ from bw.error import RefreshFailed, NoSuchSession, CannotLogin
 from bw.models.session import Session
 from bw.environment import ENVIRONMENT
 from bw.session.oauth import OAuthSession, BwSession
+from bw.session.types import DiscordSnowflake
 from bw.endpoints import Root
 import aiohttp
 import datetime
 
 
 class SessionApi:
-    async def start_oauth_session(self, state: State, discord_id: int, access_code: str) -> OAuthSession:
+    async def start_oauth_session(self, state: State, discord_id: DiscordSnowflake, access_code: str) -> OAuthSession:
         data = {
             'grant_type': 'authorization_code',
             'code': access_code,
@@ -96,7 +97,7 @@ class SessionApi:
             expire_time = datetime.datetime.fromisoformat(result.get('expire_time')),
         )
     
-    def get_bw_session_from_discord_id(self, state: State, discord_id: int) -> BwSession:
+    def get_bw_session_from_discord_id(self, state: State, discord_id: DiscordSnowflake) -> BwSession:
         with state.Session.begin() as session:
             query = (
                 select(Session)
@@ -107,7 +108,7 @@ class SessionApi:
                 raise NoSuchSession
             return BwSession.from_session(existing_session)
 
-    def get_discord_session_from_discord_id(self, state: State, discord_id: int) -> OAuthSession:
+    def get_discord_session_from_discord_id(self, state: State, discord_id: DiscordSnowflake) -> OAuthSession:
         with state.Session.begin() as session:
             query = (
                 select(Session)

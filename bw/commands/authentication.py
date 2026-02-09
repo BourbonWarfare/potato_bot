@@ -11,6 +11,7 @@ from bw.embeds import login_with_discord, logged_in_with_discord, failed_to_logi
 from bw.utils import backoff
 from bw.interface import Interface
 from bw.session.api import SessionApi
+from bw.session.types import DiscordSnowflake
 from bw.state import State
 from bw.error import CannotLogin
 
@@ -54,4 +55,4 @@ class Authentication(commands.Cog, name='Authentication'):
             access_code = await get_code(state)
         except aiohttp.ClientResponseError as e:
             raise CannotLogin(e)
-        await SessionApi().start_oauth_session(State.state, discord_id=interaction.user.id, access_code=access_code)
+        await SessionApi().start_oauth_session(State.state, discord_id=DiscordSnowflake(interaction.user.id), access_code=access_code)
