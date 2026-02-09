@@ -88,7 +88,7 @@ class SessionApi:
         from bw.interface import Interface
         try:
             result = await Interface().login_to_backend(oauth_session)
-        except aiohttp.ClientConnectionError as e:
+        except aiohttp.ClientResponseError as e:
             raise CannotLogin(e)
         
         return BwSession(
