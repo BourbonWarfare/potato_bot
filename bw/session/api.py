@@ -17,12 +17,9 @@ class SessionApi:
             'code': access_code,
             'redirect_uri': ENVIRONMENT.discord_oauth_redirect_uri()
         }
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
         auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
-        async with aiohttp.ClientSession(headers=headers, auth=auth) as session:
-            async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', params=data) as response:
+        async with aiohttp.ClientSession(auth=auth) as session:
+            async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data) as response:
                 try:
                     response.raise_for_status()
                 except aiohttp.ClientResponseError as e:

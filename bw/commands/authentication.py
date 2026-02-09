@@ -43,7 +43,7 @@ class Authentication(commands.Cog, name='Authentication'):
         await interaction.followup.send(embed=login_with_discord(state), ephemeral=True)
 
         logger.info('waiting for user...')
-        await asyncio.sleep(8)
+        await asyncio.sleep(4)
 
         @backoff(delay=1, retries=10, max_delay=9)
         async def get_code(state: str) -> str:
