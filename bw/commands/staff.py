@@ -79,6 +79,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 embed = embeds.successful_arma_server_operation(interaction.user, option, server)
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
-        except:
+        except Exception as e:
+            logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         await interaction.followup.send(embed=embed)
