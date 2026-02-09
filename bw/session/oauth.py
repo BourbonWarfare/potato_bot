@@ -23,6 +23,11 @@ class OAuthSession:
             refresh_token=session.oauth_refresh_token,
             expire_time = session.session_start + datetime.timedelta(seconds=session.expires_seconds)
         )
+    
+    def as_header(self) -> dict:
+        return {
+            'Authorization': f'Bearer {self.access_token}'
+        }
 
 @dataclass
 class BwSession:
@@ -45,3 +50,8 @@ class BwSession:
 
     def is_expired(self) -> bool:
         return (datetime.datetime.now() + datetime.timedelta(seconds=10)) > self.expire_time
+
+    def as_header(self) -> dict:
+        return {
+            'Authorization': f'Bearer {self.token}'
+        }

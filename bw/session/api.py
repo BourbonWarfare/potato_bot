@@ -85,7 +85,17 @@ class SessionApi:
         )
     
     async def login_to_backend(self, state: State, oauth_session: OAuthSession) -> BwSession:
-        Root.api.v1.auth.login.discord.get()        
+        async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
+            async with session.post(
+                self.url(Root.get().api.v1.auth.login.discord.resolve())
+            ) as response:
+                response.raise_for_status()
+                result = await response.json()
+        
+        return BwSession(
+            token = result.get('session_token'),
+            expire_time = datetime.datetime.fromisoformat(result.get('expire_time')),
+        )
     
     def get_bw_session_from_discord_id(self, state: State, discord_id: int) -> BwSession:
         with state.Session.begin() as session:
