@@ -141,6 +141,13 @@ def login_with_discord(state: str) -> discord.Embed:
     )
 
 
+def already_logged_in() -> discord.Embed:
+    return discord.Embed(
+        title="You are already logged in!",
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
 def logged_in_with_discord() -> discord.Embed:
     return discord.Embed(
         title="You've successfully logged in!",
