@@ -74,7 +74,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 return await interface.update_arma_server_mods(server)
             return False
 
-        if perform(option=option, server=server):
+        if await perform(option=option, server=server):
             embed = embeds.successful_arma_server_operation(interaction.user, option, server)
         else:
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)
