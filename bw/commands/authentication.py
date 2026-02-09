@@ -48,7 +48,7 @@ class Authentication(commands.Cog, name='Authentication'):
         @backoff(delay=1, retries=10, max_delay=9)
         async def get_code(state: str) -> str:
             logger.info('attempting getting access code')
-            return await Interface().auth_get_access_code(state)
+            return await Interface().auth_get_access_code(state).get('access_code')
     
         try:
             access_code = await get_code(state)
