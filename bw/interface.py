@@ -108,6 +108,13 @@ class Interface:
                 response.raise_for_status()
                 return await response.json()
 
+    async def login_to_backend(self, oauth_session: OAuthSession) -> dict:
+        async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
+            async with session.post(
+                self.url(Root.get().api.v1.auth.login.discord.resolve())
+            ) as response:
+                response.raise_for_status()
+                return await response.json()
 
 class User(Interface):
     def __init__(self, oauth_session: OAuthSession):

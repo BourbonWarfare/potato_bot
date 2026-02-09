@@ -32,7 +32,7 @@ class SessionApi:
             refresh_token=access_token_response['refresh_token'],
             expire_time=datetime.datetime.now() + datetime.timedelta(seconds=float(access_token_response['expires_in']))
         )
-        bw_session = await self.login_to_backend(state, oauth_session)
+        bw_session = await self.login_to_backend(oauth_session)
         
         with state.Session.begin() as session:
             new_session = Session(
@@ -84,13 +84,12 @@ class SessionApi:
             expire_time=datetime.datetime.now() + datetime.timedelta(seconds=access_token['expires_in'])
         )
     
-    async def login_to_backend(self, state: State, oauth_session: OAuthSession) -> BwSession:
-        async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
-            async with session.post(
-                self.url(Root.get().api.v1.auth.login.discord.resolve())
-            ) as response:
-                response.raise_for_status()
-                result = await response.json()
+    async def login_to_backend(self, oauth_session: OAuthSession) -> BwSession:
+        from bw.interface import Interface
+        try:
+            result = await Interface().login_to_backend(oauth_session)
+        except aiohttp.ClientConnectionError as e:
+            raise CannotLogin(e)
         
         return BwSession(
             token = result.get('session_token'),
