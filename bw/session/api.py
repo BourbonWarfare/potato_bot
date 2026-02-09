@@ -20,7 +20,7 @@ class SessionApi:
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
-        auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
+        auth = (ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data, auth=auth) as response:
                 try:
