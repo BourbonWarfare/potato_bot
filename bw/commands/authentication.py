@@ -52,6 +52,7 @@ class Authentication(commands.Cog, name='Authentication'):
     
         try:
             access_code = await get_code(state)
-        except aiohttp.ClientResponseError:
+        except aiohttp.ClientResponseError as e:
+            logger.warning(f'Could not login: {e}')
             raise CannotLogin()
         await SessionApi().start_oauth_session(State.state, discord_id=interaction.user.id, access_code=access_code)
