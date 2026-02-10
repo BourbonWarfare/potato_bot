@@ -1,5 +1,6 @@
 import discord
 import logging
+import aiohttp
 from enum import StrEnum
 from discord import app_commands
 from discord.ext import commands
@@ -77,6 +78,14 @@ class Staff(commands.Cog, name='Staff Commands'):
         try:
             if await perform(option=option, server=server):
                 embed = embeds.successful_arma_server_operation(interaction.user, option, server)
+            else:
+                embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+        except aiohttp.ClientResponseError as e:
+            logger.warning(f'Failed to operate on server: {e}')
+            if e.status == 401 or e.status == 403:
+                embed = embeds.not_permitted()
+            elif e.status >= 500:
+                embed = embeds.backend_failure()
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         except Exception as e:

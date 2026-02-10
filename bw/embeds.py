@@ -12,6 +12,22 @@ def default() -> discord.Embed:
     )
 
 
+def backend_failure() -> discord.Embed:
+    return discord.Embed(
+        title="🔨 Something is wrong with the server...",
+        description="An error has occured that the bot cannot handle. Please ping techmods.",
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
+def not_permitted() -> discord.Embed:
+    return discord.Embed(
+        title="❌ You are not allowed to do that",
+        description="You have tried to perform an action that you do not have permissions for",
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
 def get_bwmf() -> discord.Embed:
     return discord.Embed(
         title='📂 CLICK HERE to download',

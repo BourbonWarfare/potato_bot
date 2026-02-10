@@ -121,6 +121,7 @@ class User(Interface):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve())
                 ) as response:
+                    response.raise_for_status()
                     return response.status == 200
 
     async def stop_arma_server(self, server: str) -> bool:
@@ -129,6 +130,7 @@ class User(Interface):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve())
                 ) as response:
+                    response.raise_for_status()
                     return response.status == 200
 
     async def restart_arma_server(self, server: str) -> bool:
@@ -137,6 +139,7 @@ class User(Interface):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve())
                 ) as response:
+                    response.raise_for_status()
                     return response.status == 200
 
     async def update_arma_server(self, server: str) -> bool:
@@ -145,6 +148,7 @@ class User(Interface):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
+                    response.raise_for_status()
                     return response.status == 200
 
     async def update_arma_server_mods(self, server: str) -> bool:
@@ -154,4 +158,5 @@ class User(Interface):
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
                     headers=client.auth_header,
                 ) as response:
+                    response.raise_for_status()
                     return response.status == 200
