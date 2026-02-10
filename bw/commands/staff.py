@@ -81,7 +81,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         except aiohttp.ClientResponseError as e:
-            logger.warning(f'Failed to operate on server: {e}')
+            logger.warning(f'User {interaction.user} failed to operate on server: {e}')
             if e.status == 401 or e.status == 403:
                 embed = embeds.not_permitted()
             elif e.status >= 500:
