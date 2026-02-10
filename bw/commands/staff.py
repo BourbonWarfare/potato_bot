@@ -59,7 +59,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             oauth_session = await Authentication(self.bot).internal_login_oauth(interaction)
             bw_session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
 
-        interface = User(oauth_session, bw_session)
+        interface = User(oauth_session=oauth_session, bw_session=bw_session)
 
         async def perform(option: str, server: str) -> bool:
             if option == Command.START:

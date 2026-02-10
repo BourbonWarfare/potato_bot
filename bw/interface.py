@@ -112,7 +112,7 @@ class Interface:
 
 class User(Interface):
     def __init__(self, bw_session: BwSession, oauth_session: OAuthSession):
-        self.client = UserClient(bw_session, oauth_session)
+        self.client = UserClient(bw_session=bw_session, oauth_session=oauth_session)
         super().__init__()
 
     async def start_arma_server(self, server: str) -> bool:
