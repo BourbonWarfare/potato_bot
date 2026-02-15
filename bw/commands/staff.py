@@ -79,17 +79,14 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         try:
             response = await perform(option=option, server=server)
-            if await perform(option=option, server=server):
-                embed = embeds.successful_arma_server_operation(
-                    interaction.user,
-                    option,
-                    server,
-                    server_status=response.get('server_status', 'Unknown'),
-                    hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown'),
-                )
-            else:
-                embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+            embed = embeds.successful_arma_server_operation(
+                interaction.user,
+                option,
+                server,
+                server_status=response.get('server_status', 'Unknown'),
+                hc_status=response.get('hc_status', 'Unknown'),
+                startup_status=response.get('startup_status', 'Unknown'),
+            )
         except aiohttp.ClientResponseError as e:
             logger.warning(f'User {interaction.user} failed to operate on server: {e}')
             if e.status == 401 or e.status == 403:
