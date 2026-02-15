@@ -27,8 +27,8 @@ class SessionExpired(SessionError):
     def __init__(self):
         super().__init__('Session is expired')
 
-class BwSessionExpired(SessionError):
+class BwSessionExpired(SessionExpired):
     pass
 
-class DiscordSessionExpired(SessionError):
+class DiscordSessionExpired(SessionExpired):
     pass
