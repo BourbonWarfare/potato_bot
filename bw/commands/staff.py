@@ -64,7 +64,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         interface = User(oauth_session=oauth_session, bw_session=bw_session)
 
-        async def perform(option: str, server: str) -> bool:
+        async def perform(option: str, server: str) -> dict:
             if option == Command.START:
                 return await interface.start_arma_server(server)
             elif option == Command.STOP:
@@ -75,11 +75,19 @@ class Staff(commands.Cog, name='Staff Commands'):
                 return await interface.update_arma_server(server)
             elif option == Command.UPDATE_MODS:
                 return await interface.update_arma_server_mods(server)
-            return False
+            return {}
 
         try:
+            response = await perform(option=option, server=server)
             if await perform(option=option, server=server):
-                embed = embeds.successful_arma_server_operation(interaction.user, option, server)
+                embed = embeds.successful_arma_server_operation(
+                    interaction.user,
+                    option,
+                    server,
+                    server_status=response.get('server_status', 'Unknown'),
+                    hc_status=response.get('hc_status', 'Unknown'),
+                    startup_status=response.get('startup_status', 'Unknown'),
+                )
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         except aiohttp.ClientResponseError as e:

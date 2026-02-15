@@ -178,12 +178,16 @@ def failed_to_login_with_discord() -> discord.Embed:
     )
 
 
-def successful_arma_server_operation(user: discord.User, operation: str, server: str) -> discord.Embed:
-    return discord.Embed(
+def successful_arma_server_operation(user: discord.User, operation: str, server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+    embed = discord.Embed(
         title='Success!',
         description=f'{user.mention} has succesfully performed "{operation}" on server {server}',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
+    embed.add_field('Server Status', server_status, True)
+    embed.add_field('HC Status', hc_status, True)
+    embed.add_field('Process Status', startup_status, True)
+    return embed
 
 
 def arma_server_not_found(user: discord.User, operation: str, server: str) -> discord.Embed:
