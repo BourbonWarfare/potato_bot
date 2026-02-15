@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from bw.environment import ENVIRONMENT
 from bw.settings import GLOBAL_CONFIGURATION
+from bw.arma_server_cache import ArmaServerCache
 
 logger = logging.getLogger('bw.state')
 
@@ -26,6 +27,7 @@ class State:
 
     def __init__(self):
         self.engine_map = {}
+        self.arma_server_cache_ = ArmaServerCache()
         State.state = self
 
         if 'db_name' in GLOBAL_CONFIGURATION:
@@ -34,6 +36,10 @@ class State:
 
     def register_database(self, database_name: str, echo=False):
         self.engine_map[database_name] = DatabaseConnection(self._setup_engine(echo=echo, db_name=database_name))
+
+    @property
+    def arma_server_cache(self) -> ArmaServerCache:
+        return self.arma_server_cache_
 
     @property
     def default_engine(self) -> DatabaseConnection:

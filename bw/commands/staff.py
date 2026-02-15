@@ -16,12 +16,7 @@ from bw.commands.utils import get_session
 logger = logging.getLogger('bw.potbot.command')
 
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
-    try:
-        servers = await Interface().get_arma_servers()
-    except aiohttp.ClientResponseError as e:
-        logger.warning(f'Could not get arma servers: {e}')
-        return []
-
+    servers = State.state.arma_server_cache.servers
     if len(servers) == 0:
         logger.warning('Could not find any configured servers')
         return []
