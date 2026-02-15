@@ -111,7 +111,7 @@ class Interface:
     
     async def get_arma_servers(self) -> list[str]:
         async with aiohttp.ClientSession() as session:
-            async with session.post(self.url(Root.get().api.v1.server_ops.arma.servers.resolve())) as response:
+            async with session.get(self.url(Root.get().api.v1.server_ops.arma.servers.resolve())) as response:
                 response.raise_for_status()
                 return await response.json().get('servers')
 
