@@ -93,7 +93,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         except RefreshFailed as e:
-            logger.warning(f'{e}. Reattempting...')
+            logger.warning(f'{e}. Reattempting whole method...')
             SessionApi().revoke_user_session(State.state, interaction.user.id)
             self.server_management(interaction=interaction, server=server, option=option)
             return

@@ -45,7 +45,6 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
             logger.warning('Cannot login, retrying login')
             SessionApi().revoke_user_session(State.state, interaction.user.id)
             bw_session, oauth_session = await show_login()
-    else:
-        await interaction.response.defer()
-    
+
+    await interaction.response.defer()
     return bw_session, oauth_session
