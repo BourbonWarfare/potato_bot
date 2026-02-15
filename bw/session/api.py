@@ -97,8 +97,8 @@ class SessionApi:
             existing_session = session.scalar(query)
             if not existing_session:
                 raise NoSuchSession(bw_session)
-            existing_session.session_token = bw_session.token,
-            existing_session.session_expire = bw_session.expire_time,
+            existing_session.session_token = bw_session.token
+            existing_session.session_expire = bw_session.expire_time
 
         return bw_session
 
