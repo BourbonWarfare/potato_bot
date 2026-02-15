@@ -84,7 +84,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             elif e.status == 404:
                 embed = embeds.arma_server_not_found(interaction.user, option, server)
             elif e.status >= 500:
-                embed = embeds.backend_failure()
+                embed = embeds.server_management_failure(e.message)
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         except RefreshFailed as e:

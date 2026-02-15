@@ -213,3 +213,11 @@ def arma_server_status(server: str, mission: str, state: str, map: str, players:
     embed.add_field(name='Map', value=map, inline=True)
     embed.add_field(name='Players', value=f'{players}/{max_players}', inline=True)
     return embed
+
+
+def server_management_failure(context: str) -> discord.Embed:
+    return discord.Embed(
+        title="🔨 Failed to operate on ARMA server",
+        description=f"We could not complete the operation on the server: {context}",
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
