@@ -87,7 +87,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             logger.warning(f'User {interaction.user} failed to operate on server: {e}')
             if e.status == 401 or e.status == 403:
                 embed = embeds.not_permitted()
-            elif e.status == 403:
+            elif e.status == 404:
                 embed = embeds.arma_server_not_found(interaction.user, option, server)
             elif e.status >= 500:
                 embed = embeds.backend_failure()
