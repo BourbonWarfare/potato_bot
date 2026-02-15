@@ -2,7 +2,6 @@ import asyncio
 import logging
 import aiohttp
 import datetime
-from bw.interface import Interface
 
 logger = logging.getLogger('bw.arma_server_cache')
 
@@ -16,6 +15,7 @@ class ArmaServerCache:
         self.last_refresh_ = None
     
     async def refresh(self):
+        from bw.interface import Interface
         try:
             logger.info('Refreshing server cache')
             servers = await Interface().get_arma_servers()
