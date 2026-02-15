@@ -184,9 +184,9 @@ def successful_arma_server_operation(user: discord.User, operation: str, server:
         description=f'{user.mention} has succesfully performed "{operation}" on server {server}',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    embed.add_field('Server Status', server_status, True)
-    embed.add_field('HC Status', hc_status, True)
-    embed.add_field('Process Status', startup_status, True)
+    embed.add_field(name='Server Status', value=server_status, inline=True)
+    embed.add_field(name='HC Status', value=hc_status, inline=True)
+    embed.add_field(name='Process Status', value=startup_status, inline=True)
     return embed
 
 
