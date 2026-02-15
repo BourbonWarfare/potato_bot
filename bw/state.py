@@ -8,7 +8,6 @@ from bw.settings import GLOBAL_CONFIGURATION
 
 logger = logging.getLogger('bw.state')
 
-
 class DatabaseConnection:
     def __init__(self, engine):
         self.engine = engine

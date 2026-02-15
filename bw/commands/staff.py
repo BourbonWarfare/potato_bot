@@ -6,8 +6,9 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
+from bw.utils import levenshtein_distance
 from bw.error import NoSuchSession
-from bw.interface import User
+from bw.interface import Interface, User
 from bw.session.api import SessionApi
 from bw.state import State
 from bw.commands.authentication import Authentication
@@ -15,12 +16,18 @@ from bw.commands.authentication import Authentication
 logger = logging.getLogger('bw.potbot.command')
 
 
-class Server(StrEnum):
-    MAIN = 'Main Server'
-    ALTERNATE = 'Alternate/Offnight Server'
-    TRAINING = 'Training Server'
-    ALL = 'All Servers'
+async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
+    try:
+        servers = await Interface().get_arma_servers()
+    except aiohttp.ClientResponseError:
+        logger.warning(f'Could not get arma servers!')
+        return []
 
+    if len(servers) == 0:
+        return []
+
+    servers_with_distances = sorted([(server, levenshtein_distance(current, server)) for server in servers], key=lambda a, b: a[0] < b[0])
+    return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances]
 
 class Command(StrEnum):
     START = 'Start'
@@ -38,15 +45,14 @@ class Staff(commands.Cog, name='Staff Commands'):
         name='armaserver',
         description='Manage an ARMA server.',
     )
+    @app_commands.autocomplete(server=arma_servers_autocomplete)
     @app_commands.choices(
-        server=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Server],
         option=[app_commands.Choice(name=choice.value, value=choice.value) for choice in Command],
     )
     @app_commands.describe(
         server='The server which to perform the operation on.', option='The operation you wish to perform on the server.'
     )
     async def server_management(self, interaction: discord.Interaction, server: str, option: str):
-        server = Server(server)
         option = Command(option)
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
 

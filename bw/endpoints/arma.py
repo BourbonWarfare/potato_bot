@@ -35,9 +35,14 @@ class Server(Endpoint):
     healthcheck = Healthcheck()
 
 
+class Servers(Endpoint):
+    endpoint = 'servers'
+
+
 class Arma(Endpoint):
     endpoint = 'arma'
     server = Server()
+    servers = Servers()
 
 
 class ServerOps(Endpoint):
