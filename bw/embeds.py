@@ -229,10 +229,10 @@ def arma_server_status(server: str, mission: str, state: str, map: str, players:
         title=f'Status of server "{server}"',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    embed.add_field(name='Mission', value=mission, inline=True)
-    embed.add_field(name='Server State', value=state, inline=True)
-    embed.add_field(name='Map', value=map, inline=True)
-    embed.add_field(name='Players', value=f'{players}/{max_players}', inline=True)
+    embed.add_field(name='Mission', value=mission, inline=False)
+    embed.add_field(name='Server State', value=state, inline=False)
+    embed.add_field(name='Map', value=map, inline=False)
+    embed.add_field(name='Players', value=f'{players}/{max_players}', inline=False)
     return embed
 
 
