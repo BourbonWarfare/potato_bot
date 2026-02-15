@@ -29,12 +29,12 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
     return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
 
 class Command(StrEnum):
+    STATUS = 'Status'
     START = 'Start'
     STOP = 'Stop'
     RESTART = 'Restart'
     UPDATE_GAME = 'Update Server'
     UPDATE_MODS = 'Update Mods'
-    STATUS = 'Status'
 
 
 class Staff(commands.Cog, name='Staff Commands'):

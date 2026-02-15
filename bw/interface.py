@@ -170,7 +170,7 @@ class User(Interface):
     async def get_arma_server_status(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.user_session() as client:
-                async with session.post(
+                async with session.get(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).status.resolve()),
                     headers=client.auth_header,
                 ) as response:
