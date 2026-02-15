@@ -120,7 +120,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                         server=server
                     )
             else:
-                if response.startup_status == 'Failed':
+                if response.get('startup_status', 'Failed') == 'Failed':
                     embed = embeds.failed_arma_server_operation_with_status(
                         interaction.user,
                         option,
