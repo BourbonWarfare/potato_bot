@@ -74,7 +74,6 @@ class SessionApi:
 
     async def login_to_backend(self, oauth_session: OAuthSession) -> BwSession:
         from bw.interface import Interface
-
         try:
             result = await Interface().login_to_backend(oauth_session)
         except aiohttp.ClientResponseError as e:
