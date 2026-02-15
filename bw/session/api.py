@@ -12,6 +12,8 @@ import datetime
 
 class SessionApi:
     async def start_oauth_session(self, state: State, discord_id: DiscordSnowflake, access_code: str) -> OAuthSession:
+        self.revoke_user_session(state, discord_id)
+
         data = {'grant_type': 'authorization_code', 'code': access_code, 'redirect_uri': ENVIRONMENT.discord_oauth_redirect_uri()}
         auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
         async with aiohttp.ClientSession(auth=auth) as session:
@@ -28,7 +30,11 @@ class SessionApi:
             refresh_token=access_token_response['refresh_token'],
             expire_time=datetime.datetime.now() + datetime.timedelta(seconds=float(access_token_response['expires_in'])),
         )
-        bw_session = await self.login_to_backend(state, oauth_session)
+        try:
+            bw_session = await self.login_to_backend(state, oauth_session)
+        except NoSuchSession:
+            # expected, we are creating a new session afterall
+            pass
 
         with state.Session.begin() as session:
             new_session = Session(
