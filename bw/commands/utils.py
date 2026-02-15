@@ -30,8 +30,8 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
     except DiscordSessionExpired:
         logger.info(f'Discord Session expired for {interaction.user}, attempting to refresh')
         try:
-            oauth_session = SessionApi().refresh_oauth_session(State.state, oauth_session)
-            bw_session = SessionApi().login_to_backend(State.state, oauth_session)
+            oauth_session = await SessionApi().refresh_oauth_session(State.state, oauth_session)
+            bw_session = await SessionApi().login_to_backend(State.state, oauth_session)
         except (RefreshFailed, CannotLogin) as e:
             logger.info(f'Could not refresh session: {e}. Re-logging in')
             SessionApi().revoke_user_session(State.state, interaction.user.id)
@@ -40,7 +40,7 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
         logger.info(f'BW Session expired for {interaction.user}, attemptign to re-login')
         oauth_session = SessionApi().get_discord_session_from_discord_id(State.state, interaction.user.id)
         try:
-            bw_session = SessionApi().login_to_backend(State.state, oauth_session)
+            bw_session = await SessionApi().login_to_backend(State.state, oauth_session)
         except CannotLogin:
             logger.warning('Cannot login, retrying login')
             SessionApi().revoke_user_session(State.state, interaction.user.id)
