@@ -28,7 +28,7 @@ class SessionApi:
             refresh_token=access_token_response['refresh_token'],
             expire_time=datetime.datetime.now() + datetime.timedelta(seconds=float(access_token_response['expires_in'])),
         )
-        bw_session = await self.login_to_backend(oauth_session)
+        bw_session = await self.login_to_backend(state, oauth_session)
 
         with state.Session.begin() as session:
             new_session = Session(

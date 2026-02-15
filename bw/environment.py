@@ -107,7 +107,7 @@ class Local(Environment):
 
 class Test(Environment):
     def db_echo(self) -> bool:
-        return True
+        return False
 
     def discord_oauth_redirect_uri(self):
         return 'https://staging.bourbonwarfare.com/auth/login/discord'
