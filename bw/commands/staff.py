@@ -19,14 +19,18 @@ logger = logging.getLogger('bw.potbot.command')
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
     try:
         servers = await Interface().get_arma_servers()
-    except aiohttp.ClientResponseError:
-        logger.warning(f'Could not get arma servers!')
+    except aiohttp.ClientResponseError as e:
+        logger.warning(f'Could not get arma servers: {e}')
         return []
 
     if len(servers) == 0:
+        logger.warning('Could not find any configured servers')
         return []
 
-    servers_with_distances = sorted([(server, levenshtein_distance(current, server)) for server in servers], key=lambda a, b: a[0] < b[0])
+    servers_with_distances = sorted(
+        [(server, levenshtein_distance(current, server)) for server in servers],
+        key=lambda a: a[1]
+    )
     logger.debug(f'{servers_with_distances}')
     return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
 
