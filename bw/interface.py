@@ -113,7 +113,7 @@ class Interface:
         async with aiohttp.ClientSession() as session:
             async with session.get(self.url(Root.get().api.v1.server_ops.arma.servers.resolve())) as response:
                 response.raise_for_status()
-                return await response.json().get('servers')
+                return (await response.json()).get('servers')
 
 
 class User(Interface):
