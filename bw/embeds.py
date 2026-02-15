@@ -186,6 +186,13 @@ def successful_arma_server_operation(user: discord.User, operation: str, server:
     )
 
 
+def arma_server_not_found(user: discord.User, operation: str, server: str) -> discord.Embed:
+    return discord.Embed(
+        title='What server are you talking about?',
+        description=f'{user.mention} has tried to perform "{operation}" on server {server}, but "{server}" does not exist!',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+
 def failed_arma_server_operation(user: discord.User, operation: str, server: str) -> discord.Embed:
     return discord.Embed(
         title='Failure :(', description=f'{user.mention} tried "{operation}" but it has failed on server {server}', colour=ENVIRONMENT.embed_colour_staff()

@@ -7,10 +7,9 @@ from discord.ext import commands
 
 from bw import embeds
 from bw.utils import levenshtein_distance
-from bw.error import NoSuchSession, BwSessionExpired, DiscordSessionExpired, RefreshFailed, CannotLogin
+from bw.error import RefreshFailed
 from bw.interface import Interface, User
 from bw.session.api import SessionApi
-from bw.session.oauth import BwSession, OAuthSession
 from bw.state import State
 from bw.commands.utils import get_session
 
@@ -88,6 +87,8 @@ class Staff(commands.Cog, name='Staff Commands'):
             logger.warning(f'User {interaction.user} failed to operate on server: {e}')
             if e.status == 401 or e.status == 403:
                 embed = embeds.not_permitted()
+            elif e.status == 403:
+                embed = embeds.arma_server_not_found(interaction.user, option, server)
             elif e.status >= 500:
                 embed = embeds.backend_failure()
             else:
