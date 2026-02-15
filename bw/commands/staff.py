@@ -15,7 +15,6 @@ from bw.commands.utils import get_session
 
 logger = logging.getLogger('bw.potbot.command')
 
-
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
     try:
         servers = await Interface().get_arma_servers()
