@@ -97,14 +97,24 @@ class Staff(commands.Cog, name='Staff Commands'):
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         else:
             if option == Command.STATUS:
-                embed = embeds.arma_server_status(
-                    server,
-                    mission=response.get('mission', 'No Mission Selected'),
-                    state=response.get('state', 'Unknown'),
-                    map=response.get('map', 'None'),
-                    players=response.get('players', -1),
-                    max_players=response.get('max_players', -1),
-                )
+                result = response.get('result', 'failure')
+                if result == 'success':
+                    embed = embeds.arma_server_status(
+                        server,
+                        mission=response.get('mission', 'None Selected'),
+                        state=response.get('state', 'Unknown'),
+                        map=response.get('map', 'None'),
+                        players=response.get('players', -1),
+                        max_players=response.get('max_players', -1),
+                    )
+                elif result == 'failure':
+                    embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+                elif result == 'unresponsive':
+                    embed = embeds.arma_server_unresponsive(
+                        interaction.user,
+                        operation=option,
+                        server=server
+                    )
             else:
                 embed = embeds.successful_arma_server_operation(
                     interaction.user,
