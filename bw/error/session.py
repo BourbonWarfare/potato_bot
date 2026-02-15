@@ -7,8 +7,8 @@ class SessionError(BwDiscordError):
 
 
 class RefreshFailed(SessionError):
-    def __init__(self):
-        super().__init__('Could not refresh OAuth token')
+    def __init__(self, error: Exception):
+        super().__init__(f'Could not refresh OAuth token: {error}')
 
 
 class NoSuchSession(SessionError):

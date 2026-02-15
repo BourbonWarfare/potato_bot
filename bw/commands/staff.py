@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from bw import embeds
 from bw.utils import levenshtein_distance
-from bw.error import NoSuchSession, BwSessionExpired, DiscordSessionExpired
+from bw.error import NoSuchSession, BwSessionExpired, DiscordSessionExpired, RefreshFailed
 from bw.interface import Interface, User
 from bw.session.api import SessionApi
 from bw.state import State
@@ -105,6 +105,11 @@ class Staff(commands.Cog, name='Staff Commands'):
                 embed = embeds.backend_failure()
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+        except RefreshFailed as e:
+            logger.warning(f'{e}. Reattempting...')
+            SessionApi().revoke_user_session(State.state, interaction.user.id)
+            self.server_management(interaction=interaction, server=server, option=option)
+            return
         except Exception as e:
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)

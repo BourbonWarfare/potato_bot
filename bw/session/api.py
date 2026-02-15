@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from bw.state import State
 from bw.error import RefreshFailed, NoSuchSession, CannotLogin
@@ -52,8 +52,8 @@ class SessionApi:
             async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data, auth=auth) as response:
                 try:
                     response.raise_for_status()
-                except aiohttp.ClientResponseError:
-                    raise RefreshFailed()
+                except aiohttp.ClientResponseError as e:
+                    raise RefreshFailed(e) from e
 
                 access_token = await response.json()
 
@@ -100,3 +100,8 @@ class SessionApi:
             if existing_session is None:
                 raise NoSuchSession()
             return OAuthSession.from_session(existing_session)
+    
+    def revoke_user_session(self, state: State, discord_id: DiscordSnowflake):
+        with state.Session.begin() as session:
+            query = delete(Session).where(Session.discord_id == discord_id)
+            session.execute(query)
