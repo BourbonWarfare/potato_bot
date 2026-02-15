@@ -12,8 +12,12 @@ class RefreshFailed(SessionError):
 
 
 class NoSuchSession(SessionError):
-    def __init__(self):
+    from bw.session.oauth import BwSession, OAuthSession
+
+    session: None | BwSession | OAuthSession
+    def __init__(self, session: None | BwSession | OAuthSession = None):
         super().__init__('No such session exists')
+        self.session = session
 
 
 class CannotLogin(SessionError):

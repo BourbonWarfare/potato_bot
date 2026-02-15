@@ -32,9 +32,9 @@ class SessionApi:
         )
         try:
             bw_session = await self.login_to_backend(state, oauth_session)
-        except NoSuchSession:
+        except NoSuchSession as e:
             # expected, we are creating a new session afterall
-            pass
+            bw_session = e.session
 
         with state.Session.begin() as session:
             new_session = Session(
@@ -96,7 +96,7 @@ class SessionApi:
             query = select(Session).where(Session.oauth_token == oauth_session.access_token)
             existing_session = session.scalar(query)
             if not existing_session:
-                raise NoSuchSession()
+                raise NoSuchSession(bw_session)
             existing_session.session_token = bw_session.token,
             existing_session.session_expire = bw_session.expire_time,
 
