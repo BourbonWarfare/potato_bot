@@ -34,6 +34,7 @@ class Command(StrEnum):
     RESTART = 'Restart'
     UPDATE_GAME = 'Update Server'
     UPDATE_MODS = 'Update Mods'
+    STATUS = 'Status'
 
 
 class Staff(commands.Cog, name='Staff Commands'):
@@ -51,7 +52,7 @@ class Staff(commands.Cog, name='Staff Commands'):
     @app_commands.describe(
         server='The server which to perform the operation on.', option='The operation you wish to perform on the server.'
     )
-    async def server_management(self, interaction: discord.Interaction, server: str, option: str):
+    async def server_management(self, interaction: discord.Interaction, option: str, server: str):
         option = Command(option)
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
 
@@ -70,18 +71,12 @@ class Staff(commands.Cog, name='Staff Commands'):
                 return await interface.update_arma_server(server)
             elif option == Command.UPDATE_MODS:
                 return await interface.update_arma_server_mods(server)
+            elif option == Command.STATUS:
+                return await interface.get_arma_server_status(server)
             return {}
 
         try:
             response = await perform(option=option, server=server)
-            embed = embeds.successful_arma_server_operation(
-                interaction.user,
-                option,
-                server,
-                server_status=response.get('server_status', 'Unknown'),
-                hc_status=response.get('hc_status', 'Unknown'),
-                startup_status=response.get('startup_status', 'Unknown'),
-            )
         except aiohttp.ClientResponseError as e:
             logger.warning(f'User {interaction.user} failed to operate on server: {e}')
             if e.status == 401 or e.status == 403:
@@ -100,4 +95,23 @@ class Staff(commands.Cog, name='Staff Commands'):
         except Exception as e:
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+        else:
+            if option == Command.STATUS:
+                embed = embeds.arma_server_status(
+                    server,
+                    mission=response.get('mission', 'No Mission Selected'),
+                    state=response.get('state', 'Unknown'),
+                    map=response.get('map', 'None'),
+                    players=response.get('players', -1),
+                    max_players=response.get('max_players', -1),
+                )
+            else:
+                embed = embeds.successful_arma_server_operation(
+                    interaction.user,
+                    option,
+                    server,
+                    server_status=response.get('server_status', 'Unknown'),
+                    hc_status=response.get('hc_status', 'Unknown'),
+                    startup_status=response.get('startup_status', 'Unknown'),
+                )
         await interaction.followup.send(embed=embed)

@@ -201,3 +201,15 @@ def failed_arma_server_operation(user: discord.User, operation: str, server: str
     return discord.Embed(
         title='Failure :(', description=f'{user.mention} tried "{operation}" but it has failed on server {server}', colour=ENVIRONMENT.embed_colour_staff()
     )
+
+
+def arma_server_status(server: str, mission: str, state: str, map: str, players: int, max_players: int) -> discord.Embed:
+    embed = discord.Embed(
+        title=f'Status of server "{server}"',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+    embed.add_field(name='Mission', value=mission, inline=True)
+    embed.add_field(name='Server State', value=state, inline=True)
+    embed.add_field(name='Map', value=map, inline=True)
+    embed.add_field(name='Players', value=f'{players}/{max_players}', inline=True)
+    return embed

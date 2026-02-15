@@ -166,3 +166,13 @@ class User(Interface):
                 ) as response:
                     response.raise_for_status()
                     return await response.json()
+
+    async def get_arma_server_status(self, server: str) -> dict:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.user_session() as client:
+                async with session.post(
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).status.resolve()),
+                    headers=client.auth_header,
+                ) as response:
+                    response.raise_for_status()
+                    return await response.json()

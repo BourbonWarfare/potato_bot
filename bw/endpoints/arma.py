@@ -25,6 +25,10 @@ class Healthcheck(Endpoint):
     endpoint = 'healthcheck'
 
 
+class Status(Endpoint):
+    endpoint = 'status'
+
+
 class Server(Endpoint):
     endpoint = VariableEndpoint()
     start = Start()
@@ -33,6 +37,7 @@ class Server(Endpoint):
     update = Update()
     update_mods = UpdateMods()
     healthcheck = Healthcheck()
+    status = Status()
 
 
 class Servers(Endpoint):
