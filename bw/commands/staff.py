@@ -27,6 +27,7 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
         return []
 
     servers_with_distances = sorted([(server, levenshtein_distance(current, server)) for server in servers], key=lambda a, b: a[0] < b[0])
+    logger.debug(f'{servers_with_distances}')
     return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances]
 
 class Command(StrEnum):
