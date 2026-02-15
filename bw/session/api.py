@@ -40,7 +40,6 @@ class SessionApi:
                 expires_seconds=int(access_token_response['expires_in']),
             )
             session.add(new_session)
-            session.commit()
 
         return oauth_session
 
@@ -57,32 +56,45 @@ class SessionApi:
 
                 access_token = await response.json()
 
-        with state.Session.begin() as session:
-            query = select(Session).where(Session.refresh_token == oauth_session.refresh_token)
-            existing_session: Session = session.scalar(query)
-            existing_session.token = access_token['access_token']
-            existing_session.refresh_token = access_token['refresh_token']
-            existing_session.expires_seconds = access_token['expires_in']
-            existing_session.session_start = datetime.datetime.now()
-            session.commit()
-
-        return OAuthSession(
+        oauth_session = OAuthSession(
             access_token=access_token['access_token'],
             refresh_token=access_token['refresh_token'],
             expire_time=datetime.datetime.now() + datetime.timedelta(seconds=access_token['expires_in']),
         )
+        with state.Session.begin() as session:
+            query = select(Session).where(Session.refresh_token == oauth_session.refresh_token)
+            existing_session = session.scalar(query)
+            if not existing_session:
+                raise NoSuchSession()
 
-    async def login_to_backend(self, oauth_session: OAuthSession) -> BwSession:
+            existing_session.token = oauth_session.access_token
+            existing_session.refresh_token = oauth_session.refresh_token
+            existing_session.expires_seconds = access_token['expires_in']
+            existing_session.session_start = datetime.datetime.now()
+
+        return oauth_session
+
+    async def login_to_backend(self, state: State, oauth_session: OAuthSession) -> BwSession:
         from bw.interface import Interface
         try:
             result = await Interface().login_to_backend(oauth_session)
         except aiohttp.ClientResponseError as e:
             raise CannotLogin(e)
 
-        return BwSession(
+        bw_session = BwSession(
             token=result.get('session_token'),
             expire_time=datetime.datetime.fromisoformat(result.get('expire_time')),
         )
+
+        with state.Session.begin() as session:
+            query = select(Session).where(Session.oauth_token == oauth_session.access_token)
+            existing_session = session.scalar(query)
+            if not existing_session:
+                raise NoSuchSession()
+            existing_session.session_token = bw_session.token,
+            existing_session.session_expire = bw_session.expire_time,
+
+        return bw_session
 
     def get_bw_session_from_discord_id(self, state: State, discord_id: DiscordSnowflake) -> BwSession:
         with state.Session.begin() as session:
