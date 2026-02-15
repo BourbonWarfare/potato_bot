@@ -22,3 +22,13 @@ class CannotLogin(SessionError):
             super().__init__(f'An error has occured while logging in: {context}')
         else:
             super().__init__('An error has occured while logging in')
+
+class SessionExpired(SessionError):
+    def __init__(self):
+        super().__init__('Session is expired')
+
+class BwSessionExpired(SessionError):
+    pass
+
+class DiscordSessionExpired(SessionError):
+    pass

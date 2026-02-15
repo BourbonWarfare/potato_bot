@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from bw import embeds
 from bw.utils import levenshtein_distance
-from bw.error import NoSuchSession
+from bw.error import NoSuchSession, BwSessionExpired, DiscordSessionExpired
 from bw.interface import Interface, User
 from bw.session.api import SessionApi
 from bw.state import State
@@ -64,10 +64,16 @@ class Staff(commands.Cog, name='Staff Commands'):
         try:
             logger.info(f'Loading session for {interaction.user}')
             bw_session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
+            if bw_session.is_expired():
+                raise BwSessionExpired()
+
             oauth_session = SessionApi().get_discord_session_from_discord_id(State.state, interaction.user.id)
+            if oauth_session.is_expired():
+                raise DiscordSessionExpired()
+
             await interaction.response.defer()
-        except NoSuchSession:
-            logger.info(f'No session found for {interaction.user}, creating new one')
+        except (NoSuchSession, BwSessionExpired, DiscordSessionExpired):
+            logger.info(f'Session invalid for {interaction.user}, creating new one')
             oauth_session = await Authentication(self.bot).internal_login_oauth(interaction)
             bw_session = SessionApi().get_bw_session_from_discord_id(State.state, interaction.user.id)
 
