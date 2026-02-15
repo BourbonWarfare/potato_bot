@@ -212,6 +212,18 @@ def failed_arma_server_operation(user: discord.User, operation: str, server: str
     )
 
 
+def failed_arma_server_operation_with_status(user: discord.User, operation: str, server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+    embed = discord.Embed(
+        title='Failed!',
+        description=f'{user.mention} has performed "{operation}" on server {server}',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+    embed.add_field(name='Server Status', value=server_status, inline=True)
+    embed.add_field(name='HC Status', value=hc_status, inline=True)
+    embed.add_field(name='Process Status', value=startup_status, inline=True)
+    return embed
+
+
 def arma_server_status(server: str, mission: str, state: str, map: str, players: int, max_players: int) -> discord.Embed:
     embed = discord.Embed(
         title=f'Status of server "{server}"',

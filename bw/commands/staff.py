@@ -1,6 +1,7 @@
 import discord
 import logging
 import aiohttp
+import time
 from enum import StrEnum
 from discord import app_commands
 from discord.ext import commands
@@ -17,6 +18,8 @@ logger = logging.getLogger('bw.potbot.command')
 
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
     servers = State.state.arma_server_cache.servers
+    logger.debug('Starting autocomplete')
+    start_time = time.time()
     if len(servers) == 0:
         logger.warning('Could not find any configured servers')
         return []
@@ -26,6 +29,7 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
         key=lambda a: a[1]
     )
     logger.debug(f'{servers_with_distances}')
+    logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
     return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
 
 class Command(StrEnum):
@@ -116,12 +120,22 @@ class Staff(commands.Cog, name='Staff Commands'):
                         server=server
                     )
             else:
-                embed = embeds.successful_arma_server_operation(
-                    interaction.user,
-                    option,
-                    server,
-                    server_status=response.get('server_status', 'Unknown'),
-                    hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown'),
-                )
+                if response.startup_status == 'Failed':
+                    embed = embeds.failed_arma_server_operation_with_status(
+                        interaction.user,
+                        option,
+                        server,
+                        server_status=response.get('server_status', 'Unknown'),
+                        hc_status=response.get('hc_status', 'Unknown'),
+                        startup_status=response.get('startup_status', 'Unknown'),
+                    )
+                else:
+                    embed = embeds.successful_arma_server_operation(
+                        interaction.user,
+                        option,
+                        server,
+                        server_status=response.get('server_status', 'Unknown'),
+                        hc_status=response.get('hc_status', 'Unknown'),
+                        startup_status=response.get('startup_status', 'Unknown'),
+                    )
         await interaction.followup.send(embed=embed)
