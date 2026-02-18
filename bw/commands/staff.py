@@ -196,6 +196,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 return await interface.update_arma_server(server)
             return {}
 
+        embed = None
         try:
             response = await perform(option=update_option, server=server)
         except aiohttp.ClientResponseError as e:
@@ -217,5 +218,23 @@ class Staff(commands.Cog, name='Staff Commands'):
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, update_option, server)
         else:
-            embed = embeds.get_bwmf()
-        await interaction.followup.send(embed=embed)
+            if update_option == UpdateChoices.MODS:
+                servers: dict[str, dict] = response['affected_servers']
+                mods: list[dict] = response['updated_mods']
+                embeds = []
+                for server_name, server_status in servers.items():
+                    embeds.append(embeds.arma_server_status(
+                        server_name,
+                        server_status=response.get('server_status', 'Unknown'),
+                        hc_status=response.get('hc_status', 'Unknown'),
+                        startup_status=response.get('startup_status', 'Unknown'),
+                    ))
+                mod_update_log = []
+                for mod in mods.items():
+                    mod_update_log.append(f'{mod.get('title', 'Unknown')}({mod.get('workshop_id', 'No Workshop ID')})')
+                await interaction.followup.send(f'Mods Updated:\n```{"\n".join(mod_update_log)}```')
+            else:
+                await interaction.followup.send(embed=embed)
+        finally:
+            if embed is not None:
+                await interaction.followup.send(embed=embed)

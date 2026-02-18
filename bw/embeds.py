@@ -236,6 +236,17 @@ def arma_server_status(server: str, mission: str, state: str, map: str, players:
     return embed
 
 
+def arma_server_state(server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+    embed = discord.Embed(
+        title=f'Status of server "{server}"',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+    embed.add_field(name='Server Status', value=server_status, inline=True)
+    embed.add_field(name='HC Status', value=hc_status, inline=True)
+    embed.add_field(name='Process Status', value=startup_status, inline=True)
+    return embed
+
+
 def server_management_failure(context: str) -> discord.Embed:
     return discord.Embed(
         title="🔨 Failed to operate on ARMA server",
