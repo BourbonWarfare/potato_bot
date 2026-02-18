@@ -190,18 +190,18 @@ def successful_arma_server_operation(user: discord.User, operation: str, server:
     return embed
 
 
-def arma_server_not_found(user: discord.User, operation: str, server: str) -> discord.Embed:
+def arma_server_not_found(user: discord.User, server: str) -> discord.Embed:
     return discord.Embed(
         title='What server are you talking about?',
-        description=f'{user.mention} has tried to perform "{operation}" on server {server}, but "{server}" does not exist!',
+        description=f'{user.mention} has tried to operate on server {server}, but "{server}" does not exist!',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
 
 
-def arma_server_unresponsive(user: discord.User, operation: str, server: str) -> discord.Embed:
+def arma_server_unresponsive(user: discord.User, server: str) -> discord.Embed:
     return discord.Embed(
         title='ARMA server Unresponsive',
-        description=f'{user.mention} has tried to perform "{operation}" on server {server}, but "{server}" is not responsive!',
+        description=f'{user.mention} has tried to operate on server {server}, but "{server}" is not responsive!',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
 
@@ -212,10 +212,10 @@ def failed_arma_server_operation(user: discord.User, operation: str, server: str
     )
 
 
-def failed_arma_server_operation_with_status(user: discord.User, operation: str, server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+def couldnt_get_arma_server_status(user: discord.User, server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
     embed = discord.Embed(
         title='Failed!',
-        description=f'{user.mention} has performed "{operation}" on server {server}',
+        description=f'{user.mention} has tried to get "{server}"\'s status, but it did not complete successfully',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
     embed.add_field(name='Server Status', value=server_status, inline=True)
