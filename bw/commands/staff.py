@@ -176,10 +176,10 @@ class Staff(commands.Cog, name='Staff Commands'):
     )
     @app_commands.autocomplete(server=arma_servers_autocomplete)
     @app_commands.choices(
-        option=[app_commands.Choice(name=choice.value, value=choice.value) for choice in UpdateChoices],
+        update_option=[app_commands.Choice(name=choice.value, value=choice.value) for choice in UpdateChoices],
     )
     @app_commands.describe(
-        server='The server which to perform the operation on.', option='The operation you wish to perform on the server.'
+        server='The server which to perform the operation on.', update_option='The operation you wish to perform on the server.'
     )
     async def update_server(self, interaction: discord.Interaction, update_option: str, server: str):
         update_option = UpdateChoices(update_option)
