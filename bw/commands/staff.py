@@ -221,13 +221,13 @@ class Staff(commands.Cog, name='Staff Commands'):
             if update_option == UpdateChoices.MODS:
                 servers: dict[str, dict] = response['affected_servers']
                 mods: list[dict] = response['updated_mods']
-                embeds = []
+                embed_list = []
                 for server_name, server_status in servers.items():
-                    embeds.append(embeds.arma_server_status(
+                    embed_list.append(embeds.arma_server_status(
                         server_name,
-                        server_status=response.get('server_status', 'Unknown'),
-                        hc_status=response.get('hc_status', 'Unknown'),
-                        startup_status=response.get('startup_status', 'Unknown'),
+                        server_status=server_status.get('server_status', 'Unknown'),
+                        hc_status=server_status.get('hc_status', 'Unknown'),
+                        startup_status=server_status.get('startup_status', 'Unknown'),
                     ))
                 mod_update_log = []
                 for mod in mods.items():
