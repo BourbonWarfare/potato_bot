@@ -68,7 +68,7 @@ class SessionApi:
             expire_time=datetime.datetime.now() + datetime.timedelta(seconds=access_token['expires_in']),
         )
         with state.Session.begin() as session:
-            query = select(Session).where(Session.refresh_token == oauth_session.refresh_token)
+            query = select(Session).where(Session.oauth_refresh_token == oauth_session.refresh_token)
             existing_session = session.scalar(query)
             if not existing_session:
                 raise NoSuchSession()
