@@ -223,7 +223,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 mods: list[dict] = response['updated_mods']
                 embed_list = []
                 for server_name, server_status in servers.items():
-                    embed_list.append(embeds.arma_server_status(
+                    embed_list.append(embeds.arma_server_state(
                         server_name,
                         server_status=server_status.get('server_status', 'Unknown'),
                         hc_status=server_status.get('hc_status', 'Unknown'),
