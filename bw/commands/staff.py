@@ -232,7 +232,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 mod_update_log = []
                 for mod in mods:
                     mod_update_log.append(f'{mod.get('title', 'Unknown')}({mod.get('workshop_id', 'No Workshop ID')})')
-                await interaction.followup.send(f'Mods Updated:\n```{"\n".join(mod_update_log)}```')
+                await interaction.followup.send(f'Mods Updated:\n```{"\n".join(mod_update_log)}```', embeds=embed_list)
             else:
                 await interaction.followup.send(embed=embed)
         finally:
