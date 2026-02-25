@@ -46,6 +46,6 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
             SessionApi().revoke_user_session(State.state, interaction.user.id)
             bw_session, oauth_session = await show_login()
 
-    if not interaction.is_done():
+    if not interaction.responseis_done():
         await interaction.response.defer()
     return bw_session, oauth_session
