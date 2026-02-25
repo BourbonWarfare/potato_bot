@@ -234,7 +234,12 @@ class Staff(commands.Cog, name='Staff Commands'):
                     mod_update_log.append(f'{mod.get('title', 'Unknown')}({mod.get('workshop_id', 'No Workshop ID')})')
                 await interaction.followup.send(f'Mods Updated:\n```{"\n".join(mod_update_log)}```', embeds=embed_list)
             else:
-                await interaction.followup.send(embed=embed)
+                embed = embeds.successful_server_update(
+                    server,
+                    server_status=response.get('server_status', 'Unknown'),
+                    hc_status=response.get('hc_status', 'Unknown'),
+                    startup_status=response.get('startup_status', 'Unknown'),
+                )
         finally:
             if embed is not None:
                 await interaction.followup.send(embed=embed)
