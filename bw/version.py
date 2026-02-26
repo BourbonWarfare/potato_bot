@@ -14,7 +14,7 @@ class Version:
         self._extra = extra
 
     @classmethod
-    def from_string(cls, string: str) -> Self:
+    def from_string(cls, string: str) -> 'Version':
         components = string.split('.')
         if len(components) == 3:
             return Version(
@@ -38,7 +38,7 @@ class Version:
         else:
             return f'{self._major}.{self._minor}.{self._patch}-{self._extra}'
 
-    def __eq__(self, other: Self | str) -> bool:
+    def __eq__(self, other: 'Version' | str) -> bool:
         if isinstance(other, Version):
             return (
                 self._major == other._major

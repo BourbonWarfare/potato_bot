@@ -2,6 +2,8 @@ import asyncio
 import logging
 import aiohttp
 import datetime
+from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator
 
 logger = logging.getLogger('bw.arma_server_cache')
 
@@ -27,7 +29,17 @@ class ArmaServerCache:
         self.refresh_task_ = None
     
     @property
-    def servers(self) -> list[str]:
-        if not self.refresh_task_ and (not self.last_refresh_ or (datetime.datetime.now() - self.last_refresh_) >= datetime.timedelta(minutes=5)):
+    @asynccontextmanager
+    async def servers(self) -> AsyncIterator[list[str]]:
+        if self.servers_ is None:
+            await self.refresh()
+
+        yield self.servers_
+
+        if self.last_refresh_ is not None:
+            time_since_refresh = datetime.datetime.now() - self.last_refresh_
+        else:
+            time_since_refresh = datetime.timedelta(days=1000)
+
+        if not self.refresh_task_ and time_since_refresh >= datetime.timedelta(minutes=5):
             self.refresh_task_ = asyncio.create_task(self.refresh())
-        return self.servers_

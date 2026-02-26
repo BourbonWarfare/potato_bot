@@ -17,20 +17,20 @@ from bw.commands.utils import get_session
 logger = logging.getLogger('bw.potbot.command')
 
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
-    servers = State.state.arma_server_cache.servers
-    logger.debug('Starting autocomplete')
-    start_time = time.time()
-    if len(servers) == 0:
-        logger.warning('Could not find any configured servers')
-        return []
+    async with State.state.arma_server_cache.servers as servers:
+        logger.debug('Starting autocomplete')
+        start_time = time.time()
+        if len(servers) == 0:
+            logger.warning('Could not find any configured servers')
+            return []
 
-    servers_with_distances = sorted(
-        [(server, levenshtein_distance(current, server)) for server in servers],
-        key=lambda a: a[1]
-    )
-    logger.debug(f'{servers_with_distances}')
-    logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
-    return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
+        servers_with_distances = sorted(
+            [(server, levenshtein_distance(current, server)) for server in servers],
+            key=lambda a: a[1]
+        )
+        logger.debug(f'{servers_with_distances}')
+        logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
+        return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
 
 class ArmaCommand(StrEnum):
     START = 'Start'
@@ -211,9 +211,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 embed = embeds.failed_arma_server_operation(interaction.user, update_option, server)
         except RefreshFailed as e:
             logger.warning(f'{e}. Reattempting whole method...')
-            SessionApi().revoke_user_session(State.state, interaction.user.id)
-            self.update_server(interaction=interaction, server=server, option=update_option)
-            return
+            raise
         except Exception as e:
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, update_option, server)
