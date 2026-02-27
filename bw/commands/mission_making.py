@@ -86,7 +86,8 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         logger.debug('Downloading mission')
         download_t0 = time.time()
         with tempfile.NamedTemporaryFile(mode="wb") as file:
-            await self.mission_file.component.values[0].save(file)
+            buffered_writer = io.BufferedWriter(file)
+            await self.mission_file.component.values[0].save(buffered_writer)
         thread.send(f'Mission downloaded (took {time.time() - download_t0:.2f} seconds)')
 
         interaction.followup.send(f'✅ {interaction.user.mention} your mission has been uploaded successfully!')
