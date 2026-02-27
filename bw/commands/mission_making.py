@@ -61,7 +61,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         logger.info(
             f'{self.description.component.value}\n{self.potential_issues.component.value}\n{self.server.component.values[0]}'
         )
-        interaction.response.send_message('test')
 
 
 class MissionMaking(commands.Cog, name='Mission Making'):
