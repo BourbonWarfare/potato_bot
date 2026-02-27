@@ -22,14 +22,14 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     description = ui.Label(
         text='Description',
         description='Describe this iteration of the mission',
-        component=ui.TextInput(style=discord.TextStyle.long),
+        component=ui.TextInput(style=discord.TextStyle.paragraph),
     )
     potential_issues = ui.Label(
         text='Potential Issues',
         description='Describe anything which you want to be tested directly',
-        component=ui.TextInput(style=discord.TextStyle.long),
+        component=ui.TextInput(style=discord.TextStyle.paragraph),
     )
-    _1 = ui.Separator()
+    _spacer1 = ui.Separator()
     server = ui.Label(
         text='Destination Server',
         description='Which server the mission is uploaded to',
