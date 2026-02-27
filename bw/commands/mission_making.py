@@ -4,7 +4,7 @@ from discord import app_commands, ui
 from discord.ext import commands
 
 from bw.embeds import get_bwmf
-from bw.commands.utils import arma_servers_autocomplete, get_session
+from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User
 
@@ -77,4 +77,4 @@ class MissionMaking(commands.Cog, name='Mission Making'):
     async def upload(self, interaction: discord.Interaction):
         bw_session, oauth_session = await get_session(interaction)
         interface = User(bw_session=bw_session, oauth_session=oauth_session)
-        interaction.response.send_modal(MissionUploadModal(interface))
+        await interaction.response.send_modal(MissionUploadModal(interface))
