@@ -47,6 +47,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
     interface: User
     def __init__(self, interface: User):
+        super().__init__()
         self.interface = interface
 
     async def on_submit(self, interaction: discord.Interaction):
