@@ -53,7 +53,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         logger.info(
             f'{self.description.component.value}\n{self.potential_issues.component.value}\n{self.server.component.values[0]}'
         )
-        interaction.response.defer()
+        interaction.response.defer(thinking=True)
         bw_session, oauth_session = await get_session(interaction)
         interface = User(bw_session=bw_session, oauth_session=oauth_session)
         await interaction.followup.send('test')
