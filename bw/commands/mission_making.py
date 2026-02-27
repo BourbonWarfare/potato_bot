@@ -29,7 +29,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         description='Describe anything which you want to be tested directly',
         component=ui.TextInput(style=discord.TextStyle.paragraph),
     )
-    _spacer1 = ui.Separator()
     server = ui.Label(
         text='Destination Server',
         description='Which server the mission is uploaded to',
@@ -46,8 +45,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     footer = ui.TextDisplay(
         'Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
     )
-
-    interface_: User
 
     async def on_submit(self, interaction: discord.Interaction):
         assert isinstance(self.mission_file.component, ui.FileUpload)
