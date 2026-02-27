@@ -80,7 +80,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
         logger.debug('Sending to thread')
         today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
-        await thread.send(f'Mission uploaded on {today.isoformat('-', 'minutes')}')
+        await thread.send(f'Mission uploaded on {today.isoformat('-', 'seconds')}')
 
         logger.debug('Getting BW session')
         bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
