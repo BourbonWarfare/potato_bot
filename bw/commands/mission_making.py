@@ -74,9 +74,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
         await interaction.response.send_message(embed=get_bwmf(), ephemeral=True)
 
     @app_commands.command(name='upload', description='Upload a mission to the selected server')
-    @app_commands.autocomplete(server=arma_servers_autocomplete)
-    @app_commands.describe(server='The server which to upload the mission to', mission='The mission to upload')
-    async def upload(self, interaction: discord.Interaction, server: str, mission: discord.Attachment):
+    async def upload(self, interaction: discord.Interaction):
         bw_session, oauth_session = await get_session(interaction)
         interface = User(bw_session=bw_session, oauth_session=oauth_session)
         interaction.response.send_modal(MissionUploadModal(interface))
