@@ -1,4 +1,3 @@
-from turtle import down
 import discord
 import logging
 import datetime
