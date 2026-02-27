@@ -11,6 +11,7 @@ from bw.error import StateUsedBeforeDefined
 
 logger = logging.getLogger('bw.state')
 
+
 class DatabaseConnection:
     def __init__(self, engine):
         self.engine = engine

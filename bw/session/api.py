@@ -82,6 +82,7 @@ class SessionApi:
 
     async def login_to_backend(self, state: State, oauth_session: OAuthSession) -> BwSession:
         from bw.interface import Interface
+
         try:
             result = await Interface().login_to_backend(oauth_session)
         except aiohttp.ClientResponseError as e:
@@ -117,7 +118,7 @@ class SessionApi:
             if existing_session is None:
                 raise NoSuchSession()
             return OAuthSession.from_session(existing_session)
-    
+
     def revoke_user_session(self, state: State, discord_id: DiscordSnowflake):
         with state.Session.begin() as session:
             query = delete(Session).where(Session.discord_id == discord_id)

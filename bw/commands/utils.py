@@ -14,8 +14,10 @@ from bw.utils import levenshtein_distance
 
 logger = logging.getLogger('bw.potbot.command')
 
+
 async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAuthSession]:
     user_id = DiscordSnowflake(str(interaction.user.id))
+
     async def show_login() -> tuple[BwSession, OAuthSession]:
         oauth_session = await Authentication(interaction).internal_login_oauth(interaction)
         bw_session = SessionApi().get_bw_session_from_discord_id(State.state, user_id)
@@ -56,6 +58,7 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
         await interaction.response.defer()
     return bw_session, oauth_session
 
+
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
     async with State.state.arma_server_cache.servers as servers:
         logger.debug('Starting autocomplete')
@@ -65,8 +68,7 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
             return []
 
         servers_with_distances = sorted(
-            [(server, levenshtein_distance(current, server)) for server in servers],
-            key=lambda a: a[1]
+            [(server, levenshtein_distance(current, server)) for server in servers], key=lambda a: a[1]
         )
         logger.debug(f'{servers_with_distances}')
         logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')

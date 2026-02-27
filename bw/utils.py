@@ -2,7 +2,6 @@ import re
 import functools
 import asyncio
 import random
-import aiohttp
 
 
 def backoff(delay=2, retries=3, max_delay=float('inf')):
@@ -37,7 +36,7 @@ def strip_emoji(string: str) -> str:
 def levenshtein_distance(a: str, b: str) -> int:
     if len(a) > len(b):
         a, b = b, a
-    
+
     distances = range(len(a) + 1)
     for b_index, b_char in enumerate(b):
         new_distances = [b_index + 1]
@@ -45,11 +44,7 @@ def levenshtein_distance(a: str, b: str) -> int:
             if a_char == b_char:
                 new_distances.append(distances[a_index])
             else:
-                new_distances.append(1 + min(
-                    distances[a_index],
-                    distances[a_index + 1],
-                    new_distances[-1]
-                ))
+                new_distances.append(1 + min(distances[a_index], distances[a_index + 1], new_distances[-1]))
         distances = new_distances
     return distances[-1]
 

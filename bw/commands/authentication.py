@@ -64,7 +64,7 @@ class Authentication(commands.Cog, name='Authentication'):
             access_code = await get_code(state)
         except aiohttp.ClientResponseError as e:
             raise CannotLogin(e)
-        
+
         logger.info('Starting OAuth session with access code')
         return await SessionApi().start_oauth_session(
             State.state, discord_id=DiscordSnowflake(interaction.user.id), access_code=access_code

@@ -14,16 +14,16 @@ def default() -> discord.Embed:
 
 def backend_failure() -> discord.Embed:
     return discord.Embed(
-        title="🔨 Something is wrong with the server...",
-        description="An error has occured that the bot cannot handle. Please ping techmods.",
+        title='🔨 Something is wrong with the server...',
+        description='An error has occured that the bot cannot handle. Please ping techmods.',
         colour=ENVIRONMENT.embed_colour_member(),
     )
 
 
 def not_permitted() -> discord.Embed:
     return discord.Embed(
-        title="❌ You are not allowed to do that",
-        description="You have tried to perform an action that you do not have permissions for",
+        title='❌ You are not allowed to do that',
+        description='You have tried to perform an action that you do not have permissions for',
         colour=ENVIRONMENT.embed_colour_member(),
     )
 
@@ -159,7 +159,7 @@ def login_with_discord(state: str) -> discord.Embed:
 
 def already_logged_in() -> discord.Embed:
     return discord.Embed(
-        title="You are already logged in!",
+        title='You are already logged in!',
         colour=ENVIRONMENT.embed_colour_member(),
     )
 
@@ -178,7 +178,9 @@ def failed_to_login_with_discord() -> discord.Embed:
     )
 
 
-def successful_arma_server_operation(user: discord.User, operation: str, server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+def successful_arma_server_operation(
+    user: discord.User, operation: str, server: str, server_status: str, hc_status: str, startup_status: str
+) -> discord.Embed:
     embed = discord.Embed(
         title='Success!',
         description=f'{user.mention} has succesfully performed "{operation}" on server {server}',
@@ -208,11 +210,15 @@ def arma_server_unresponsive(user: discord.User, server: str) -> discord.Embed:
 
 def failed_arma_server_operation(user: discord.User, operation: str, server: str) -> discord.Embed:
     return discord.Embed(
-        title='Failure :(', description=f'{user.mention} tried "{operation}" but it has failed on server {server}', colour=ENVIRONMENT.embed_colour_staff()
+        title='Failure :(',
+        description=f'{user.mention} tried "{operation}" but it has failed on server {server}',
+        colour=ENVIRONMENT.embed_colour_staff(),
     )
 
 
-def couldnt_get_arma_server_status(user: discord.User, server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+def couldnt_get_arma_server_status(
+    user: discord.User, server: str, server_status: str, hc_status: str, startup_status: str
+) -> discord.Embed:
     embed = discord.Embed(
         title='Failed!',
         description=f'{user.mention} has tried to get "{server}"\'s status, but it did not complete successfully',
@@ -260,7 +266,7 @@ def successful_server_update(server: str, server_status: str, hc_status: str, st
 
 def server_management_failure(context: str) -> discord.Embed:
     return discord.Embed(
-        title="🔨 Failed to operate on ARMA server",
-        description=f"We could not complete the operation on the server: {context}",
+        title='🔨 Failed to operate on ARMA server',
+        description=f'We could not complete the operation on the server: {context}',
         colour=ENVIRONMENT.embed_colour_staff(),
     )

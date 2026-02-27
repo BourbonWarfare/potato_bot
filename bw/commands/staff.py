@@ -14,14 +14,17 @@ from bw.commands.utils import get_session, arma_servers_autocomplete
 
 logger = logging.getLogger('bw.potbot.command')
 
+
 class ArmaCommand(StrEnum):
     START = 'Start'
     STOP = 'Stop'
     RESTART = 'Restart'
 
+
 class UpdateChoices(StrEnum):
     MODS = 'Mods'
     SERVER = 'Server'
+
 
 class Staff(commands.Cog, name='Staff Commands'):
     def __init__(self, bot):
@@ -91,15 +94,12 @@ class Staff(commands.Cog, name='Staff Commands'):
                 )
         await interaction.followup.send(embed=embed)
 
-
     @app_commands.command(
         name='serverstatus',
         description='Show the status of an ARMA server.',
     )
     @app_commands.autocomplete(server=arma_servers_autocomplete)
-    @app_commands.describe(
-        server='The server which to view the status of.'
-    )
+    @app_commands.describe(server='The server which to view the status of.')
     async def get_server_status(self, interaction: discord.Interaction, server: str):
         logger.info(f'{interaction.user} is checking the status of "{server}"')
 
@@ -123,7 +123,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                     server,
                     server_status=response.get('server_status', 'Unknown'),
                     hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown')
+                    startup_status=response.get('startup_status', 'Unknown'),
                 )
         except RefreshFailed as e:
             logger.error(str(e))
@@ -135,7 +135,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 server,
                 server_status=response.get('server_status', 'Unknown'),
                 hc_status=response.get('hc_status', 'Unknown'),
-                startup_status=response.get('startup_status', 'Unknown')
+                startup_status=response.get('startup_status', 'Unknown'),
             )
         else:
             result = response.get('result', 'failure')
@@ -154,13 +154,10 @@ class Staff(commands.Cog, name='Staff Commands'):
                     server,
                     server_status=response.get('server_status', 'Unknown'),
                     hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown')
+                    startup_status=response.get('startup_status', 'Unknown'),
                 )
             elif result == 'unresponsive':
-                embed = embeds.arma_server_unresponsive(
-                    interaction.user,
-                    server=server
-                )
+                embed = embeds.arma_server_unresponsive(interaction.user, server=server)
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(
@@ -214,15 +211,17 @@ class Staff(commands.Cog, name='Staff Commands'):
                 mods: list[dict] = response['updated_mods']
                 embed_list = []
                 for server_name, server_status in servers.items():
-                    embed_list.append(embeds.arma_server_state(
-                        server_name,
-                        server_status=server_status.get('server_status', 'Unknown'),
-                        hc_status=server_status.get('hc_status', 'Unknown'),
-                        startup_status=server_status.get('startup_status', 'Unknown'),
-                    ))
+                    embed_list.append(
+                        embeds.arma_server_state(
+                            server_name,
+                            server_status=server_status.get('server_status', 'Unknown'),
+                            hc_status=server_status.get('hc_status', 'Unknown'),
+                            startup_status=server_status.get('startup_status', 'Unknown'),
+                        )
+                    )
                 mod_update_log = []
                 for mod in mods:
-                    mod_update_log.append(f'{mod.get('title', 'Unknown')}({mod.get('workshop_id', 'No Workshop ID')})')
+                    mod_update_log.append(f'{mod.get("title", "Unknown")}({mod.get("workshop_id", "No Workshop ID")})')
                 await interaction.followup.send(f'Mods Updated:\n```{"\n".join(mod_update_log)}```', embeds=embed_list)
             else:
                 embed = embeds.successful_server_update(

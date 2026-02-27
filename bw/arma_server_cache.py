@@ -7,17 +7,20 @@ from collections.abc import AsyncIterator
 
 logger = logging.getLogger('bw.arma_server_cache')
 
+
 class ArmaServerCache:
     servers_: list[str]
     refresh_task_: None | asyncio.Task
     last_refresh_: None | datetime.datetime
+
     def __init__(self):
         self.servers_ = []
         self.refresh_task_ = None
         self.last_refresh_ = None
-    
+
     async def refresh(self):
         from bw.interface import Interface
+
         try:
             logger.info('Refreshing server cache')
             servers = await Interface().get_arma_servers()
@@ -27,7 +30,7 @@ class ArmaServerCache:
             servers = []
         self.servers_ = servers
         self.refresh_task_ = None
-    
+
     @property
     @asynccontextmanager
     async def servers(self) -> AsyncIterator[list[str]]:

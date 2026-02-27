@@ -15,6 +15,7 @@ class NoSuchSession(SessionError):
     from bw.session.oauth import BwSession, OAuthSession
 
     session: None | BwSession | OAuthSession
+
     def __init__(self, session: None | BwSession | OAuthSession = None):
         super().__init__('No such session exists')
         self.session = session
@@ -27,12 +28,15 @@ class CannotLogin(SessionError):
         else:
             super().__init__('An error has occured while logging in')
 
+
 class SessionExpired(SessionError):
     def __init__(self):
         super().__init__('Session is expired')
 
+
 class BwSessionExpired(SessionExpired):
     pass
+
 
 class DiscordSessionExpired(SessionExpired):
     pass
