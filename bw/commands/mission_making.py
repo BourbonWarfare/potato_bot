@@ -59,9 +59,8 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         assert isinstance(interaction.channel, discord.TextChannel | discord.Thread)
 
         server = self.server.component.values[0]
-        logger.info(
-            f'{self.description.component.value}\n{self.potential_issues.component.value}\n{server}'
-        )
+        description = self.description.component.value
+        potential_issues = self.potential_issues.component.value
 
         mission_attachment: discord.Attachment = self.mission_file.component.values[0]
         filename = mission_attachment.filename
@@ -81,6 +80,9 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         logger.debug('Sending to thread')
         today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
         await thread.send(f'Mission uploaded on {today.isoformat('-', 'seconds')}')
+
+        await thread.send(f'Upload Description: {description}')
+        await thread.send(f'Potential Issues: {potential_issues}')
 
         logger.debug('Getting BW session')
         bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
