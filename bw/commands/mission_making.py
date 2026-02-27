@@ -3,6 +3,7 @@ import logging
 import datetime
 import tempfile
 import time
+import io
 from zoneinfo import ZoneInfo
 from discord import app_commands, ui
 from discord.ext import commands
@@ -84,7 +85,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
         logger.debug('Downloading mission')
         download_t0 = time.time()
-        with tempfile.TemporaryFile(mode="w") as file:
+        with tempfile.NamedTemporaryFile(mode="wb") as file:
             await self.mission_file.component.values[0].save(file)
         thread.send(f'Mission downloaded (took {time.time() - download_t0:.2f} seconds)')
 
