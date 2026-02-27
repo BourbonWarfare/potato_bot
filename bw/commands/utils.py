@@ -18,7 +18,7 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
     user_id = DiscordSnowflake(str(interaction.user.id))
 
     async def show_login() -> tuple[BwSession, OAuthSession]:
-        oauth_session = await Authentication(interaction).internal_login_oauth(interaction)
+        oauth_session = await Authentication(None).internal_login_oauth(interaction.followup, user_id)
         bw_session = SessionApi().get_bw_session_from_discord_id(State.state, user_id)
         return bw_session, oauth_session
 
@@ -53,8 +53,6 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
             SessionApi().revoke_user_session(State.state, user_id)
             bw_session, oauth_session = await show_login()
 
-    if not interaction.response.is_done():
-        await interaction.response.defer()
     return bw_session, oauth_session
 
 

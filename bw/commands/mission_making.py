@@ -45,6 +45,10 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
     )
 
+    interface: User
+    def __init__(self, interface: User):
+        self.interface = interface
+
     async def on_submit(self, interaction: discord.Interaction):
         assert isinstance(self.mission_file.component, ui.FileUpload)
         assert isinstance(self.description.component, ui.TextInput)
@@ -53,8 +57,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         logger.info(
             f'{self.description.component.value}\n{self.potential_issues.component.value}\n{self.server.component.values[0]}'
         )
-        bw_session, oauth_session = await get_session(interaction)
-        interface = User(bw_session=bw_session, oauth_session=oauth_session)
         await interaction.response.send_message('test')
 
 
@@ -69,4 +71,6 @@ class MissionMaking(commands.Cog, name='Mission Making'):
 
     @app_commands.command(name='upload', description='Upload a mission to the selected server')
     async def upload(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(MissionUploadModal())
+        bw_session, oauth_session = await get_session(interaction)
+        interface = User(bw_session=bw_session, oauth_session=oauth_session)
+        await interaction.response.send_modal(MissionUploadModal(interface))

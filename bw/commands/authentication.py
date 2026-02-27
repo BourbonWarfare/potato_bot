@@ -37,7 +37,8 @@ class Authentication(commands.Cog, name='Authentication'):
                 return
 
         try:
-            await self.internal_login_oauth(interaction)
+            interaction.response.defer()
+            await self.internal_login_oauth(interaction.followup, DiscordSnowflake(str(interaction.user.id)))
         except CannotLogin as e:
             logger.info(e)
             await interaction.followup.send(embed=failed_to_login_with_discord(), ephemeral=True)
@@ -45,12 +46,11 @@ class Authentication(commands.Cog, name='Authentication'):
             logger.info('successfully logged in')
             await interaction.followup.send(embed=logged_in_with_discord(), ephemeral=True)
 
-    async def internal_login_oauth(self, interaction: discord.Interaction) -> OAuthSession:
-        logger.info(f'Attempting new login for {interaction.user.id}')
+    async def internal_login_oauth(self, followup: discord.Webhook, user_id: DiscordSnowflake) -> OAuthSession:
+        logger.info(f'Attempting new login for {user_id}')
         state = secrets.token_urlsafe(64)[:32]
         logger.info('sending login link')
-        await interaction.response.defer(ephemeral=True, thinking=True)
-        await interaction.followup.send(embed=login_with_discord(state), ephemeral=True)
+        await followup.send(embed=login_with_discord(state), ephemeral=True)
 
         logger.info('waiting for user...')
         await asyncio.sleep(4)
@@ -63,9 +63,9 @@ class Authentication(commands.Cog, name='Authentication'):
         try:
             access_code = await get_code(state)
         except aiohttp.ClientResponseError as e:
-            raise CannotLogin(e)
+            raise CannotLogin(str(e)) from e
 
         logger.info('Starting OAuth session with access code')
         return await SessionApi().start_oauth_session(
-            State.state, discord_id=DiscordSnowflake(interaction.user.id), access_code=access_code
+            State.state, discord_id=user_id, access_code=access_code
         )
