@@ -1,6 +1,3 @@
-from typing import Self
-
-
 class Version:
     _major: int
     _minor: int

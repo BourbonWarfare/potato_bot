@@ -8,8 +8,6 @@ from discord.ext import commands
 from bw import embeds
 from bw.error import RefreshFailed
 from bw.interface import User
-from bw.session.api import SessionApi
-from bw.state import State
 from bw.commands.utils import get_session, arma_servers_autocomplete
 
 logger = logging.getLogger('bw.potbot.command')

@@ -1,4 +1,3 @@
-from sqlalchemy.sql.functions import user
 from bw.session.types import DiscordSnowflake
 import discord
 import time

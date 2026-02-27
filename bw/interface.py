@@ -123,7 +123,7 @@ class User(Interface):
 
     async def start_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session() as client:
+            async with self.client.user_session():
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve())
                 ) as response:
@@ -132,7 +132,7 @@ class User(Interface):
 
     async def stop_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session() as client:
+            async with self.client.user_session():
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve())
                 ) as response:
@@ -141,7 +141,7 @@ class User(Interface):
 
     async def restart_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session() as client:
+            async with self.client.user_session():
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve())
                 ) as response:
@@ -150,7 +150,7 @@ class User(Interface):
 
     async def update_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session() as client:
+            async with self.client.user_session():
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
