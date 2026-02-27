@@ -57,8 +57,10 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         assert isinstance(self.potential_issues.component, ui.TextInput)
         assert isinstance(self.server.component, ui.Select)
         assert isinstance(interaction.channel, discord.TextChannel | discord.Thread)
+
+        server = self.server.component.values[0]
         logger.info(
-            f'{self.description.component.value}\n{self.potential_issues.component.value}\n{self.server.component.values[0]}'
+            f'{self.description.component.value}\n{self.potential_issues.component.value}\n{server}'
         )
 
         mission_attachment: discord.Attachment = self.mission_file.component.values[0]
@@ -68,16 +70,17 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             logger.debug('Retrieving thread')
             await interaction.response.defer(thinking=True)
             thread = interaction.channel
+            await thread.send(f'`{filename}` is being uploaded to {server}')
         else:
             logger.debug('Creating thread')
-            send_message_response = await interaction.response.send_message(f'`{filename}` upload information')
+            send_message_response = await interaction.response.send_message(f'`{filename}` is being uploaded to {server}')
             response_message = send_message_response.resource
             assert isinstance(response_message, discord.InteractionMessage)
             thread = await response_message.create_thread(name='Test Log')
 
         logger.debug('Sending to thread')
         today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
-        thread.send(f'Mission Uploaded on {today.isoformat('-', 'minutes')}')
+        await thread.send(f'Mission uploaded on {today.isoformat('-', 'minutes')}')
 
         logger.debug('Getting BW session')
         bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
@@ -88,9 +91,9 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         with tempfile.NamedTemporaryFile(mode="wb") as file:
             buffered_writer = io.BufferedWriter(file)
             await self.mission_file.component.values[0].save(buffered_writer)
-        thread.send(f'Mission downloaded (took {time.time() - download_t0:.2f} seconds)')
+        await thread.send(f'Mission downloaded (took {time.time() - download_t0:.2f} seconds)')
 
-        interaction.followup.send(f'✅ {interaction.user.mention} your mission has been uploaded successfully!')
+        await interaction.followup.send(f'✅ {interaction.user.mention} your mission has been uploaded successfully!')
 
 
 class MissionMaking(commands.Cog, name='Mission Making'):
