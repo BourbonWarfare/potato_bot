@@ -1,3 +1,5 @@
+from typing import Self
+
 class Version:
     _major: int
     _minor: int
@@ -35,7 +37,7 @@ class Version:
         else:
             return f'{self._major}.{self._minor}.{self._patch}-{self._extra}'
 
-    def __eq__(self, other: 'Version' | str) -> bool:
+    def __eq__(self, other: Self | str) -> bool:
         if isinstance(other, Version):
             return (
                 self._major == other._major
