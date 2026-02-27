@@ -47,4 +47,4 @@ class Version:
             return str(self) == other
 
 
-VERSION = Version(1, 0, 8)
+VERSION = Version(1, 0, 9)
