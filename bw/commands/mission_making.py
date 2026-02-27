@@ -1,12 +1,63 @@
 import discord
 import logging
-from discord import app_commands
+from discord import app_commands, ui
 from discord.ext import commands
 
 from bw.embeds import get_bwmf
-from bw.commands.utils import get_session, arma_servers_autocomplete
+from bw.commands.utils import arma_servers_autocomplete, get_session
+from bw.state import State
+from bw.interface import User
 
 logger = logging.getLogger('bw.potbot.command')
+
+
+class MissionUploadModal(ui.Modal, title='Upload a Mission'):
+    mission_file = ui.Label(
+        text='Mission File', description='The mission you want to upload', component=ui.FileUpload(min_values=1, required=True)
+    )
+    description = ui.Label(
+        text='Description',
+        description='Describe this iteration of the mission',
+        component=ui.TextInput(style=discord.TextStyle.long),
+    )
+    potential_issues = ui.Label(
+        text='Potential Issues',
+        description='Describe anything which you want to be tested directly',
+        component=ui.TextInput(style=discord.TextStyle.long),
+    )
+    _1 = ui.Separator()
+    server = ui.Label(
+        text='Destination Server',
+        description='Which server the mission is uploaded to',
+        component=ui.Select(
+            min_values=1,
+            max_values=1,
+            required=True,
+            options=[
+                discord.SelectOption(label=server, value=server, default=(idx == 0))
+                for idx, server in enumerate(State.state.arma_server_cache.potentially_uninitialised_servers)
+            ],
+        ),
+    )
+    footer = ui.TextDisplay(
+        'Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
+    )
+
+    interface_: User
+
+    def __init__(self, interface: User):
+        super().__init__()
+        self.interface_ = interface
+
+    async def on_submit(self, interaction: discord.Interaction):
+        assert isinstance(self.mission_file.component, ui.FileUpload)
+        assert isinstance(self.description.component, ui.TextInput)
+        assert isinstance(self.potential_issues.component, ui.TextInput)
+        assert isinstance(self.server.component, ui.Select)
+        logger.info(
+            f'{self.description.component.value}\n{self.potential_issues.component.value}\n{self.server.component.values[0]}'
+        )
+        interaction.response.send_message('test')
 
 
 class MissionMaking(commands.Cog, name='Mission Making'):
@@ -20,9 +71,8 @@ class MissionMaking(commands.Cog, name='Mission Making'):
 
     @app_commands.command(name='upload', description='Upload a mission to the selected server')
     @app_commands.autocomplete(server=arma_servers_autocomplete)
-    @app_commands.describe(
-        server='The server which to upload the mission to',
-        mission='The mission to upload'
-    )
+    @app_commands.describe(server='The server which to upload the mission to', mission='The mission to upload')
     async def upload(self, interaction: discord.Interaction, server: str, mission: discord.Attachment):
-        interaction.response.send_message('Upload stub')
+        bw_session, oauth_session = await get_session(interaction)
+        interface = User(bw_session=bw_session, oauth_session=oauth_session)
+        interaction.response.send_modal(MissionUploadModal(interface))

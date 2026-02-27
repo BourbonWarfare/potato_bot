@@ -7,7 +7,7 @@ dependencies = [
     "aiohttp",
     "aiodns",
     "beautifulsoup4",
-    "discord.py",
+    "discord.py@git+https://github.com/Rapptz/discord.py#egg=e55b308",
     "python-dotenv",
     "tzdata",
     "sqlalchemy",

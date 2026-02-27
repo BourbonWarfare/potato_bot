@@ -32,6 +32,12 @@ class ArmaServerCache:
         self.refresh_task_ = None
 
     @property
+    def potentially_uninitialised_servers(self) -> list[str]:
+        if not self.servers_:
+            return []
+        return self.servers_
+
+    @property
     @asynccontextmanager
     async def servers(self) -> AsyncIterator[list[str]]:
         if self.servers_ is None:
