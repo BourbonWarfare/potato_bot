@@ -29,6 +29,8 @@ class State:
         return create_engine(f'{self._connection()}', echo=echo)
 
     def __init__(self):
+        if State.state_ is not None:
+            return
         self.engine_map = {}
         self.arma_server_cache_ = ArmaServerCache()
         State.state_ = self
@@ -59,5 +61,5 @@ class State:
     @classproperty
     def state(cls) -> 'State':
         if not cls.state_:
-            raise StateUsedBeforeDefined()
+            cls.state_ = State()
         return cls.state_

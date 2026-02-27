@@ -11,6 +11,10 @@ from bw.interface import User
 logger = logging.getLogger('bw.potbot.command')
 
 
+def server_list() -> list[str]:
+    return State.state.arma_server_cache.potentially_uninitialised_servers
+
+
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     mission_file = ui.Label(
         text='Mission File', description='The mission you want to upload', component=ui.FileUpload(min_values=1, required=True)
@@ -35,7 +39,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             required=True,
             options=[
                 discord.SelectOption(label=server, value=server, default=(idx == 0))
-                for idx, server in enumerate(State.state.arma_server_cache.potentially_uninitialised_servers)
+                for idx, server in enumerate(server_list())
             ],
         ),
     )
