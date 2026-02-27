@@ -42,7 +42,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         ),
     )
     footer = ui.TextDisplay(
-        'Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
+        '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
     )
 
     async def on_submit(self, interaction: discord.Interaction):
@@ -55,7 +55,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         )
         bw_session, oauth_session = await get_session(interaction)
         interface = User(bw_session=bw_session, oauth_session=oauth_session)
-        interaction.response.send_message('test')
+        await interaction.response.send_message('test')
 
 
 class MissionMaking(commands.Cog, name='Mission Making'):
