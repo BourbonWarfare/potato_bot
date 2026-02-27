@@ -17,17 +17,17 @@ def server_list() -> list[str]:
 
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     mission_file = ui.Label(
-        text='Mission File', description='The mission you want to upload', component=ui.FileUpload(min_values=1, required=True)
+        text='Mission File', description='The mission you want to upload', component=ui.FileUpload(min_values=1)
     )
     description = ui.Label(
         text='Description',
         description='Describe this iteration of the mission',
-        component=ui.TextInput(style=discord.TextStyle.paragraph),
+        component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
     potential_issues = ui.Label(
         text='Potential Issues',
         description='Describe anything which you want to be tested directly',
-        component=ui.TextInput(style=discord.TextStyle.paragraph),
+        component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
     server = ui.Label(
         text='Destination Server',
@@ -35,7 +35,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         component=ui.Select(
             min_values=1,
             max_values=1,
-            required=True,
             options=[
                 discord.SelectOption(label=server, value=server, default=(idx == 0))
                 for idx, server in enumerate(server_list())
