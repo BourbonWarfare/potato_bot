@@ -12,7 +12,7 @@ logger = logging.getLogger('bw.potbot.command')
 
 
 def server_list() -> list[str]:
-    return State.state.arma_server_cache.potentially_uninitialised_servers
+    return State.state.arma_server_cache.blocking_servers
 
 
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):

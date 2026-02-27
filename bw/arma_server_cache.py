@@ -32,9 +32,9 @@ class ArmaServerCache:
         self.refresh_task_ = None
 
     @property
-    def potentially_uninitialised_servers(self) -> list[str]:
-        if not self.servers_:
-            return []
+    def blocking_servers(self) -> list[str]:
+        if not self.last_refresh_:
+            asyncio.run(self.refresh())
         return self.servers_
 
     @property
