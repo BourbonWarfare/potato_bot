@@ -21,7 +21,7 @@ class SessionApi:
                 try:
                     response.raise_for_status()
                 except aiohttp.ClientResponseError as e:
-                    raise CannotLogin(e)
+                    raise CannotLogin(str(e)) from e
 
                 access_token_response = await response.json()
 

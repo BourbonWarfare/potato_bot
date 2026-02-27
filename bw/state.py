@@ -1,3 +1,4 @@
+from sqlalchemy.util import classproperty
 import logging
 from typing import Optional
 from sqlalchemy import create_engine, Engine
@@ -6,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from bw.environment import ENVIRONMENT
 from bw.settings import GLOBAL_CONFIGURATION
 from bw.arma_server_cache import ArmaServerCache
+from bw.error import StateUsedBeforeDefined
 
 logger = logging.getLogger('bw.state')
 
@@ -16,7 +18,7 @@ class DatabaseConnection:
 
 
 class State:
-    state: Optional['State'] = None
+    state_: Optional['State'] = None
 
     def _connection(self) -> str:
         return ENVIRONMENT.db_connection()
@@ -28,7 +30,7 @@ class State:
     def __init__(self):
         self.engine_map = {}
         self.arma_server_cache_ = ArmaServerCache()
-        State.state = self
+        State.state_ = self
 
         if 'db_name' in GLOBAL_CONFIGURATION:
             self.default_database = GLOBAL_CONFIGURATION['db_name']
@@ -52,3 +54,9 @@ class State:
     @property
     def Session(self) -> sessionmaker[Session]:
         return self.default_engine.session_maker
+
+    @classproperty
+    def state(cls) -> 'State':
+        if not cls.state_:
+            raise StateUsedBeforeDefined()
+        return cls.state_

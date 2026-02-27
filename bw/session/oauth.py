@@ -32,10 +32,6 @@ class BwSession:
     expire_time: datetime.datetime
 
     @classmethod
-    def null(cls) -> Self:
-        return BwSession(token='potato', expire_time=datetime.datetime(year=2000, month=1, day=1))
-
-    @classmethod
     def from_session(cls, session: Session) -> Self:
         return cls(token=session.session_token, expire_time=session.session_expire)
 

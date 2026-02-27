@@ -1,36 +1,18 @@
 import discord
 import logging
 import aiohttp
-import time
 from enum import StrEnum
 from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
-from bw.utils import levenshtein_distance
 from bw.error import RefreshFailed
 from bw.interface import User
 from bw.session.api import SessionApi
 from bw.state import State
-from bw.commands.utils import get_session
+from bw.commands.utils import get_session, arma_servers_autocomplete
 
 logger = logging.getLogger('bw.potbot.command')
-
-async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
-    async with State.state.arma_server_cache.servers as servers:
-        logger.debug('Starting autocomplete')
-        start_time = time.time()
-        if len(servers) == 0:
-            logger.warning('Could not find any configured servers')
-            return []
-
-        servers_with_distances = sorted(
-            [(server, levenshtein_distance(current, server)) for server in servers],
-            key=lambda a: a[1]
-        )
-        logger.debug(f'{servers_with_distances}')
-        logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
-        return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
 
 class ArmaCommand(StrEnum):
     START = 'Start'
@@ -86,22 +68,17 @@ class Staff(commands.Cog, name='Staff Commands'):
             else:
                 embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         except RefreshFailed as e:
-            logger.warning(f'{e}. Reattempting whole method...')
-            SessionApi().revoke_user_session(State.state, interaction.user.id)
-            self.server_management(interaction=interaction, server=server, option=option)
-            return
+            logger.error(str(e))
+            raise
         except Exception as e:
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         else:
             if response.get('startup_status', 'Failed') == 'Failed':
-                embed = embeds.failed_arma_server_operation_with_status(
+                embed = embeds.failed_arma_server_operation(
                     interaction.user,
                     option,
                     server,
-                    server_status=response.get('server_status', 'Unknown'),
-                    hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown'),
                 )
             else:
                 embed = embeds.successful_arma_server_operation(
@@ -141,15 +118,25 @@ class Staff(commands.Cog, name='Staff Commands'):
             elif e.status >= 500:
                 embed = embeds.server_management_failure(e.message)
             else:
-                embed = embeds.couldnt_get_arma_server_status(interaction.user, server)
+                embed = embeds.couldnt_get_arma_server_status(
+                    interaction.user,
+                    server,
+                    server_status=response.get('server_status', 'Unknown'),
+                    hc_status=response.get('hc_status', 'Unknown'),
+                    startup_status=response.get('startup_status', 'Unknown')
+                )
         except RefreshFailed as e:
-            logger.warning(f'{e}. Reattempting whole method...')
-            SessionApi().revoke_user_session(State.state, interaction.user.id)
-            self.get_server_status(interaction=interaction, server=server)
-            return
+            logger.error(str(e))
+            raise e
         except Exception as e:
             logger.warning(f'Failed to operate on server: {e}')
-            embed = embeds.couldnt_get_arma_server_status(interaction.user, server)
+            embed = embeds.couldnt_get_arma_server_status(
+                interaction.user,
+                server,
+                server_status=response.get('server_status', 'Unknown'),
+                hc_status=response.get('hc_status', 'Unknown'),
+                startup_status=response.get('startup_status', 'Unknown')
+            )
         else:
             result = response.get('result', 'failure')
             if result == 'success':
@@ -162,7 +149,13 @@ class Staff(commands.Cog, name='Staff Commands'):
                     max_players=response.get('max_players', -1),
                 )
             elif result == 'failure':
-                embed = embeds.couldnt_get_arma_server_status(interaction.user, server)
+                embed = embeds.couldnt_get_arma_server_status(
+                    interaction.user,
+                    server,
+                    server_status=response.get('server_status', 'Unknown'),
+                    hc_status=response.get('hc_status', 'Unknown'),
+                    startup_status=response.get('startup_status', 'Unknown')
+                )
             elif result == 'unresponsive':
                 embed = embeds.arma_server_unresponsive(
                     interaction.user,

@@ -1,11 +1,14 @@
 import discord
+import time
 import logging
+from discord import app_commands
 
 from bw.state import State
 from bw.error import DiscordSessionExpired, NoSuchSession, RefreshFailed, BwSessionExpired, CannotLogin
 from bw.session.oauth import BwSession, OAuthSession
 from bw.session.api import SessionApi
 from bw.commands.authentication import Authentication
+from bw.utils import levenshtein_distance
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -49,3 +52,19 @@ async def get_session(interaction: discord.Interaction) -> tuple[BwSession, OAut
     if not interaction.response.is_done():
         await interaction.response.defer()
     return bw_session, oauth_session
+
+async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
+    async with State.state.arma_server_cache.servers as servers:
+        logger.debug('Starting autocomplete')
+        start_time = time.time()
+        if len(servers) == 0:
+            logger.error('Could not find any configured servers')
+            return []
+
+        servers_with_distances = sorted(
+            [(server, levenshtein_distance(current, server)) for server in servers],
+            key=lambda a: a[1]
+        )
+        logger.debug(f'{servers_with_distances}')
+        logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
+        return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]

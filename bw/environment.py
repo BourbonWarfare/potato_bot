@@ -76,7 +76,7 @@ class Environment:
         return GC[key].strip('/')
 
     def discord_oauth_redirect_uri(self) -> str:
-        NotImplementedError()
+        raise NotImplementedError()
 
     def db_connection(self) -> str:
         db_driver = GC.require('db_driver').get()
