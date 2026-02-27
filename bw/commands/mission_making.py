@@ -1,5 +1,10 @@
+from turtle import down
 import discord
 import logging
+import datetime
+import tempfile
+import time
+from zoneinfo import ZoneInfo
 from discord import app_commands, ui
 from discord.ext import commands
 
@@ -47,16 +52,44 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
     async def on_submit(self, interaction: discord.Interaction):
         assert isinstance(self.mission_file.component, ui.FileUpload)
+        assert len(self.mission_file.component.values) == 1
         assert isinstance(self.description.component, ui.TextInput)
         assert isinstance(self.potential_issues.component, ui.TextInput)
         assert isinstance(self.server.component, ui.Select)
+        assert isinstance(interaction.channel, discord.TextChannel | discord.Thread)
         logger.info(
             f'{self.description.component.value}\n{self.potential_issues.component.value}\n{self.server.component.values[0]}'
         )
-        interaction.response.defer(thinking=True)
-        bw_session, oauth_session = await get_session(interaction)
+
+        mission_attachment: discord.Attachment = self.mission_file.component.values[0]
+        filename = mission_attachment.filename
+
+        if isinstance(interaction.channel, discord.Thread):
+            logger.debug('Retrieving thread')
+            await interaction.response.defer(thinking=True)
+            thread = interaction.channel
+        else:
+            logger.debug('Creating thread')
+            send_message_response = await interaction.response.send_message(f'{filename} upload information')
+            response_message = send_message_response.resource
+            assert isinstance(response_message, discord.InteractionMessage)
+            thread = await response_message.create_thread(name='Mission Test Information', type=discord.ChannelType.public_thread)
+
+        logger.debug('Sending to thread')
+        today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
+        thread.send(f'Mission Uploaded on {today.isoformat('-', 'minutes')}')
+
+        logger.debug('Getting BW session')
+        bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
         interface = User(bw_session=bw_session, oauth_session=oauth_session)
-        await interaction.followup.send('test')
+
+        logger.debug('Downloading mission')
+        download_t0 = time.time()
+        with tempfile.TemporaryFile(mode="w") as file:
+            await self.mission_file.component.values[0].save(file)
+        thread.send(f'Mission downloaded (took {time.time() - download_t0:.2f} seconds)')
+
+        interaction.followup.send(f'✅ {interaction.user.mention} your mission has been uploaded successfully!')
 
 
 class MissionMaking(commands.Cog, name='Mission Making'):
@@ -66,7 +99,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
     @app_commands.command(name='bwmf', description='Download the latest Mission Framework')
     async def get_bwmf(self, interaction: discord.Interaction):
         logger.info(f'{interaction.user} requested the BWMF download link.')
-        await interaction.response.send_message(embed=get_bwmf(), ephemeral=True)
+        await interaction.response.send_message(embed=get_bwmf())
 
     @app_commands.command(name='upload', description='Upload a mission to the selected server')
     async def upload(self, interaction: discord.Interaction):
