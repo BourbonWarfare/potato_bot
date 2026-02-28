@@ -41,18 +41,17 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         async with State.state.arma_server_cache.servers as servers:
             if servers == []:
                 raise NoServersToUploadTo()
-            modal.add_item(ui.Label(
-                    text='Destination Server',
-                    description='Which server the mission is uploaded to',
-                    component=ui.Select(
-                        min_values=1,
-                        max_values=1,
-                        options=[
-                            discord.SelectOption(label=server, value=server, default=(idx == 0))
-                            for idx, server in enumerate(servers)
-                        ],
-                    ),
-                )
+            modal.server = ui.Label(
+                text='Destination Server',
+                description='Which server the mission is uploaded to',
+                component=ui.Select(
+                    min_values=1,
+                    max_values=1,
+                    options=[
+                        discord.SelectOption(label=server, value=server, default=(idx == 0))
+                        for idx, server in enumerate(servers)
+                    ],
+                ),
             )
         return modal
 
