@@ -99,7 +99,8 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                 try:
                     upload_response = await interface.upload_mission(temp_file, server)
                 except aiohttp.ClientResponseError as e:
-                    await thread.send(f'❌ {interaction.user.mention} your mission could not be uploaded.')
+                    await interaction.followup.send(f'❌ {interaction.user.mention} your mission could not be uploaded.')
+                    await thread.send('----- ERROR LOG -----')
                     if e.status == 409:
                         await thread.send('A mission with this filename already exists on this server.')
                     elif e.status == 422:
