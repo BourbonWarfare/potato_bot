@@ -69,8 +69,8 @@ class Helpers(commands.Cog, name='Helpers'):
                 ephemeral=False,
             )
         else:
-            hours = math.floor(offset) * 60
-            minutes = math.floor((offset - math.floor(offset)) * 60)
+            hours = math.floor(offset)
+            minutes = math.floor((offset % 1) * 60)
 
             relative_session = next_session + datetime.timedelta(hours=hours, minutes=minutes)
 

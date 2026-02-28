@@ -86,7 +86,7 @@ class SessionApi:
         try:
             result = await Interface().login_to_backend(oauth_session)
         except aiohttp.ClientResponseError as e:
-            raise CannotLogin(e)
+            raise CannotLogin(str(e)) from e
 
         bw_session = BwSession(
             token=result.get('session_token'),
