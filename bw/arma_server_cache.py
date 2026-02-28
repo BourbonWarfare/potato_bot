@@ -25,7 +25,7 @@ class ArmaServerCache:
             logger.info('Refreshing server cache')
             servers = await Interface().get_arma_servers()
             self.last_refresh_ = datetime.datetime.now()
-        except aiohttp.ClientResponseError as e:
+        except (aiohttp.ClientResponseError, aiohttp.ClientConnectionError) as e:
             logger.warning(f'Could not get arma servers: {e}')
             servers = []
         self.servers_ = servers
