@@ -35,6 +35,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         description='Describe anything which you want to be tested directly',
         component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
+    server: ui.Label
     footer = ui.TextDisplay(
         '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
     )
