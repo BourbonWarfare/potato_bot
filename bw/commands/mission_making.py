@@ -4,7 +4,9 @@ import datetime
 import tempfile
 import time
 import io
+import aiohttp
 from zoneinfo import ZoneInfo
+from pathlib import Path
 from discord import app_commands, ui
 from discord.ext import commands
 
@@ -65,6 +67,10 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         mission_attachment: discord.Attachment = self.mission_file.component.values[0]
         filename = mission_attachment.filename
 
+        logger.debug('Getting BW session')
+        bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        interface = User(bw_session=bw_session, oauth_session=oauth_session)
+
         if isinstance(interaction.channel, discord.Thread):
             logger.debug('Retrieving thread')
             await interaction.response.defer(thinking=True)
@@ -79,21 +85,42 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
         logger.debug('Sending to thread')
         today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
-        await thread.send(f'Mission uploaded on {today.isoformat('-', 'seconds')}')
+        await thread.send(f'Mission uploaded <t:{int(today.timestamp())}:R>')
 
         await thread.send(f'Upload Description: {description}')
         await thread.send(f'Potential Issues: {potential_issues}')
 
-        logger.debug('Getting BW session')
-        bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        interface = User(bw_session=bw_session, oauth_session=oauth_session)
-
         logger.debug('Downloading mission')
         download_t0 = time.time()
-        with tempfile.NamedTemporaryFile(mode="wb") as file:
-            buffered_writer = io.BufferedWriter(file)
-            await self.mission_file.component.values[0].save(buffered_writer)
-        await thread.send(f'Mission downloaded (took {time.time() - download_t0:.2f} seconds)')
+        with tempfile.TemporaryDirectory() as directory:
+            temp_file = Path(directory) / f'tmp_{filename}'
+            with open(temp_file, mode="wb") as file:
+                await self.mission_file.component.values[0].save(file)
+                try:
+                    upload_response = await interface.upload_mission(temp_file, server)
+                except aiohttp.ClientResponseError as e:
+                    await thread.send(f'❌ {interaction.user.mention} your mission could not be uploaded.')
+                    if e.status == 409:
+                        await thread.send('A mission with this filename already exists on this server.')
+                    elif e.status == 422:
+                        await thread.send('The mission could not be processed.')
+                    if e.message:
+                        await thread.send(f'Message from server: {e.message}')
+                    return
+        await thread.send(f'Mission downloaded in {time.time() - download_t0:.2f} second(s)')
+        await thread.send(f'Mission iteration #{upload_response.iteration_number}')
+
+        mission_length = upload_response.mission_length
+        safestart_length = upload_response.safe_start_length
+        mission_length_format = f'{mission_length // (60*60):02d}:{(mission_length//60)%60:02d}:{mission_length%60:02d}'
+        safe_start_length_format = f'{safestart_length // (60*60):02d}:{(safestart_length//60)%60:02d}:{safestart_length%60:02d}'
+
+        await thread.send(fr"""Iteration Information:
+    Minimum Players: {upload_response.min_players}
+    Maximum Players: {upload_response.max_players}
+    Desired Players: {upload_response.desired_players}
+    Safe Start Length: {safe_start_length_format}
+    Mission Length: {mission_length_format}""")
 
         await interaction.followup.send(f'✅ {interaction.user.mention} your mission has been uploaded successfully!')
 

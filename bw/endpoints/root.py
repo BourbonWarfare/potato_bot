@@ -3,6 +3,7 @@ from bw.endpoints.auth import Auth
 from bw.endpoints.user import User
 from bw.endpoints.group import Group
 from bw.endpoints.arma import ServerOps
+from bw.endpoints.missions import Missions
 
 
 class Healthcheck(Endpoint):
@@ -15,6 +16,7 @@ class V1(Endpoint):
     auth = Auth()
     user = User()
     group = Group()
+    missions = Missions()
     healthcheck = Healthcheck()
 
 
