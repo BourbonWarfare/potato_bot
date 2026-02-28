@@ -286,3 +286,11 @@ def failed_to_reach_discord() -> discord.Embed:
         description='Something is _really_ broken, we cannot reach Discord. Please try again later.',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
+
+def cannot_upload_no_servers() -> discord.Embed:
+    return discord.Embed(
+        title='🔨 Failed to upload: No servers',
+        description='The BW backend reports no servers. Something is misconfigured, tell Staff.',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+

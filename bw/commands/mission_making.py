@@ -8,11 +8,11 @@ from pathlib import Path
 from discord import app_commands, ui
 from discord.ext import commands
 
-from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord, failed_to_reach_bw_backend
+from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord, cannot_upload_no_servers
 from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User
-from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord
+from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, NoServersToUploadTo
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -39,6 +39,8 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     async def new(cls):
         modal = cls()
         async with State.state.arma_server_cache.servers as servers:
+            if servers == []:
+                raise NoServersToUploadTo()
             modal.add_item(ui.Label(
                     text='Destination Server',
                     description='Which server the mission is uploaded to',
@@ -159,8 +161,8 @@ class MissionMaking(commands.Cog, name='Mission Making'):
     async def upload(self, interaction: discord.Interaction):
         try:
             modal = await MissionUploadModal.new()
-        except CannotReachBwBackend as e:
+        except NoServersToUploadTo as e:
             logger.error(f'{interaction.user} cannot upload a mission: {e}')
-            await interaction.response.send_message(embed=failed_to_reach_bw_backend())
+            await interaction.response.send_message(embed=cannot_upload_no_servers())
         else:
             await interaction.response.send_modal(modal)
