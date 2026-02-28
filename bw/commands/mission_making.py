@@ -35,20 +35,23 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         description='Describe anything which you want to be tested directly',
         component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
-    server = ui.Label(
-        text='Destination Server',
-        description='Which server the mission is uploaded to',
-        component=ui.Select(
-            min_values=1,
-            max_values=1,
-            options=[
-                discord.SelectOption(label=server, value=server, default=(idx == 0)) for idx, server in enumerate(server_list())
-            ],
-        ),
-    )
     footer = ui.TextDisplay(
         '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
     )
+
+    def __init__(self):
+        self.add_item(ui.Label(
+                text='Destination Server',
+                description='Which server the mission is uploaded to',
+                component=ui.Select(
+                    min_values=1,
+                    max_values=1,
+                    options=[
+                        discord.SelectOption(label=server, value=server, default=(idx == 0)) for idx, server in enumerate(server_list())
+                    ],
+                ),
+            )
+        )
 
     async def on_submit(self, interaction: discord.Interaction):
         assert isinstance(self.mission_file.component, ui.FileUpload)
