@@ -1,3 +1,4 @@
+from sqlalchemy import desc
 import discord
 import logging
 import datetime
@@ -90,6 +91,11 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         await thread.send(f'Upload Description: {description}')
         await thread.send(f'Potential Issues: {potential_issues}')
 
+        changelog = {
+            'description': description,
+            'potential_issues': potential_issues
+        }
+
         logger.debug('Downloading mission')
         download_t0 = time.time()
         with tempfile.TemporaryDirectory() as directory:
@@ -97,7 +103,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             with open(temp_file, mode="wb") as file:
                 await self.mission_file.component.values[0].save(file)
                 try:
-                    upload_response = await interface.upload_mission(temp_file, server)
+                    upload_response = await interface.upload_mission(temp_file, server, changelog)
                 except aiohttp.ClientResponseError as e:
                     await interaction.followup.send(
                         f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
