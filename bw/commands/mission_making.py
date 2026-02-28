@@ -16,11 +16,6 @@ from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord
 
 logger = logging.getLogger('bw.potbot.command')
 
-
-def server_list() -> list[str]:
-    return State.state.arma_server_cache.blocking_servers
-
-
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     mission_file = ui.Label(
         text='Mission File', description='The mission you want to upload', component=ui.FileUpload(min_values=1)
@@ -40,19 +35,24 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
     )
 
-    def __init__(self):
-        self.add_item(ui.Label(
-                text='Destination Server',
-                description='Which server the mission is uploaded to',
-                component=ui.Select(
-                    min_values=1,
-                    max_values=1,
-                    options=[
-                        discord.SelectOption(label=server, value=server, default=(idx == 0)) for idx, server in enumerate(server_list())
-                    ],
-                ),
+    @classmethod
+    async def new(cls):
+        modal = cls()
+        async with State.state.arma_server_cache.servers as servers:
+            modal.add_item(ui.Label(
+                    text='Destination Server',
+                    description='Which server the mission is uploaded to',
+                    component=ui.Select(
+                        min_values=1,
+                        max_values=1,
+                        options=[
+                            discord.SelectOption(label=server, value=server, default=(idx == 0))
+                            for idx, server in enumerate(servers)
+                        ],
+                    ),
+                )
             )
-        )
+        return modal
 
     async def on_submit(self, interaction: discord.Interaction):
         assert isinstance(self.mission_file.component, ui.FileUpload)
@@ -157,4 +157,4 @@ class MissionMaking(commands.Cog, name='Mission Making'):
 
     @app_commands.command(name='upload', description='Upload a mission to the selected server')
     async def upload(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(MissionUploadModal())
+        await interaction.response.send_modal(awaitMissionUploadModal.new())
