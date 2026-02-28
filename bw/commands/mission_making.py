@@ -65,6 +65,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             if isinstance(label.component, ui.Select) and label.component.custom_id == 'server_selector':
                 server = label.component
                 break
+
         assert isinstance(self.mission_file.component, ui.FileUpload)
         assert len(self.mission_file.component.values) == 1
         assert isinstance(self.description.component, ui.TextInput)
@@ -84,11 +85,11 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
         except CannotReachBwBackend as e:
             logger.error(e)
-            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
             return
         except CannotReachDiscord as e:
             logger.error(e)
-            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
             return
         interface = User(bw_session=bw_session, oauth_session=oauth_session)
 
