@@ -114,11 +114,9 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         await thread.send(f'Mission iteration #{upload_response.iteration_number}')
 
         mission_length = upload_response.mission_length
-        safestart_length = upload_response.safe_start_length
-        mission_length_format = f'{mission_length // (60 * 60):02d}:{(mission_length // 60) % 60:02d}:{mission_length % 60:02d}'
-        safe_start_length_format = (
-            f'{safestart_length // (60 * 60):02d}:{(safestart_length // 60) % 60:02d}:{safestart_length % 60:02d}'
-        )
+        safe_start_length = upload_response.safe_start_length
+        mission_length_format = f'{mission_length // 60:02d}:{mission_length % 60:02d}'
+        safe_start_length_format = f'{safe_start_length // 60:02d}:{safe_start_length % 60:02d}'
 
         await thread.send(rf"""----- ITERATION INFORMATION -----
     Minimum Players: {upload_response.min_players}
