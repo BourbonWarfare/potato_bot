@@ -157,4 +157,4 @@ class MissionMaking(commands.Cog, name='Mission Making'):
 
     @app_commands.command(name='upload', description='Upload a mission to the selected server')
     async def upload(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(awaitMissionUploadModal.new())
+        await interaction.response.send_modal(await MissionUploadModal.new())
