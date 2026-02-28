@@ -41,7 +41,7 @@ class ArmaServerCache:
     @property
     @asynccontextmanager
     async def servers(self) -> AsyncIterator[list[str]]:
-        if self.servers_ is None:
+        if not self.servers_:
             await self.refresh()
 
         yield self.servers_
