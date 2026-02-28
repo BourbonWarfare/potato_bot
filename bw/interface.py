@@ -187,6 +187,7 @@ class User(Interface):
                 async with session.post(
                     self.url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
                     headers=client.auth_header,
+                    json=payload
                 ) as response:
                     try:
                         err_body = await response.text()
