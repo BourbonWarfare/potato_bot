@@ -180,10 +180,15 @@ class User(Interface):
                     response.raise_for_status()
                     return await response.json()
 
-    async def upload_mission(self, mission_path: Path, server: str) -> MissionUploadResponse:
+    async def upload_mission(self, mission_path: Path, server: str, changelog: dict[str, str]) -> MissionUploadResponse:
+        payload = {
+            'pbo_path': str(mission_path),
+            'server_name': server,
+            'changelog': changelog
+        }
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.user_session() as client:
-                async with session.get(
+                async with session.post(
                     self.url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
                     headers=client.auth_header,
                 ) as response:

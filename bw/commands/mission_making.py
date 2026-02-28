@@ -99,7 +99,9 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                 try:
                     upload_response = await interface.upload_mission(temp_file, server)
                 except aiohttp.ClientResponseError as e:
-                    await interaction.followup.send(f'❌ {interaction.user.mention} your mission could not be uploaded.')
+                    await interaction.followup.send(
+                        f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
+                    )
                     await thread.send('----- ERROR LOG -----')
                     if e.status == 409:
                         await thread.send('A mission with this filename already exists on this server.')
@@ -116,7 +118,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         mission_length_format = f'{mission_length // (60*60):02d}:{(mission_length//60)%60:02d}:{mission_length%60:02d}'
         safe_start_length_format = f'{safestart_length // (60*60):02d}:{(safestart_length//60)%60:02d}:{safestart_length%60:02d}'
 
-        await thread.send(fr"""Iteration Information:
+        await thread.send(fr"""----- ITERATION INFORMATION -----
     Minimum Players: {upload_response.min_players}
     Maximum Players: {upload_response.max_players}
     Desired Players: {upload_response.desired_players}
