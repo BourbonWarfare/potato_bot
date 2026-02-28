@@ -1,5 +1,6 @@
 import aiohttp
 
+
 class ResponseError(Exception):
     body: str
     exception: aiohttp.ClientResponseError

@@ -66,6 +66,4 @@ class Authentication(commands.Cog, name='Authentication'):
             raise CannotLogin(str(e)) from e
 
         logger.info('Starting OAuth session with access code')
-        return await SessionApi().start_oauth_session(
-            State.state, discord_id=user_id, access_code=access_code
-        )
+        return await SessionApi().start_oauth_session(State.state, discord_id=user_id, access_code=access_code)

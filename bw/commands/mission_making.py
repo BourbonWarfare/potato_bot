@@ -42,8 +42,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             min_values=1,
             max_values=1,
             options=[
-                discord.SelectOption(label=server, value=server, default=(idx == 0))
-                for idx, server in enumerate(server_list())
+                discord.SelectOption(label=server, value=server, default=(idx == 0)) for idx, server in enumerate(server_list())
             ],
         ),
     )
@@ -89,16 +88,13 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         await thread.send(f'Upload Description: {description}')
         await thread.send(f'Potential Issues: {potential_issues}')
 
-        changelog = {
-            'description': description,
-            'potential_issues': potential_issues
-        }
+        changelog = {'description': description, 'potential_issues': potential_issues}
 
         logger.debug('Downloading mission')
         download_t0 = time.time()
         with tempfile.TemporaryDirectory() as directory:
             temp_file = Path(directory) / f'tmp_{filename}'
-            with open(temp_file, mode="wb") as file:
+            with open(temp_file, mode='wb') as file:
                 await self.mission_file.component.values[0].save(file)
                 try:
                     upload_response = await interface.upload_mission(temp_file, server, changelog)
@@ -119,10 +115,12 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
         mission_length = upload_response.mission_length
         safestart_length = upload_response.safe_start_length
-        mission_length_format = f'{mission_length // (60*60):02d}:{(mission_length//60)%60:02d}:{mission_length%60:02d}'
-        safe_start_length_format = f'{safestart_length // (60*60):02d}:{(safestart_length//60)%60:02d}:{safestart_length%60:02d}'
+        mission_length_format = f'{mission_length // (60 * 60):02d}:{(mission_length // 60) % 60:02d}:{mission_length % 60:02d}'
+        safe_start_length_format = (
+            f'{safestart_length // (60 * 60):02d}:{(safestart_length // 60) % 60:02d}:{safestart_length % 60:02d}'
+        )
 
-        await thread.send(fr"""----- ITERATION INFORMATION -----
+        await thread.send(rf"""----- ITERATION INFORMATION -----
     Minimum Players: {upload_response.min_players}
     Maximum Players: {upload_response.max_players}
     Desired Players: {upload_response.desired_players}

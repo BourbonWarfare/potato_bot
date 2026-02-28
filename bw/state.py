@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker, Session
 from bw.environment import ENVIRONMENT
 from bw.settings import GLOBAL_CONFIGURATION
 from bw.arma_server_cache import ArmaServerCache
-from bw.error import StateUsedBeforeDefined
 
 logger = logging.getLogger('bw.state')
 
