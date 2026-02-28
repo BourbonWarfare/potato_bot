@@ -21,7 +21,7 @@ class VariableResolver:
         self.resolver = resolver
 
     def var(self, value: str) -> 'Resolver':
-        self.resolver.path.append(f'{quote_plus(value)}/')
+        self.resolver.path.append(f'{quote_plus(value)}')
         return self.resolver
 
 
