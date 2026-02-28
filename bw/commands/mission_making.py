@@ -30,9 +30,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         description='Describe anything which you want to be tested directly',
         component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
-    footer = ui.TextDisplay(
-        '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.',
-    )
 
     @classmethod
     async def new(cls):
@@ -45,7 +42,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                     description='Which server the mission is uploaded to',
                     component=ui.Select(
                         custom_id='server_selector',
-                        row=2,
                         min_values=1,
                         max_values=1,
                         options=[
@@ -55,6 +51,9 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                     ),
                 )
             )
+            modal.add_item(ui.TextDisplay(
+                '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.',
+            ))
         return modal
 
     async def on_submit(self, interaction: discord.Interaction):
