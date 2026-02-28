@@ -30,7 +30,6 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         description='Describe anything which you want to be tested directly',
         component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
-    server: ui.Label
     footer = ui.TextDisplay(
         '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.'
     )
@@ -41,29 +40,39 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         async with State.state.arma_server_cache.servers as servers:
             if servers == []:
                 raise NoServersToUploadTo()
-            modal.server = ui.Label(
-                text='Destination Server',
-                description='Which server the mission is uploaded to',
-                component=ui.Select(
-                    min_values=1,
-                    max_values=1,
-                    options=[
-                        discord.SelectOption(label=server, value=server, default=(idx == 0))
-                        for idx, server in enumerate(servers)
-                    ],
-                ),
+            modal.add_item(ui.Label(
+                    text='Destination Server',
+                    description='Which server the mission is uploaded to',
+                    component=ui.Select(
+                        custom_id='server_selector',
+                        min_values=1,
+                        max_values=1,
+                        options=[
+                            discord.SelectOption(label=server, value=server, default=(idx == 0))
+                            for idx, server in enumerate(servers)
+                        ],
+                    ),
+                )
             )
         return modal
 
     async def on_submit(self, interaction: discord.Interaction):
+        to_check: list[ui.Label] = []
+        for child in self.walk_children():
+            if isinstance(child, ui.Label):
+                to_check.append(child)
+        for label in to_check:
+            if isinstance(label.component, ui.Select) and label.component.custom_id == 'server_selector':
+                server = label.component
+                break
         assert isinstance(self.mission_file.component, ui.FileUpload)
         assert len(self.mission_file.component.values) == 1
         assert isinstance(self.description.component, ui.TextInput)
         assert isinstance(self.potential_issues.component, ui.TextInput)
-        assert isinstance(self.server.component, ui.Select)
+        assert isinstance(server, ui.Select)
         assert isinstance(interaction.channel, discord.TextChannel | discord.Thread)
 
-        server = self.server.component.values[0]
+        server = server.values[0]
         description = self.description.component.value
         potential_issues = self.potential_issues.component.value
 
