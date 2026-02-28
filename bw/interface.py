@@ -1,5 +1,6 @@
 import aiohttp
 import datetime
+import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
 from bw.environment import ENVIRONMENT
@@ -9,18 +10,19 @@ from bw.state import State
 from bw.session.oauth import OAuthSession, BwSession
 from bw.utils import backoff
 from bw.missions.response import MissionUploadResponse
-from bw.error import ResponseError
+from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord
 
+logger = logging.getLogger('bw.interface')
 
 class ApiClient:
     session_url: str
     bot_token: str
-    session: BwSession
+    session: BwSession | None
 
     def __init__(self, session_url: str):
         self.session_url = session_url
         self.bot_token = ENVIRONMENT.backend_token()
-        self.session = BwSession.null()
+        self.session = None
 
     @backoff(delay=0.5, retries=5)
     async def refresh_session(self, session: None | aiohttp.ClientSession = None):
@@ -28,8 +30,10 @@ class ApiClient:
             async with session.get(self.session_url, json={'bot_token': self.bot_token}) as response:
                 response.raise_for_status()
                 session = await response.json()
-                self.session.expire_time = datetime.datetime.fromisoformat(session.get('expire_time'))
-                self.session.token = session.get('session_token')
+                self.session = BwSession(
+                    token=session['session_token'],
+                    expire_time=datetime.datetime.fromisoformat(session['expire_time'])
+                )
 
         if session is None:
             async with aiohttp.ClientSession() as session:
@@ -39,13 +43,13 @@ class ApiClient:
 
     @asynccontextmanager
     async def api_session(self, session: aiohttp.ClientSession | None = None):
-        if self.session.is_expired():
+        if not self.session or self.session.is_expired():
             await self.refresh_session(session)
         yield self
 
     @property
     def auth_header(self) -> dict[str, str]:
-        return {'Authorization': f'Bearer {self.session_token}'} if self.session_token else {}
+        return {'Authorization': f'Bearer {self.session.token}'} if self.session else {}
 
 
 class UserClient:
@@ -70,9 +74,13 @@ class UserClient:
             yield self
         except aiohttp.ClientResponseError as e:
             if e.status == 401:
-                await self.refresh_session(self.refresh_token)
+                logger.warning('Session expired after we already started the request. Refreshing...')
+                await self.refresh_session()
             else:
                 raise e
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend()
 
     @property
     def auth_header(self) -> dict[str, str]:
@@ -88,35 +96,55 @@ class Interface:
         return f'http://{self.address}:{self.port}{path}'
 
     async def healthcheck(self) -> bool:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.url(Root.get().api.v1.healthcheck.resolve())) as response:
-                return response.status == 200
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.url(Root.get().api.v1.healthcheck.resolve())) as response:
+                    return response.status == 200
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend()
 
     async def arma_server_healthcheck(self, server: str) -> bool:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                self.url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
-            ) as response:
-                return response.status == 200
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
+                ) as response:
+                    return response.status == 200
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend()
 
     async def auth_get_access_code(self, state: str) -> dict:
         headers = {'Authorization': f'Bearer {state}'}
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
-                response.raise_for_status()
-                return await response.json()
+        try:
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.get(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
+                    response.raise_for_status()
+                    return await response.json()
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend()
 
     async def login_to_backend(self, oauth_session: OAuthSession) -> dict:
-        async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
-            async with session.post(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
-                response.raise_for_status()
-                return await response.json()
+        try:
+            async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
+                async with session.post(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
+                    response.raise_for_status()
+                    return await response.json()
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend()
 
     async def get_arma_servers(self) -> list[str]:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.url(Root.get().api.v1.server_ops.arma.servers.resolve())) as response:
-                response.raise_for_status()
-                return (await response.json()).get('servers')
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.url(Root.get().api.v1.server_ops.arma.servers.resolve())) as response:
+                    response.raise_for_status()
+                    return (await response.json()).get('servers')
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend()
 
 
 class User(Interface):

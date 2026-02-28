@@ -6,7 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
-from bw.error import RefreshFailed
+from bw.error import RefreshFailed, CannotReachBwBackend, CannotReachDiscord
 from bw.interface import User
 from bw.commands.utils import get_session, arma_servers_autocomplete
 
@@ -43,7 +43,17 @@ class Staff(commands.Cog, name='Staff Commands'):
         option = ArmaCommand(option)
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
 
-        bw_session, oauth_session = await get_session(interaction)
+        interaction.response.defer()
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
+            return
 
         interface = User(oauth_session=oauth_session, bw_session=bw_session)
 
@@ -71,6 +81,9 @@ class Staff(commands.Cog, name='Staff Commands'):
         except RefreshFailed as e:
             logger.error(str(e))
             raise
+        except CannotReachBwBackend as e:
+            logger.error(f'Failed to operate on server: {e}')
+            embed = embeds.failed_to_reach_bw_backend()
         except Exception as e:
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)
@@ -101,7 +114,17 @@ class Staff(commands.Cog, name='Staff Commands'):
     async def get_server_status(self, interaction: discord.Interaction, server: str):
         logger.info(f'{interaction.user} is checking the status of "{server}"')
 
-        bw_session, oauth_session = await get_session(interaction)
+        interaction.response.defer()
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
+            return
 
         interface = User(oauth_session=oauth_session, bw_session=bw_session)
 
@@ -123,6 +146,9 @@ class Staff(commands.Cog, name='Staff Commands'):
                     hc_status=response.get('hc_status', 'Unknown'),
                     startup_status=response.get('startup_status', 'Unknown'),
                 )
+        except CannotReachBwBackend as e:
+            logger.error(f'Failed to operate on server: {e}')
+            embed = embeds.failed_to_reach_bw_backend()
         except RefreshFailed as e:
             logger.error(str(e))
             raise e
@@ -173,7 +199,17 @@ class Staff(commands.Cog, name='Staff Commands'):
         update_option = UpdateChoices(update_option)
         logger.info(f'{interaction.user} is trying to update {update_option} on "{server}"')
 
-        bw_session, oauth_session = await get_session(interaction)
+        interaction.response.defer()
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
+            return
 
         interface = User(oauth_session=oauth_session, bw_session=bw_session)
 
@@ -200,6 +236,9 @@ class Staff(commands.Cog, name='Staff Commands'):
         except RefreshFailed as e:
             logger.warning(f'{e}. Reattempting whole method...')
             raise
+        except CannotReachBwBackend as e:
+            logger.error(f'Failed to operate on server: {e}')
+            embed = embeds.failed_to_reach_bw_backend()
         except Exception as e:
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, update_option, server)

@@ -6,14 +6,21 @@ import asyncio
 from discord import app_commands
 from discord.ext import commands
 
-from bw.embeds import login_with_discord, logged_in_with_discord, failed_to_login_with_discord, already_logged_in
+from bw.embeds import (
+    login_with_discord,
+    logged_in_with_discord,
+    failed_to_login_with_discord,
+    already_logged_in,
+    failed_to_reach_bw_backend,
+    failed_to_reach_discord
+)
 from bw.utils import backoff
 from bw.interface import Interface
 from bw.session.api import SessionApi
 from bw.session.types import DiscordSnowflake
 from bw.session.oauth import OAuthSession
 from bw.state import State
-from bw.error import CannotLogin, NoSuchSession
+from bw.error import CannotLogin, NoSuchSession, CannotReachBwBackend, CannotReachDiscord
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -42,6 +49,14 @@ class Authentication(commands.Cog, name='Authentication'):
         except CannotLogin as e:
             logger.info(e)
             await interaction.followup.send(embed=failed_to_login_with_discord(), ephemeral=True)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            return
         else:
             logger.info('successfully logged in')
             await interaction.followup.send(embed=logged_in_with_discord(), ephemeral=True)

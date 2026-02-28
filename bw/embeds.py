@@ -270,3 +270,19 @@ def server_management_failure(context: str) -> discord.Embed:
         description=f'We could not complete the operation on the server: {context}',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
+
+
+def failed_to_reach_bw_backend() -> discord.Embed:
+    return discord.Embed(
+        title='🔨 Failed to reach BW Backend',
+        description='Something is broken, we cannot reach the backend. Please try again later, or tell Staff if this persists.',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+
+
+def failed_to_reach_discord() -> discord.Embed:
+    return discord.Embed(
+        title='🔨 Failed to reach Discord',
+        description='Something is _really_ broken, we cannot reach Discord. Please try again later.',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )

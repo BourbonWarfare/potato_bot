@@ -1,7 +1,7 @@
 from sqlalchemy import select, delete
 
 from bw.state import State
-from bw.error import RefreshFailed, NoSuchSession, CannotLogin
+from bw.error import RefreshFailed, NoSuchSession, CannotLogin, CannotReachDiscord, CannotReachBwBackend
 from bw.models.session import Session
 from bw.environment import ENVIRONMENT
 from bw.session.oauth import OAuthSession, BwSession
@@ -16,14 +16,17 @@ class SessionApi:
 
         data = {'grant_type': 'authorization_code', 'code': access_code, 'redirect_uri': ENVIRONMENT.discord_oauth_redirect_uri()}
         auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
-        async with aiohttp.ClientSession(auth=auth) as session:
-            async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data) as response:
-                try:
-                    response.raise_for_status()
-                except aiohttp.ClientResponseError as e:
-                    raise CannotLogin(str(e)) from e
+        try:
+            async with aiohttp.ClientSession(auth=auth) as session:
+                async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data) as response:
+                    try:
+                        response.raise_for_status()
+                    except aiohttp.ClientResponseError as e:
+                        raise CannotLogin(str(e)) from e
 
                 access_token_response = await response.json()
+        except aiohttp.ClientConnectionError as e:
+            raise CannotReachDiscord() from e
 
         oauth_session = OAuthSession(
             access_token=access_token_response['access_token'],
@@ -53,14 +56,17 @@ class SessionApi:
         data = {'grant_type': 'refresh_token', 'refresh_token': oauth_session.refresh_token}
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data, auth=auth) as response:
-                try:
-                    response.raise_for_status()
-                except aiohttp.ClientResponseError as e:
-                    raise RefreshFailed(e) from e
+        try:
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data, auth=auth) as response:
+                    try:
+                        response.raise_for_status()
+                    except aiohttp.ClientResponseError as e:
+                        raise RefreshFailed(e) from e
 
-                access_token = await response.json()
+                    access_token = await response.json()
+        except aiohttp.ClientConnectionError as e:
+            raise CannotReachDiscord() from e
 
         oauth_session = OAuthSession(
             access_token=access_token['access_token'],

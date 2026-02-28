@@ -4,6 +4,7 @@ import aiohttp
 import datetime
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
+from bw.error import CannotReachBwBackend
 
 logger = logging.getLogger('bw.arma_server_cache')
 
@@ -25,7 +26,7 @@ class ArmaServerCache:
             logger.info('Refreshing server cache')
             servers = await Interface().get_arma_servers()
             self.last_refresh_ = datetime.datetime.now()
-        except (aiohttp.ClientResponseError, aiohttp.ClientConnectionError) as e:
+        except (aiohttp.ClientResponseError, CannotReachBwBackend) as e:
             logger.warning(f'Could not get arma servers: {e}')
             servers = []
         self.servers_ = servers

@@ -8,11 +8,11 @@ from pathlib import Path
 from discord import app_commands, ui
 from discord.ext import commands
 
-from bw.embeds import get_bwmf
+from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord
 from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User
-from bw.error import ResponseError
+from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -66,7 +66,16 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         filename = mission_attachment.filename
 
         logger.debug('Getting BW session')
-        bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            return
         interface = User(bw_session=bw_session, oauth_session=oauth_session)
 
         if isinstance(interaction.channel, discord.Thread):
@@ -98,6 +107,11 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                 await self.mission_file.component.values[0].save(file)
                 try:
                     upload_response = await interface.upload_mission(temp_file, server, changelog)
+                except CannotReachBwBackend as e:
+                    logger.error(f'Failed to operate on server: {e}')
+                    await interaction.followup.send(
+                        f'❌ {interaction.user.mention} your mission could not be uploaded: we cannot reach the BW Backend. Please try again later.'
+                    )
                 except ResponseError as e:
                     await interaction.followup.send(
                         f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
