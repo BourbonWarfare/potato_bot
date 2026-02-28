@@ -93,7 +93,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         logger.debug('Downloading mission')
         download_t0 = time.time()
         with tempfile.TemporaryDirectory() as directory:
-            temp_file = Path(directory) / f'tmp_{filename}'
+            temp_file = Path(directory) / filename
             with open(temp_file, mode='wb') as file:
                 await self.mission_file.component.values[0].save(file)
                 try:
