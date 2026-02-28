@@ -290,7 +290,7 @@ def failed_to_reach_discord() -> discord.Embed:
 def cannot_upload_no_servers() -> discord.Embed:
     return discord.Embed(
         title='🔨 Failed to upload: No servers',
-        description='The BW backend reports no servers. Something is misconfigured, tell Staff.',
+        description='The BW backend reports no servers; it is probably shutdown, tell Staff to restart it.',
         colour=ENVIRONMENT.embed_colour_member(),
     )
 
