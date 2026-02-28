@@ -1,11 +1,8 @@
-from sqlalchemy import desc
 import discord
 import logging
 import datetime
 import tempfile
 import time
-import io
-import aiohttp
 from zoneinfo import ZoneInfo
 from pathlib import Path
 from discord import app_commands, ui
@@ -15,6 +12,7 @@ from bw.embeds import get_bwmf
 from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User
+from bw.error import ResponseError
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -104,17 +102,17 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                 await self.mission_file.component.values[0].save(file)
                 try:
                     upload_response = await interface.upload_mission(temp_file, server, changelog)
-                except aiohttp.ClientResponseError as e:
+                except ResponseError as e:
                     await interaction.followup.send(
                         f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
                     )
                     await thread.send('----- ERROR LOG -----')
-                    if e.status == 409:
+                    if e.exception.status == 409:
                         await thread.send('A mission with this filename already exists on this server.')
-                    elif e.status == 422:
+                    elif e.exception.status == 422:
                         await thread.send('The mission could not be processed.')
-                    if e.message:
-                        await thread.send(f'Message from server: {e.message}')
+                    if e.body:
+                        await thread.send(f'Message from server: {e.body}')
                     return
         await thread.send(f'Mission downloaded in {time.time() - download_t0:.2f} second(s)')
         await thread.send(f'Mission iteration #{upload_response.iteration_number}')

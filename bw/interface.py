@@ -2,7 +2,6 @@ import aiohttp
 import datetime
 from pathlib import Path
 from contextlib import asynccontextmanager
-from typing import Any
 from bw.environment import ENVIRONMENT
 from bw.endpoints import Root
 from bw.session.api import SessionApi
@@ -10,6 +9,7 @@ from bw.state import State
 from bw.session.oauth import OAuthSession, BwSession
 from bw.utils import backoff
 from bw.missions.response import MissionUploadResponse
+from bw.error import ResponseError
 
 
 class ApiClient:
@@ -192,5 +192,9 @@ class User(Interface):
                     self.url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
                     headers=client.auth_header,
                 ) as response:
-                    response.raise_for_status()
+                    try:
+                        err_body = await response.text()
+                        response.raise_for_status()
+                    except aiohttp.ClientResponseError as e:
+                        raise ResponseError(err_body, e)
                     return MissionUploadResponse(**await response.json())
