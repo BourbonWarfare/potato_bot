@@ -8,7 +8,7 @@ from pathlib import Path
 from discord import app_commands, ui
 from discord.ext import commands
 
-from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord
+from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord, failed_to_reach_bw_backend
 from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User
@@ -157,4 +157,10 @@ class MissionMaking(commands.Cog, name='Mission Making'):
 
     @app_commands.command(name='upload', description='Upload a mission to the selected server')
     async def upload(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(await MissionUploadModal.new())
+        try:
+            modal = await MissionUploadModal.new()
+        except CannotReachBwBackend as e:
+            logger.error(f'{interaction.user} cannot upload a mission: {e}')
+            await interaction.response.send_message(embed=failed_to_reach_bw_backend())
+        else:
+            await interaction.response.send_modal(modal)
