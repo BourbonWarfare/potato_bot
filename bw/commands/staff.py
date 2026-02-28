@@ -43,7 +43,7 @@ class Staff(commands.Cog, name='Staff Commands'):
         option = ArmaCommand(option)
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
 
-        interaction.response.defer()
+        await interaction.response.defer()
         try:
             bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
         except CannotReachBwBackend as e:
@@ -114,7 +114,7 @@ class Staff(commands.Cog, name='Staff Commands'):
     async def get_server_status(self, interaction: discord.Interaction, server: str):
         logger.info(f'{interaction.user} is checking the status of "{server}"')
 
-        interaction.response.defer()
+        await interaction.response.defer()
         try:
             bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
         except CannotReachBwBackend as e:
@@ -199,7 +199,7 @@ class Staff(commands.Cog, name='Staff Commands'):
         update_option = UpdateChoices(update_option)
         logger.info(f'{interaction.user} is trying to update {update_option} on "{server}"')
 
-        interaction.response.defer()
+        await interaction.response.defer()
         try:
             bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
         except CannotReachBwBackend as e:
