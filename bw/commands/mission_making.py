@@ -127,6 +127,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                     await interaction.followup.send(
                         f'❌ {interaction.user.mention} your mission could not be uploaded: we cannot reach the BW Backend. Please try again later.'
                     )
+                    return
                 except ResponseError as e:
                     await interaction.followup.send(
                         f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
