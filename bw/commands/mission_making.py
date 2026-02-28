@@ -125,7 +125,8 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                 except CannotReachBwBackend as e:
                     logger.error(f'Failed to operate on server: {e}')
                     await interaction.followup.send(
-                        f'❌ {interaction.user.mention} your mission could not be uploaded: we cannot reach the BW Backend. Please try again later.'
+                        f'❌ {interaction.user.mention} your mission could not be uploaded.',
+                        embed=failed_to_reach_bw_backend()
                     )
                     return
                 except ResponseError as e:
