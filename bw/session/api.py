@@ -24,8 +24,10 @@ class SessionApi:
             base_url += '/'
 
         try:
-            async with aiohttp.ClientSession(base_url=base_url, auth=auth) as session:
-                async with session.post(url='oauth2/token', data=data) as response:
+            async with aiohttp.ClientSession(base_url=base_url) as session:
+                logger.info('a')
+                async with session.post(url='oauth2/token', data=data, auth=auth) as response:
+                    logger.info('b')
                     response.raise_for_status()
             access_token_response = await response.json()
         except aiohttp.ClientConnectionError as e:
