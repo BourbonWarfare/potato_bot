@@ -8,6 +8,9 @@ from bw.session.oauth import OAuthSession, BwSession
 from bw.session.types import DiscordSnowflake
 import aiohttp
 import datetime
+import logging
+
+logger = logging.getLogger('bw.session')
 
 
 class SessionApi:
@@ -22,10 +25,12 @@ class SessionApi:
                     try:
                         response.raise_for_status()
                     except aiohttp.ClientResponseError as e:
+                        logger.error(f'Cannot login to Discord: {e}')
                         raise CannotLogin(str(e)) from e
 
                 access_token_response = await response.json()
         except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach Discord to get OAuth token: {e}')
             raise CannotReachDiscord() from e
 
         oauth_session = OAuthSession(
