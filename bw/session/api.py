@@ -1,3 +1,4 @@
+from virtualenv.activation.python.activate_this import base
 from sqlalchemy import select, delete
 
 from bw.state import State
@@ -19,9 +20,13 @@ class SessionApi:
 
         data = {'grant_type': 'authorization_code', 'code': access_code, 'redirect_uri': ENVIRONMENT.discord_oauth_redirect_uri()}
         auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
+        base_url = ENVIRONMENT.discord_api_url()
+        if base_url[-1] != '/':
+            base_url += '/'
+
         try:
-            async with aiohttp.ClientSession(base_url=ENVIRONMENT.discord_api_url(), auth=auth) as session:
-                async with session.post(url='/oauth2/token', data=data) as response:
+            async with aiohttp.ClientSession(base_url=base_url, auth=auth) as session:
+                async with session.post(url='oauth2/token', data=data) as response:
                     response.raise_for_status()
             access_token_response = await response.json()
         except aiohttp.ClientConnectionError as e:
