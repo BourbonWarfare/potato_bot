@@ -20,18 +20,16 @@ class SessionApi:
         data = {'grant_type': 'authorization_code', 'code': access_code, 'redirect_uri': ENVIRONMENT.discord_oauth_redirect_uri()}
         auth = aiohttp.BasicAuth(ENVIRONMENT.discord_client_id(), ENVIRONMENT.discord_client_secret())
         try:
-            async with aiohttp.ClientSession(auth=auth) as session:
-                async with session.post(f'{ENVIRONMENT.discord_api_url()}/oauth2/token', data=data) as response:
-                    try:
-                        response.raise_for_status()
-                    except aiohttp.ClientResponseError as e:
-                        logger.error(f'Cannot login to Discord: {e}')
-                        raise CannotLogin(str(e)) from e
-
-                access_token_response = await response.json()
+            async with aiohttp.ClientSession(base_url=ENVIRONMENT.discord_api_url(), auth=auth) as session:
+                async with session.post(url='/oauth2/token', data=data) as response:
+                    response.raise_for_status()
+            access_token_response = await response.json()
         except aiohttp.ClientConnectionError as e:
             logger.error(f'Cannot reach Discord to get OAuth token: {e}')
             raise CannotReachDiscord() from e
+        except aiohttp.ClientResponseError as e:
+            logger.error(f'Cannot login to Discord: {e}')
+            raise CannotLogin(str(e)) from e
 
         oauth_session = OAuthSession(
             access_token=access_token_response['access_token'],
