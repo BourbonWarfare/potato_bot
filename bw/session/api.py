@@ -38,6 +38,7 @@ class SessionApi:
         except NoSuchSession as e:
             # expected, we are creating a new session afterall
             bw_session = e.session
+            assert isinstance(bw_session, BwSession)
 
         with state.Session.begin() as session:
             new_session = Session(
@@ -76,11 +77,11 @@ class SessionApi:
         with state.Session.begin() as session:
             query = select(Session).where(Session.oauth_refresh_token == oauth_session.refresh_token)
             existing_session = session.scalar(query)
-            if not existing_session:
+            if not isinstance(existing_session, Session):
                 raise NoSuchSession()
 
-            existing_session.token = oauth_session.access_token
-            existing_session.refresh_token = oauth_session.refresh_token
+            existing_session.oauth_token = oauth_session.access_token
+            existing_session.oauth_refresh_token = oauth_session.refresh_token
             existing_session.expires_seconds = access_token['expires_in']
             existing_session.session_start = datetime.datetime.now()
 
