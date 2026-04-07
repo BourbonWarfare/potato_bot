@@ -1,4 +1,3 @@
-from virtualenv.activation.python.activate_this import base
 from sqlalchemy import select, delete
 
 from bw.state import State
