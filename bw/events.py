@@ -9,7 +9,13 @@ from bw.endpoints.root import Root
 
 class Broker:
     def __init__(self):
+        pass
+
+    def start(self):
         self.backend_event_handler.start()
+
+    def stop(self):
+        self.backend_event_handler.stop()
 
     def add_handler(self, handler: Callable[[str, str, dict[str, Any]], None], namespace: str | None, event: str | None):
         pass

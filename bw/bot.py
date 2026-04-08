@@ -7,6 +7,7 @@ from discord.ext import commands
 
 from bw.commands import community, helpers, mission_making, recruitment, staff, authentication
 from bw.version import VERSION, Version
+from bw.events import global_event_broker
 
 logger = logging.getLogger('bw.potbot')
 
@@ -46,4 +47,7 @@ class PotatoBot(commands.Bot):
             logger.info('A new version detected, re-syncing')
             logger.debug(f'current_version={current_version}, VERSION={VERSION}')
             await self.tree.sync()
+        
+        logger.info('Starting event broker')
+        global_event_broker.start()
         logger.info(f'Session ready for {self.user}')
