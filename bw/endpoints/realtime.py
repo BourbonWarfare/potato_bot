@@ -1,8 +1,8 @@
 from bw.endpoints.endpoint import Endpoint
 
-class Subscribe(Endpoint):
-    endpoint = 'subscribe'
+class Sse(Endpoint):
+    endpoint = 'sse'
 
 class Realtime(Endpoint):
     endpoint = 'realtime'
-    subscribe = Subscribe()
+    sse = Sse()

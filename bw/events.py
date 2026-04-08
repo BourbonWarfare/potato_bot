@@ -34,7 +34,7 @@ class Broker:
     @tasks.loop()
     async def backend_event_handler(self):
         timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
-        url = Interface().url(Root.get().api.v1.realtime.subscribe.resolve())
+        url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(url=url, headers={'Accept': 'text/event-stream'}) as response:
                 response.raise_for_status()
