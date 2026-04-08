@@ -39,7 +39,6 @@ class Broker:
             async with session.get(url=url, headers={'Accept': 'text/event-stream'}) as response:
                 response.raise_for_status()
                 async for line in response.content:
-                    line = line.decode('utf-8').strip()
-                    print(await line)
+                    print(line)
 
 global_event_broker = Broker()
