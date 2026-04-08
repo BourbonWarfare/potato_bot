@@ -1,3 +1,4 @@
+from bw.endpoints.realtime import Realtime
 from bw.endpoints.endpoint import Endpoint
 from bw.endpoints.auth import Auth
 from bw.endpoints.user import User
@@ -17,6 +18,7 @@ class V1(Endpoint):
     user = User()
     group = Group()
     missions = Missions()
+    realtime = Realtime()
     healthcheck = Healthcheck()
 
 

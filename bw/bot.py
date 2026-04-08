@@ -3,6 +3,7 @@ from pathlib import Path
 
 import logging
 import discord
+from discord.ext import commands
 
 from bw.commands import community, helpers, mission_making, recruitment, staff, authentication
 from bw.version import VERSION, Version
@@ -10,7 +11,7 @@ from bw.version import VERSION, Version
 logger = logging.getLogger('bw.potbot')
 
 
-class PotatoBot(discord.ext.commands.Bot):
+class PotatoBot(commands.Bot):
     @classmethod
     def setup(cls) -> Self:
         intents = discord.Intents.default()

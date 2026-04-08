@@ -1,3 +1,4 @@
+from sqlalchemy.sql.coercions import name
 import discord
 import logging
 import datetime
@@ -7,12 +8,14 @@ from zoneinfo import ZoneInfo
 from pathlib import Path
 from discord import app_commands, ui
 from discord.ext import commands
+from typing import Any
 
 from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord, cannot_upload_no_servers
 from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User
 from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, NoServersToUploadTo
+from bw.events import global_event_broker
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -177,3 +180,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
             await interaction.response.send_message(embed=cannot_upload_no_servers())
         else:
             await interaction.response.send_modal(modal)
+
+    @global_event_broker.subscribe(namespace='missions')
+    def mission_event_handler(self, namespace: str, event: str, data: dict[str, Any]) -> None:
+        print(namespace, event, data)

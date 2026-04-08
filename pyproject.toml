@@ -11,7 +11,7 @@ dependencies = [
     "python-dotenv",
     "tzdata",
     "sqlalchemy",
-    "alembic"
+    "alembic",
 ]
 authors = [
     {name="Bailey Danyluk"}
