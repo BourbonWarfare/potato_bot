@@ -38,6 +38,7 @@ class Broker:
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(url=url, headers={'Accept': 'text/event-stream'}) as response:
                 response.raise_for_status()
+                print(dict(response.headers))
                 async for line in response.content:
                     print(line)
 
