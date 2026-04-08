@@ -35,14 +35,11 @@ class Broker:
     async def backend_event_handler(self):
         timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
         url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
-        print('start', url, timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(url=url, headers={'Accept': 'text/event-stream'}) as response:
-                print('response')
                 response.raise_for_status()
                 async for line in response.content:
                     line = line.decode('utf-8').strip()
-                    print(line)
-        print('end')
+                    print(await line)
 
 global_event_broker = Broker()
