@@ -36,16 +36,23 @@ class Broker:
 
     @tasks.loop()
     async def backend_event_handler(self):
+        print(1)
         timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
         url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
         headers={'Accept': 'text/event-stream', 'Cache-Control': 'no-cache'}
-        async with aiohttp.ClientSession(timeout=timeout, headers=headers, version=aiohttp.HttpVersion11) as session:
+        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
+            print(2)
             async with session.get(url=url) as response:
+                print(3)
                 response.raise_for_status()
+                print(4)
                 if response.status == 204:
+                    print(5)
                     logger.info('SSE stream has no content')
                     return
+                print(6)
                 async for line_in_bytes in response.content:
+                    print(7)
                     line = line_in_bytes.decode('utf-8')
                     print(line_in_bytes, line)
 
