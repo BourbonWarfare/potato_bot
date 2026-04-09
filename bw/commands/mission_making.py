@@ -1,3 +1,4 @@
+from bw.events.decoder import ServerSentEvent
 import discord
 import logging
 import datetime
@@ -181,5 +182,5 @@ class MissionMaking(commands.Cog, name='Mission Making'):
             await interaction.response.send_modal(modal)
 
     @global_event_broker.subscribe(namespace='missions')
-    def mission_event_handler(self, namespace: str, event: str, data: dict[str, Any]) -> None:
-        print(namespace, event, data)
+    def mission_event_handler(self, event: ServerSentEvent) -> None:
+        print(event)

@@ -1,21 +1,29 @@
-from bw.interface import Interface
 import aiohttp
-from aiohttp import hdrs
 import logging
 import json
-from typing import Any
+
+from aiohttp import hdrs
 from collections.abc import Callable
 from functools import wraps
 from discord.ext import tasks
+from dataclasses import dataclass
 
+from bw.interface import Interface
 from bw.endpoints.root import Root
-from bw.events.decoder import ServerSentEventBuilder
+from bw.events.decoder import ServerSentEventBuilder, ServerSentEvent
 
 logger = logging.getLogger('bw.events')
 
+@dataclass
+class Handler:
+    handler: Callable[[ServerSentEvent], None]
+    filtered_namespace: str | None
+    filtered_event: str | None
+
 class Broker:
+    handlers: list[Handler]
     def __init__(self):
-        pass
+        self.handlers = []
 
     def start(self):
         self.backend_event_handler.start()
@@ -23,11 +31,15 @@ class Broker:
     def stop(self):
         self.backend_event_handler.stop()
 
-    def add_handler(self, handler: Callable[[str, str, dict[str, Any]], None], namespace: str | None, event: str | None):
-        pass
+    def add_handler(self, handler: Callable[[ServerSentEvent], None], namespace: str | None, event: str | None):
+        self.handlers.append(Handler(
+            handler=handler,
+            filtered_namespace=namespace,
+            filtered_event=event
+        ))
 
     def subscribe(self, *, namespace: str | None = None, event: str | None = None):
-        def decorator(func: Callable[[str, str, dict[str, Any]], None]):
+        def decorator(func: Callable[[ServerSentEvent], None]):
             @wraps(func)
             def wrapper(*args, **kwargs) -> None:
                 return func(*args, **kwargs)
@@ -36,6 +48,15 @@ class Broker:
             return wrapper
         
         return decorator
+
+    def publish(self, event: ServerSentEvent):
+        for handler in self.handlers:
+            if handler.filtered_namespace and event.namespace != handler.filtered_namespace:
+                continue
+            if handler.filtered_event and event.event != handler.filtered_event:
+                continue
+
+            handler.handler(event)
 
     @tasks.loop()
     async def backend_event_handler(self):
@@ -53,7 +74,7 @@ class Broker:
                 async for line_in_bytes in response.content:
                     line = line_in_bytes.decode('utf-8').strip('\n').strip('\r')
                     if line == '':
-                        print(latest_event.finish())
+                        self.publish(latest_event.finish())
                         latest_event = ServerSentEventBuilder()
                         continue
 
