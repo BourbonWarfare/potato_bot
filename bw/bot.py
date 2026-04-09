@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from bw.commands import community, helpers, mission_making, recruitment, staff, authentication
 from bw.version import VERSION, Version
-from bw.events import global_event_broker
+from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot')
 

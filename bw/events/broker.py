@@ -2,12 +2,14 @@ from bw.interface import Interface
 import aiohttp
 from aiohttp import hdrs
 import logging
+import json
 from typing import Any
 from collections.abc import Callable
 from functools import wraps
 from discord.ext import tasks
 
 from bw.endpoints.root import Root
+from bw.events.decoder import ServerSentEventBuilder
 
 logger = logging.getLogger('bw.events')
 
@@ -46,8 +48,21 @@ class Broker:
                 if response.status == 204:
                     logger.info('SSE stream has no content')
                     return
+                
+                latest_event = ServerSentEventBuilder()
                 async for line_in_bytes in response.content:
-                    line = line_in_bytes.decode('utf-8')
-                    print(line_in_bytes, line)
+                    line = line_in_bytes.decode('utf-8').strip('\n').strip('\r')
+                    if line == '':
+                        print(latest_event.finish())
+                        latest_event = ServerSentEventBuilder()
+                        continue
+
+                    prefix, following = line.split(':', 1)
+                    if prefix == 'id':
+                        latest_event.with_id(following.strip())
+                    elif prefix == 'event':
+                        latest_event.with_event(following.strip())
+                    elif prefix == 'data':
+                        latest_event.with_data(json.loads(following.strip()))
 
 global_event_broker = Broker()

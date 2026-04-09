@@ -1,4 +1,3 @@
-from sqlalchemy.sql.coercions import name
 import discord
 import logging
 import datetime
@@ -15,7 +14,7 @@ from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User
 from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, NoServersToUploadTo
-from bw.events import global_event_broker
+from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot.command')
 
