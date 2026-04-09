@@ -39,9 +39,9 @@ class Broker:
     async def backend_event_handler(self):
         timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
         url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
-        headers={hdrs.ACCEPT: 'text/event-stream', 'Cache-Control': 'no-cache'}
-        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
-            async with session.get(url=url) as response:
+        headers={hdrs.ACCEPT: 'text/event-stream', hdrs.CACHE_CONTROL: 'no-cache'}
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url=url, timeout=timeout, headers=headers) as response:
                 response.raise_for_status()
                 if response.status == 204:
                     logger.info('SSE stream has no content')
