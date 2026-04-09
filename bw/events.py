@@ -1,11 +1,14 @@
 from bw.interface import Interface
 import aiohttp
+import logging
 from typing import Any
 from collections.abc import Callable
 from functools import wraps
 from discord.ext import tasks
 
 from bw.endpoints.root import Root
+
+logger = logging.getLogger('bw.events')
 
 class Broker:
     def __init__(self):
@@ -35,10 +38,15 @@ class Broker:
     async def backend_event_handler(self):
         timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
         url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
-        async with aiohttp.ClientSession(timeout=timeout, headers={'Accept': 'text/event-stream'}, version=aiohttp.HttpVersion11) as session:
+        headers={'Accept': 'text/event-stream', 'Cache-Control': 'no-cache'}
+        async with aiohttp.ClientSession(timeout=timeout, headers=headers, version=aiohttp.HttpVersion11) as session:
             async with session.get(url=url) as response:
                 response.raise_for_status()
-                async for line in response.content:
-                    print(line)
+                if response.status == 204:
+                    logger.info('SSE stream has no content')
+                    return
+                async for line_in_bytes in response.content:
+                    line = line_in_bytes.decode('utf-8')
+                    print(line_in_bytes, line)
 
 global_event_broker = Broker()

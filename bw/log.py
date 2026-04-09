@@ -11,7 +11,8 @@ PRODUCTION_LOG_CONFIG = {
     'bw.state': 'INFO',
     'bw.potbot': 'INFO',
     'bw.potbot.command': 'INFO',
-    'bw.interface': 'INFO'
+    'bw.interface': 'INFO',
+    'bw.events': 'DEBUG'
 }
 
 
