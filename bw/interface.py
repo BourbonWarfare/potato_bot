@@ -8,7 +8,6 @@ from contextlib import asynccontextmanager
 from typing import Any
 from bw.environment import ENVIRONMENT
 from bw.endpoints import Root
-from bw.session.api import SessionApi
 from bw.session.oauth import OAuthSession, BwSession
 from bw.utils import backoff
 from bw.missions.response import (
@@ -78,6 +77,7 @@ class UserClient(BaseClient):
     @backoff(delay=0.5, retries=5)
     async def refresh_session(self):
         from bw.state import State
+        from bw.session.api import SessionApi
         self.discord_session = await SessionApi().refresh_oauth_session(State.state, self.discord_session)
         self.bw_session = await SessionApi().login_to_backend(State.state, self.discord_session)
 
