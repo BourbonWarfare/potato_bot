@@ -1,14 +1,17 @@
+from bw.missions.types import IterationUuid
+from bw.environment import ENVIRONMENT
+from bw.discord.api import DiscordApi
 from bw.events.decoder import ServerSentEvent
 import discord
 import logging
 import datetime
 import tempfile
 import time
+import uuid
 from zoneinfo import ZoneInfo
 from pathlib import Path
-from discord import app_commands, ui
+from discord import app_commands, ui, ForumChannel, Thread
 from discord.ext import commands
-from typing import Any
 
 from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord, cannot_upload_no_servers
 from bw.commands.utils import get_session
@@ -18,6 +21,7 @@ from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, No
 from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot.command')
+
 
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     mission_file = ui.Label(
@@ -40,7 +44,8 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         async with State.state.arma_server_cache.servers as servers:
             if servers == []:
                 raise NoServersToUploadTo()
-            modal.add_item(ui.Label(
+            modal.add_item(
+                ui.Label(
                     text='Destination Server',
                     description='Which server the mission is uploaded to',
                     component=ui.Select(
@@ -54,9 +59,12 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                     ),
                 )
             )
-            modal.add_item(ui.TextDisplay(
-                '⚠️ Your mission will have some automated tests occur after upload. We will notify you if they succeed or fail.',
-            ))
+            modal.add_item(
+                ui.TextDisplay(
+                    '⚠️ Your mission will have some automated tests occur after upload. '
+                    'We will notify you if they succeed or fail.',
+                )
+            )
         return modal
 
     async def on_submit(self, interaction: discord.Interaction):
@@ -128,8 +136,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                 except CannotReachBwBackend as e:
                     logger.error(f'Failed to operate on server: {e}')
                     await interaction.followup.send(
-                        f'❌ {interaction.user.mention} your mission could not be uploaded.',
-                        embed=failed_to_reach_bw_backend()
+                        f'❌ {interaction.user.mention} your mission could not be uploaded.', embed=failed_to_reach_bw_backend()
                     )
                     return
                 except ResponseError as e:
@@ -163,7 +170,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
 
 class MissionMaking(commands.Cog, name='Mission Making'):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @app_commands.command(name='bwmf', description='Download the latest Mission Framework')
@@ -182,5 +189,15 @@ class MissionMaking(commands.Cog, name='Mission Making'):
             await interaction.response.send_modal(modal)
 
     @global_event_broker.subscribe(namespace='missions')
-    def mission_event_handler(self, event: ServerSentEvent) -> None:
-        print(event)
+    async def mission_event_handler(self, event: ServerSentEvent) -> None:
+        channel = self.bot.get_channel(ENVIRONMENT.mission_forum_id())
+        assert isinstance(channel, ForumChannel)
+
+        if event.event == 'uploaded':
+            iteration_information = await User(State.state.api_client()).iteration_information(
+                IterationUuid(uuid.UUID(hex=event.data['iteration']))
+            )
+            mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information.mission)
+
+            forum = self.bot.get_channel(mission_thread.thread_id)
+            assert isinstance(forum, Thread)

@@ -12,10 +12,16 @@ from bw.session.api import SessionApi
 from bw.state import State
 from bw.session.oauth import OAuthSession, BwSession
 from bw.utils import backoff
-from bw.missions.response import MissionUploadResponse, IterationInformationResponse, MissionInformationResponse, MissionTypeResponse
-from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord
+from bw.missions.response import (
+    MissionUploadResponse,
+    IterationInformationResponse,
+    MissionInformationResponse,
+    MissionTypeResponse,
+)
+from bw.error import ResponseError, CannotReachBwBackend
 
 logger = logging.getLogger('bw.interface')
+
 
 class BaseClient(ABC):
     @asynccontextmanager
@@ -25,6 +31,7 @@ class BaseClient(ABC):
     @property
     def auth_header(self) -> dict[str, str]:
         return {}
+
 
 class ApiClient(BaseClient):
     bot_token: str
@@ -41,8 +48,7 @@ class ApiClient(BaseClient):
                 response.raise_for_status()
                 session = await response.json()
                 self.session = BwSession(
-                    token=session['session_token'],
-                    expire_time=datetime.datetime.fromisoformat(session['expire_time'])
+                    token=session['session_token'], expire_time=datetime.datetime.fromisoformat(session['expire_time'])
                 )
 
         if session is None:
@@ -215,7 +221,7 @@ class User(Interface):
                 async with session.post(
                     self.url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
                     headers=client.auth_header,
-                    json=payload
+                    json=payload,
                 ) as response:
                     try:
                         err_body = await response.text()
@@ -229,7 +235,7 @@ class User(Interface):
             async with self.client.backend_session(session=session) as client:
                 async with session.get(
                     self.url(Root.get().api.v1.missions.iteration.iteration_id.var(iteration_uuid).resolve()),
-                    headers=client.auth_header
+                    headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
                     payload: dict[str, Any] = await response.json()
@@ -237,11 +243,7 @@ class User(Interface):
                     tag: dict[str, Any] = mission.pop('mission_type')
 
                     return IterationInformationResponse(
-                        **payload,
-                        mission=MissionInformationResponse(
-                            **mission,
-                            mission_type=MissionTypeResponse(**tag)
-                        )
+                        **payload, mission=MissionInformationResponse(**mission, mission_type=MissionTypeResponse(**tag))
                     )
 
     async def mission_information(self, mission_uuid: MissionUuid) -> MissionInformationResponse:
@@ -249,14 +251,10 @@ class User(Interface):
             async with self.client.backend_session(session=session) as client:
                 async with session.get(
                     self.url(Root.get().api.v1.missions.mission.mission_id.var(mission_uuid).resolve()),
-                    headers=client.auth_header
+                    headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
                     payload: dict[str, Any] = await response.json()
                     tag: dict[str, Any] = payload.pop('mission_type')
 
-                    return MissionInformationResponse(
-                        **payload,
-                        mission_type=MissionTypeResponse(**tag)
-                    )
-
+                    return MissionInformationResponse(**payload, mission_type=MissionTypeResponse(**tag))

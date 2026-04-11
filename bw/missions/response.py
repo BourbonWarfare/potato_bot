@@ -46,4 +46,3 @@ class IterationInformationResponse:
     bwmf_version: str
     iteration: int
     changelog: str
-

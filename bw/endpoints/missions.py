@@ -1,18 +1,23 @@
 from bw.endpoints.endpoint import Endpoint, VariableEndpoint
 
+
 class MissionId(Endpoint):
     endpoint = VariableEndpoint()
+
 
 class Mission(Endpoint):
     endpoint = 'mission'
     iteration_id = MissionId()
 
+
 class IterationId(Endpoint):
     endpoint = VariableEndpoint()
+
 
 class Iteration(Endpoint):
     endpoint = 'iteration'
     iteration_id = IterationId()
+
 
 class Server(Endpoint):
     endpoint = VariableEndpoint()

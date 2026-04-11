@@ -12,7 +12,7 @@ from bw.embeds import (
     failed_to_login_with_discord,
     already_logged_in,
     failed_to_reach_bw_backend,
-    failed_to_reach_discord
+    failed_to_reach_discord,
 )
 from bw.utils import backoff
 from bw.interface import Interface

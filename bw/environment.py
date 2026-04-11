@@ -1,3 +1,4 @@
+from bw.discord.types import ForumId
 import discord
 import logging
 import datetime
@@ -34,6 +35,10 @@ class Environment:
     @config_fetch('backend_secret')
     def backend_bot_token(self, key: str) -> str:
         return GC[key]
+
+    @config_fetch('mission_forum_id')
+    def mission_forum_id(self, key: str) -> ForumId:
+        return ForumId(int(GC[key]))
 
     @config_fetch('discord_token')
     def discord_token(self, key: str) -> str:

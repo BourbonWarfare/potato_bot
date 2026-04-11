@@ -48,8 +48,7 @@ class PotatoBot(commands.Bot):
             logger.info('A new version detected, re-syncing')
             logger.debug(f'current_version={current_version}, VERSION={VERSION}')
             await self.tree.sync()
-        
+
         logger.info('Starting event broker')
         global_event_broker.start()
         logger.info(f'Session ready for {self.user}')
-

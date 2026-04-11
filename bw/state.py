@@ -17,6 +17,7 @@ class DatabaseConnection:
         self.engine = engine
         self.session_maker = sessionmaker(self.engine)
 
+
 class State:
     state_: Optional['State'] = None
 

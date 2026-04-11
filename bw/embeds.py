@@ -2,6 +2,7 @@ import discord
 import datetime
 import urllib
 from bw.environment import ENVIRONMENT
+from bw.missions.response import MissionInformationResponse, MissionTypeResponse
 
 
 def default() -> discord.Embed:
@@ -152,7 +153,8 @@ def login_with_discord(state: str) -> discord.Embed:
     return discord.Embed(
         title='Login to POTBOT with Discord',
         description='Logs into POTBOT to perform restricted commands.',
-        url=f'https://discord.com/oauth2/authorize?client_id={ENVIRONMENT.discord_client_id()}&response_type=code&redirect_uri={redirect_uri}&scope=identify&state={state}',
+        url=f'https://discord.com/oauth2/authorize?client_id={ENVIRONMENT.discord_client_id()}'
+        f'&response_type=code&redirect_uri={redirect_uri}&scope=identify&state={state}',
         colour=ENVIRONMENT.embed_colour_member(),
     )
 
@@ -287,6 +289,7 @@ def failed_to_reach_discord() -> discord.Embed:
         colour=ENVIRONMENT.embed_colour_staff(),
     )
 
+
 def cannot_upload_no_servers() -> discord.Embed:
     return discord.Embed(
         title='🔨 Failed to upload: No servers',
@@ -294,3 +297,26 @@ def cannot_upload_no_servers() -> discord.Embed:
         colour=ENVIRONMENT.embed_colour_member(),
     )
 
+
+def mission_type_information(mission_type: MissionTypeResponse) -> discord.Embed:
+    return discord.Embed(
+        title='📋 Mission Type',
+        description=f'Type: {mission_type.name}\nSignoffs needed: {mission_type.signoffs_required}',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
+def mission_information(mission: MissionInformationResponse) -> tuple[discord.Embed, discord.Embed]:
+    return (
+        discord.Embed(
+            title='🪖 Mission Information',
+            description=f'🪧 Name: {mission.title}\n🖥️ Server: {mission.server}\n👀 Author: {mission.author_name}\n------'
+            f'\n{"\n  \\* ".join([f"{flag}: {str(data)}" for flag, data in mission.special_flags.items()])}',
+            colour=ENVIRONMENT.embed_colour_member(),
+        ),
+        mission_type_information(mission.mission_type),
+    )
+
+
+def iteration_information(mission: MissionInformationResponse) -> discord.Embed:
+    pass
