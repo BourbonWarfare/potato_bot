@@ -142,6 +142,16 @@ class Interface:
             logger.error(f'Cannot reach BW Backend: {e}')
             raise CannotReachBwBackend()
 
+    async def login_to_backend(self, oauth_session: OAuthSession) -> dict:
+        try:
+            async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
+                async with session.post(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
+                    response.raise_for_status()
+                    return await response.json()
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend()
+
     async def get_arma_servers(self) -> list[str]:
         try:
             async with aiohttp.ClientSession() as session:
