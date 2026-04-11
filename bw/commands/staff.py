@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from bw import embeds
 from bw.error import RefreshFailed, CannotReachBwBackend, CannotReachDiscord
-from bw.interface import User
+from bw.interface import User, UserClient
 from bw.commands.utils import get_session, arma_servers_autocomplete
 
 logger = logging.getLogger('bw.potbot.command')
@@ -55,7 +55,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
             return
 
-        interface = User(oauth_session=oauth_session, bw_session=bw_session)
+        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         async def perform(option: str, server: str) -> dict:
             if option == ArmaCommand.START:
@@ -126,7 +126,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
             return
 
-        interface = User(oauth_session=oauth_session, bw_session=bw_session)
+        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         try:
             response = await interface.get_arma_server_status(server)
@@ -211,7 +211,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
             return
 
-        interface = User(oauth_session=oauth_session, bw_session=bw_session)
+        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         async def perform(option: UpdateChoices, server: str) -> dict:
             if option == UpdateChoices.MODS:

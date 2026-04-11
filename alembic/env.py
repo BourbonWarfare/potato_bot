@@ -29,6 +29,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 import bw.models
 from bw.models.session import *
+from bw.models.discord import *
 target_metadata = bw.models.Base.metadata
 
 # other values from the config, defined by the needs of env.py,

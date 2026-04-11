@@ -31,6 +31,10 @@ def config_fetch(entry: str, type_converter: type = str, require: bool = True) -
 
 
 class Environment:
+    @config_fetch('backend_secret')
+    def backend_bot_token(self, key: str) -> str:
+        return GC[key]
+
     @config_fetch('discord_token')
     def discord_token(self, key: str) -> str:
         return GC[key]
@@ -57,10 +61,6 @@ class Environment:
 
     @config_fetch('backend_port', int)
     def backend_port(self, key: str) -> str:
-        return GC[key]
-
-    @config_fetch('backend_token', str)
-    def backend_token(self, key: str) -> str:
         return GC[key]
 
     @config_fetch('discord_client_id', str)

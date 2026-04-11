@@ -1,33 +1,43 @@
+from abc import ABC
+from bw.missions.types import IterationUuid, MissionUuid
 import aiohttp
 import datetime
 import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
+from typing import Any
 from bw.environment import ENVIRONMENT
 from bw.endpoints import Root
 from bw.session.api import SessionApi
 from bw.state import State
 from bw.session.oauth import OAuthSession, BwSession
 from bw.utils import backoff
-from bw.missions.response import MissionUploadResponse
+from bw.missions.response import MissionUploadResponse, IterationInformationResponse, MissionInformationResponse, MissionTypeResponse
 from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord
 
 logger = logging.getLogger('bw.interface')
 
-class ApiClient:
-    session_url: str
+class BaseClient(ABC):
+    @asynccontextmanager
+    async def backend_session(self, session: aiohttp.ClientSession | None = None):
+        yield
+
+    @property
+    def auth_header(self) -> dict[str, str]:
+        return {}
+
+class ApiClient(BaseClient):
     bot_token: str
     session: BwSession | None
 
-    def __init__(self, session_url: str):
-        self.session_url = session_url
-        self.bot_token = ENVIRONMENT.backend_token()
+    def __init__(self):
+        self.bot_token = ENVIRONMENT.backend_bot_token()
         self.session = None
 
     @backoff(delay=0.5, retries=5)
     async def refresh_session(self, session: None | aiohttp.ClientSession = None):
         async def refresh(session: aiohttp.ClientSession):
-            async with session.get(self.session_url, json={'bot_token': self.bot_token}) as response:
+            async with session.get(Root.get().api.v1.auth.login.bot.resolve(), json={'bot_token': self.bot_token}) as response:
                 response.raise_for_status()
                 session = await response.json()
                 self.session = BwSession(
@@ -42,7 +52,7 @@ class ApiClient:
             await refresh(session)
 
     @asynccontextmanager
-    async def api_session(self, session: aiohttp.ClientSession | None = None):
+    async def backend_session(self, session: aiohttp.ClientSession | None = None):
         if not self.session or self.session.is_expired():
             await self.refresh_session(session)
         yield self
@@ -52,7 +62,7 @@ class ApiClient:
         return {'Authorization': f'Bearer {self.session.token}'} if self.session else {}
 
 
-class UserClient:
+class UserClient(BaseClient):
     bw_session: BwSession
     discord_session: OAuthSession
 
@@ -66,7 +76,7 @@ class UserClient:
         self.bw_session = await SessionApi().login_to_backend(State.state, self.discord_session)
 
     @asynccontextmanager
-    async def user_session(self):
+    async def backend_session(self, session: aiohttp.ClientSession | None = None):
         if self.bw_session.is_expired() or self.discord_session.is_expired():
             await self.refresh_session()
 
@@ -126,16 +136,6 @@ class Interface:
             logger.error(f'Cannot reach BW Backend: {e}')
             raise CannotReachBwBackend()
 
-    async def login_to_backend(self, oauth_session: OAuthSession) -> dict:
-        try:
-            async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
-                async with session.post(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
-                    response.raise_for_status()
-                    return await response.json()
-        except aiohttp.ClientConnectionError as e:
-            logger.error(f'Cannot reach BW Backend: {e}')
-            raise CannotReachBwBackend()
-
     async def get_arma_servers(self) -> list[str]:
         try:
             async with aiohttp.ClientSession() as session:
@@ -148,13 +148,13 @@ class Interface:
 
 
 class User(Interface):
-    def __init__(self, bw_session: BwSession, oauth_session: OAuthSession):
-        self.client = UserClient(bw_session=bw_session, oauth_session=oauth_session)
+    def __init__(self, client: BaseClient):
+        self.client = client
         super().__init__()
 
     async def start_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session():
+            async with self.client.backend_session(session=session):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve())
                 ) as response:
@@ -163,7 +163,7 @@ class User(Interface):
 
     async def stop_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session():
+            async with self.client.backend_session(session=session):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve())
                 ) as response:
@@ -172,7 +172,7 @@ class User(Interface):
 
     async def restart_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session():
+            async with self.client.backend_session(session=session):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve())
                 ) as response:
@@ -181,7 +181,7 @@ class User(Interface):
 
     async def update_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session():
+            async with self.client.backend_session(session=session):
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
@@ -190,7 +190,7 @@ class User(Interface):
 
     async def update_arma_server_mods(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session() as client:
+            async with self.client.backend_session(session=session) as client:
                 async with session.post(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
                     headers=client.auth_header,
@@ -200,7 +200,7 @@ class User(Interface):
 
     async def get_arma_server_status(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session() as client:
+            async with self.client.backend_session(session=session) as client:
                 async with session.get(
                     self.url(Root.get().api.v1.server_ops.arma.server.var(server).status.resolve()),
                     headers=client.auth_header,
@@ -211,7 +211,7 @@ class User(Interface):
     async def upload_mission(self, mission_path: Path, server: str, changelog: dict[str, str]) -> MissionUploadResponse:
         payload = {'pbo_path': str(mission_path), 'changelog': changelog}
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.user_session() as client:
+            async with self.client.backend_session(session=session) as client:
                 async with session.post(
                     self.url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
                     headers=client.auth_header,
@@ -223,3 +223,40 @@ class User(Interface):
                     except aiohttp.ClientResponseError as e:
                         raise ResponseError(err_body, e)
                     return MissionUploadResponse(**await response.json())
+
+    async def iteration_information(self, iteration_uuid: IterationUuid) -> IterationInformationResponse:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session) as client:
+                async with session.get(
+                    self.url(Root.get().api.v1.missions.iteration.iteration_id.var(iteration_uuid).resolve()),
+                    headers=client.auth_header
+                ) as response:
+                    response.raise_for_status()
+                    payload: dict[str, Any] = await response.json()
+                    mission: dict[str, Any] = payload.pop('mission')
+                    tag: dict[str, Any] = mission.pop('mission_type')
+
+                    return IterationInformationResponse(
+                        **payload,
+                        mission=MissionInformationResponse(
+                            **mission,
+                            mission_type=MissionTypeResponse(**tag)
+                        )
+                    )
+
+    async def mission_information(self, mission_uuid: MissionUuid) -> MissionInformationResponse:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session) as client:
+                async with session.get(
+                    self.url(Root.get().api.v1.missions.mission.mission_id.var(mission_uuid).resolve()),
+                    headers=client.auth_header
+                ) as response:
+                    response.raise_for_status()
+                    payload: dict[str, Any] = await response.json()
+                    tag: dict[str, Any] = payload.pop('mission_type')
+
+                    return MissionInformationResponse(
+                        **payload,
+                        mission_type=MissionTypeResponse(**tag)
+                    )
+

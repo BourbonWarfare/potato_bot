@@ -7,7 +7,6 @@ from discord.ext import commands
 
 from bw.commands import community, helpers, mission_making, recruitment, staff, authentication
 from bw.version import VERSION, Version
-from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot')
 
@@ -33,6 +32,8 @@ class PotatoBot(commands.Bot):
         logger.info(f'Setup as {self.user}. Ready to go! :3')
 
     async def on_ready(self):
+        from bw.events.broker import global_event_broker
+
         path = Path('version.txt')
         if path.exists():
             with open(path) as f:
@@ -51,3 +52,4 @@ class PotatoBot(commands.Bot):
         logger.info('Starting event broker')
         global_event_broker.start()
         logger.info(f'Session ready for {self.user}')
+

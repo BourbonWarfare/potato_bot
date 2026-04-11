@@ -13,7 +13,7 @@ from typing import Any
 from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_discord, cannot_upload_no_servers
 from bw.commands.utils import get_session
 from bw.state import State
-from bw.interface import User
+from bw.interface import User, UserClient
 from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, NoServersToUploadTo
 from bw.events.broker import global_event_broker
 
@@ -94,7 +94,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             logger.error(e)
             await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
             return
-        interface = User(bw_session=bw_session, oauth_session=oauth_session)
+        interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
 
         if isinstance(interaction.channel, discord.Thread):
             logger.debug('Retrieving thread')
