@@ -33,7 +33,7 @@ class State:
             return
         self.engine_map = {}
         self.arma_server_cache_ = ArmaServerCache()
-        self.api_client = ApiClient()
+        self.api_client_ = ApiClient()
         State.state_ = self
 
         if 'db_name' in GLOBAL_CONFIGURATION:
@@ -45,7 +45,7 @@ class State:
 
     @property
     def api_client(self) -> ApiClient:
-        return self.api_client
+        return self.api_client_
 
     @property
     def arma_server_cache(self) -> ArmaServerCache:
