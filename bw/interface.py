@@ -78,6 +78,7 @@ class UserClient(BaseClient):
     async def refresh_session(self):
         from bw.state import State
         from bw.session.api import SessionApi
+
         self.discord_session = await SessionApi().refresh_oauth_session(State.state, self.discord_session)
         self.bw_session = await SessionApi().login_to_backend(State.state, self.discord_session)
 

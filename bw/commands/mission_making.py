@@ -173,6 +173,8 @@ class MissionMaking(commands.Cog, name='Mission Making'):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+        global_event_broker.add_handler(self.mission_event_handler, namespace='mission', event=None)
+
     @app_commands.command(name='bwmf', description='Download the latest Mission Framework')
     async def get_bwmf(self, interaction: discord.Interaction):
         logger.info(f'{interaction.user} requested the BWMF download link.')
@@ -188,7 +190,6 @@ class MissionMaking(commands.Cog, name='Mission Making'):
         else:
             await interaction.response.send_modal(modal)
 
-    @global_event_broker.subscribe(namespace='mission')
     async def mission_event_handler(self, event: ServerSentEvent) -> None:
         channel = self.bot.get_channel(ENVIRONMENT.mission_forum_id())
         assert isinstance(channel, ForumChannel)

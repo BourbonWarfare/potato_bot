@@ -1,10 +1,10 @@
 import aiohttp
 import logging
 import json
+import asyncio
 
 from aiohttp import hdrs
-from collections.abc import Callable
-from functools import wraps
+from collections.abc import Callable, Awaitable
 from discord.ext import tasks
 from dataclasses import dataclass
 
@@ -17,7 +17,7 @@ logger = logging.getLogger('bw.events')
 
 @dataclass
 class Handler:
-    handler: Callable[[ServerSentEvent], None]
+    handler: Callable[[ServerSentEvent], Awaitable[None]]
     filtered_namespace: str | None
     filtered_event: str | None
 
@@ -34,21 +34,10 @@ class Broker:
     def stop(self):
         self.backend_event_handler.stop()
 
-    def add_handler(self, handler: Callable[[ServerSentEvent], None], namespace: str | None, event: str | None):
+    def add_handler(self, handler: Callable[[ServerSentEvent], Awaitable[None]], *, namespace: str | None, event: str | None):
         self.handlers.append(Handler(handler=handler, filtered_namespace=namespace, filtered_event=event))
 
-    def subscribe(self, *, namespace: str | None = None, event: str | None = None):
-        def decorator(func: Callable[[ServerSentEvent], None]):
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> None:
-                return func(*args, **kwargs)
-
-            self.add_handler(wrapper, namespace=namespace, event=event)
-            return wrapper
-
-        return decorator
-
-    def publish(self, event: ServerSentEvent):
+    async def publish(self, event: ServerSentEvent):
         for handler in self.handlers:
             if handler.filtered_namespace and event.namespace != handler.filtered_namespace:
                 logger.debug(
@@ -58,40 +47,40 @@ class Broker:
                 continue
             if handler.filtered_event and event.event != handler.filtered_event:
                 logger.debug(
-                    'Filtering handler due to event mismatch:'
-                    f'Expected: "{event.event}". Handler: "{handler.filtered_event}"'
+                    f'Filtering handler due to event mismatch:Expected: "{event.event}". Handler: "{handler.filtered_event}"'
                 )
                 continue
 
-            handler.handler(event)
+            await handler.handler(event)
 
     @tasks.loop()
     async def backend_event_handler(self):
-        timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
-        url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
-        headers = {hdrs.ACCEPT: 'text/event-stream', hdrs.CACHE_CONTROL: 'no-cache'}
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url=url, timeout=timeout, headers=headers) as response:
-                response.raise_for_status()
-                if response.status == 204:
-                    logger.info('SSE stream has no content')
-                    return
+        async with asyncio.TaskGroup() as tasks:
+            timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
+            url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
+            headers = {hdrs.ACCEPT: 'text/event-stream', hdrs.CACHE_CONTROL: 'no-cache'}
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url=url, timeout=timeout, headers=headers) as response:
+                    response.raise_for_status()
+                    if response.status == 204:
+                        logger.info('SSE stream has no content')
+                        return
 
-                latest_event = ServerSentEventBuilder()
-                async for line_in_bytes in response.content:
-                    line = line_in_bytes.decode('utf-8').strip('\n').strip('\r')
-                    if line == '':
-                        self.publish(latest_event.finish())
-                        latest_event = ServerSentEventBuilder()
-                        continue
+                    latest_event = ServerSentEventBuilder()
+                    async for line_in_bytes in response.content:
+                        line = line_in_bytes.decode('utf-8').strip('\n').strip('\r')
+                        if line == '':
+                            tasks.create_task(self.publish(latest_event.finish()))
+                            latest_event = ServerSentEventBuilder()
+                            continue
 
-                    prefix, following = line.split(':', 1)
-                    if prefix == 'id':
-                        latest_event.with_id(following.strip())
-                    elif prefix == 'event':
-                        latest_event.with_event(following.strip())
-                    elif prefix == 'data':
-                        latest_event.with_data(json.loads(following.strip()))
+                        prefix, following = line.split(':', 1)
+                        if prefix == 'id':
+                            latest_event.with_id(following.strip())
+                        elif prefix == 'event':
+                            latest_event.with_event(following.strip())
+                        elif prefix == 'data':
+                            latest_event.with_data(json.loads(following.strip()))
 
 
 global_event_broker = Broker()
