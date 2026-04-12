@@ -43,19 +43,19 @@ class Broker:
             def wrapper(*args, **kwargs) -> None:
                 return func(*args, **kwargs)
 
-            global_event_broker.add_handler(wrapper, namespace=namespace, event=event)
+            self.add_handler(wrapper, namespace=namespace, event=event)
             return wrapper
 
         return decorator
 
     def publish(self, event: ServerSentEvent):
         for handler in self.handlers:
-            print(handler.filtered_namespace, handler.filtered_event, event)
             if handler.filtered_namespace and event.namespace != handler.filtered_namespace:
                 continue
             if handler.filtered_event and event.event != handler.filtered_event:
                 continue
 
+            print('handle', handler.handler)
             handler.handler(event)
 
     @tasks.loop()
