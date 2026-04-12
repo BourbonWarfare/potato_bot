@@ -51,7 +51,10 @@ class Broker:
                 )
                 continue
 
-            await handler.handler(event)
+            try:
+                await handler.handler(event)
+            except Exception as e:
+                logger.error(f'Failed to run event handler: {e}')
 
     @tasks.loop()
     async def backend_event_handler(self):
