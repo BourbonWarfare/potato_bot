@@ -51,11 +51,18 @@ class Broker:
     def publish(self, event: ServerSentEvent):
         for handler in self.handlers:
             if handler.filtered_namespace and event.namespace != handler.filtered_namespace:
+                logger.debug(
+                    'Filtering handler due to namespace mismatch:'
+                    f'Expected: "{event.namespace}". Handler: "{handler.filtered_namespace}"'
+                )
                 continue
             if handler.filtered_event and event.event != handler.filtered_event:
+                logger.debug(
+                    'Filtering handler due to event mismatch:'
+                    f'Expected: "{event.event}". Handler: "{handler.filtered_event}"'
+                )
                 continue
 
-            print('handle', handler.handler)
             handler.handler(event)
 
     @tasks.loop()
