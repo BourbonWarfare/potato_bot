@@ -85,6 +85,7 @@ class Environment:
 
     def db_connection(self) -> str:
         db_driver = GC.require('db_driver').get()
+        assert isinstance(db_driver, str)
         if db_driver.split('+')[0] == 'sqlite':
             db_filepath = GC.require('db_filepath').get()
             return f'{db_driver}:///{db_filepath}'
