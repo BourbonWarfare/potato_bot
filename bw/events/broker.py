@@ -50,10 +50,8 @@ class Broker:
 
     def publish(self, event: ServerSentEvent):
         for handler in self.handlers:
-            print(handler.filtered_namespace, event.namespace, event.namespace != handler.filtered_namespace)
             if handler.filtered_namespace and event.namespace != handler.filtered_namespace:
                 continue
-            print(handler.filtered_event, event.event, event.event != handler.filtered_event)
             if handler.filtered_event and event.event != handler.filtered_event:
                 continue
 

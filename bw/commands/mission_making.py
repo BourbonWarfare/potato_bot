@@ -188,7 +188,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
         else:
             await interaction.response.send_modal(modal)
 
-    @global_event_broker.subscribe(namespace='missions')
+    @global_event_broker.subscribe(namespace='mission')
     async def mission_event_handler(self, event: ServerSentEvent) -> None:
         channel = self.bot.get_channel(ENVIRONMENT.mission_forum_id())
         assert isinstance(channel, ForumChannel)
