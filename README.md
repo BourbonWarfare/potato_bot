@@ -1,49 +1,48 @@
-# potato_backend
-## The backend server Bourbon Warfare uses to manage stuff
+# potato_bot
 
-### What is this?
+The Discord bot for the [Bourbon Warfare](https://bourbonwarfare.com) ARMA group.
 
-This is a server for the ARMA group Bourbon Warfare. It was originally created to
-be a backend for the BW Mission Database, but it is used for any of the groups needs.
+It is the user-facing half of a pair. The backend is [potato_db](https://github.com/bourbonwarfare/potato_db), which holds the data and exposes the API; this bot is a thin Discord frontend that talks to it over HTTP.
 
-## Development
-### Setup
-Use your favourite Python package manager to install the requirements as laid out in
-`pyproject.toml`. `development` and `tests` are available as extras if you want to
-use additional features
+## What it does
 
-#### Example
-**Install project and all extras**
-`uv sync --locked --all-extras --dev`
+- **Recruitment & orientation.** Tracks recruits and orientors, manages role assignments, and gates the recruitment workflow inside Discord.
+- **Mission making.** Lets mission makers upload `.pbo` files through Discord, forwards them to the backend, and reports back iteration/version info from the mission database.
+- **ARMA server ops.** Wraps the backend's server-ops endpoints in Discord commands so authorised users can start, stop, restart, update, and mod-update ARMA servers from chat.
+- **Staff tooling.** Admin commands for staff that wrap the backend's privileged endpoints.
+- **Community helpers.** Miscellaneous quality-of-life slash commands.
+- **Authentication.** Brokers Discord OAuth2 between users and the backend, refreshing sessions transparently.
 
-**Install project, but only test extras**
-`uv sync --locked --extra tests --dev`
+Every command is implemented as a `discord.py` cog under [`bw/commands/`](./bw/commands).
 
-## Running
-### Local
-A helper `main.py` function is available in the root directory to run the server locally.
-Connect to `localhost:8080` to see the server
+## Technology
 
-### Production
-The project uses `Quart` to manage the server. This framework requires a valid `ASGI`
-server to run. See [Quart documentation](https://quart.palletsprojects.com/en/latest/tutorials/deployment/)
-for more information.
+- **Python 3.12**, dependencies pinned with [uv](https://docs.astral.sh/uv/).
+- **[discord.py](https://discordpy.readthedocs.io/)** for the Discord gateway and slash commands.
+- **[aiohttp](https://docs.aiohttp.org/)** + **aiodns** for talking to the backend.
+- **[SQLAlchemy](https://www.sqlalchemy.org/)** + **[Alembic](https://alembic.sqlalchemy.org/)** against **SQLite** for bot-local state (sessions, caches, OAuth bookkeeping).
+- **[beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/)** for parsing HTML the bot scrapes for some helper commands.
+- **[python-dotenv](https://pypi.org/project/python-dotenv/)** for configuration via `settings.env`.
+- **[pytest](https://pytest.org/)** (+ `pytest-asyncio`, `pytest-mock`, `pytest-cov`) for tests, **[ruff](https://docs.astral.sh/ruff/)** for lint and format, **[ty](https://github.com/astral-sh/ty)** for type checking.
 
-## Configuration
-All server-specific configuration is contained in `conf.txt`. Some attributes are required,
-and if not present the project will exist with a `ConfigError` exception.
+## Architecture
 
-Values are stored as `key=value`, and you can add comments with `# comment` syntax.
+The bot is outbound-only. It connects to:
 
-## Database
-Some server features requires a database to run. The server is developed assuming Postgres
-is used, but other databases may work.
+1. **Discord**, via the discord.py gateway.
+2. **The potato_db backend**, via HTTP (`bw/interface.py`). Paths are resolved through the typed builder in `bw/endpoints/`, so endpoint changes on the backend surface here as compile-time-ish errors instead of stringly-typed runtime failures.
 
-### Configuration
-In `conf.txt`, the following keys are required for database connections:
-- `db_driver`: driver which is powering the database, see
-[SQL Alchemy documentation](https://docs.sqlalchemy.org/en/20/core/engines.html) for more information
-- `db_username`: username which will be connected for all database operations
-- `db_password`: password for `db_username`
-- `db_address`: address which will be connected to
-- `db_name`: the specific database which operations will be performed on
+There is no inbound HTTP server. The bot does not need any ports open.
+
+The bot authenticates to the backend in two ways:
+
+- **Bot token (`backend_secret`).** A long-lived shared secret matched against a "bot user" on the backend. Used for actions the bot performs on its own behalf — periodic health checks, fetches, etc.
+- **User OAuth2 sessions.** When a Discord user runs a command that touches their own data on the backend (a mission upload, a staff action), the bot relays their Discord OAuth tokens to the backend to mint a per-user session.
+
+## Building and running
+
+See [BUILDING.md](./BUILDING.md) for local setup, tests, migrations, and the production runbook.
+
+## License
+
+See [LICENSE](./LICENSE).
