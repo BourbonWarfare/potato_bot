@@ -9,7 +9,7 @@ from collections.abc import Callable, Awaitable
 from discord.ext import tasks
 from dataclasses import dataclass
 
-from bw.interface import Interface
+from bw.interface import Interface, server_url
 from bw.endpoints.root import Root
 from bw.events.decoder import ServerSentEventBuilder, ServerSentEvent
 
@@ -62,7 +62,7 @@ class Broker:
     async def backend_event_handler(self):
         async with asyncio.TaskGroup() as tasks:
             timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
-            url = Interface().url(Root.get().api.v1.realtime.sse.resolve())
+            url = server_url(Root.get().api.v1.realtime.sse.resolve())
             headers = {hdrs.ACCEPT: 'text/event-stream', hdrs.CACHE_CONTROL: 'no-cache'}
             async with aiohttp.ClientSession() as session:
                 async with session.get(url=url, timeout=timeout, headers=headers) as response:
