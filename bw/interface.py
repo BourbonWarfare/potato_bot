@@ -48,7 +48,7 @@ class ApiClient(BaseClient):
     @backoff(delay=0.5, retries=5)
     async def refresh_session(self, session: None | aiohttp.ClientSession = None):
         async def refresh(session: aiohttp.ClientSession):
-            async with session.get(
+            async with session.post(
                 server_url(Root.get().api.v1.auth.login.bot.resolve()), json={'bot_token': self.bot_token}
             ) as response:
                 response.raise_for_status()
