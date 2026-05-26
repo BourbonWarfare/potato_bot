@@ -2,6 +2,7 @@ import aiohttp
 import logging
 import json
 import asyncio
+import traceback
 
 from aiohttp import hdrs
 from collections.abc import Callable, Awaitable
@@ -55,6 +56,7 @@ class Broker:
                 await handler.handler(event)
             except Exception as e:
                 logger.error(f'Failed to run event handler: {str(e)}')
+                logger.debug(traceback.format_exc())
 
     @tasks.loop()
     async def backend_event_handler(self):
