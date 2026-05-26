@@ -325,12 +325,15 @@ def iteration_information(iteration: IterationInformationResponse) -> discord.Em
 
     embed = discord.Embed(
         title=f'🆕 Iteration #{iteration.iteration}',
-        description=iteration.changelog or '_No changelog provided._',
+        description='\n'.join([f'{field}: {value}' for field, value in iteration.changelog.items()])
+        or '_No changelog provided._',
         colour=ENVIRONMENT.embed_colour_member(),
     )
-    embed.add_field(name='Players (min / desired / max)',
-                    value=f'{iteration.min_player_count} / {iteration.desired_player_count} / {iteration.max_player_count}',
-                    inline=False)
+    embed.add_field(
+        name='Players (min / desired / max)',
+        value=f'{iteration.min_player_count} / {iteration.desired_player_count} / {iteration.max_player_count}',
+        inline=False,
+    )
     embed.add_field(name='Safe Start', value=safe_start_length, inline=True)
     embed.add_field(name='Mission Length', value=mission_length, inline=True)
     embed.add_field(name='BWMF Version', value=iteration.bwmf_version, inline=True)

@@ -1,6 +1,7 @@
 import dataclasses
 import datetime
 import typing
+import json
 from bw.missions.types import MissionTypeTag, IterationUuid, UserUuid
 from dataclasses import dataclass
 from typing import Any
@@ -20,6 +21,8 @@ class _CoerceFields:
 
             if check_type is datetime.datetime and isinstance(value, str):
                 value = datetime.datetime.fromisoformat(value)
+            elif check_type is str and isinstance(value, dict):
+                value = json.loads(check_type)
             elif dataclasses.is_dataclass(check_type) and isinstance(value, dict):
                 value = check_type(**value)
             else:
@@ -69,4 +72,4 @@ class IterationInformationResponse(_CoerceFields):
     upload_date: datetime.datetime
     bwmf_version: str
     iteration: int
-    changelog: str
+    changelog: dict[str, str]
