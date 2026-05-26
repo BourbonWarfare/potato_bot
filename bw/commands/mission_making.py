@@ -166,7 +166,10 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
     Safe Start Length: {safe_start_length_format}
     Mission Length: {mission_length_format}""")
 
-        await interaction.followup.send(f'✅ {interaction.user.mention} your mission has been uploaded successfully!')
+        await interaction.followup.send(
+            f'✅ {interaction.user.mention} your mission has been uploaded successfully!'
+            f' Please check <#{ENVIRONMENT.mission_forum_id()}> for your mission thread.'
+        )
 
 
 class MissionMaking(commands.Cog, name='Mission Making'):

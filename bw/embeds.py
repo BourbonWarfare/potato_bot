@@ -325,8 +325,7 @@ def iteration_information(iteration: IterationInformationResponse) -> discord.Em
 
     embed = discord.Embed(
         title=f'🆕 Iteration #{iteration.iteration}',
-        description='\n'.join([f'{field}: {value}' for field, value in iteration.changelog.items()])
-        or '_No changelog provided._',
+        description='\n'.join([f'{field}: {value}' for field, value in iteration.changelog.items()]),
         colour=ENVIRONMENT.embed_colour_member(),
     )
     embed.add_field(

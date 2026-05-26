@@ -9,6 +9,12 @@ from bw.state import State
 
 
 class DiscordApi:
+    async def does_mission_thread_exist(self, state: State, mission_information: MissionInformationResponse) -> bool:
+        with state.Session.begin() as session:
+            query = select(MissionForum).where(MissionForum.mission_uuid == mission_information.uuid)
+            forum = session.scalar(query)
+            return bool(forum)
+
     async def get_or_create_mission_thread(
         self, state: State, channel: ForumChannel, mission_information: MissionInformationResponse
     ) -> MissionForum:

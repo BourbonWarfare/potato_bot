@@ -22,7 +22,6 @@ class _CoerceFields:
             if check_type is datetime.datetime and isinstance(value, str):
                 value = datetime.datetime.fromisoformat(value)
             elif check_type is dict and isinstance(value, str):
-                print(value)
                 value = json.loads(value)
             elif dataclasses.is_dataclass(check_type) and isinstance(value, dict):
                 value = check_type(**value)
