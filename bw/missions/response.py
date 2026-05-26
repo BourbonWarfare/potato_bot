@@ -1,6 +1,8 @@
+import dataclasses
 from bw.missions.types import MissionTypeTag, IterationUuid, UserUuid
 from dataclasses import dataclass
 from typing import Any
+from pydoc import locate
 import datetime
 
 
@@ -13,12 +15,28 @@ class MissionUploadResponse:
     safe_start_length: int
     mission_length: int
 
+    def __post_init__(self):
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            field_type = field.type if not isinstance(field.type, str) else locate(field.type)
+            assert isinstance(field_type, type)
+            if not isinstance(value, field_type):
+                setattr(self, field.name, field_type(value))
+
 
 @dataclass
 class MissionTypeResponse:
     name: str
     signoffs_required: int
     tag: MissionTypeTag
+
+    def __post_init__(self):
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            field_type = field.type if not isinstance(field.type, str) else locate(field.type)
+            assert isinstance(field_type, type)
+            if not isinstance(value, field_type):
+                setattr(self, field.name, field_type(value))
 
 
 @dataclass
@@ -31,6 +49,14 @@ class MissionInformationResponse:
     title: str
     mission_type: MissionTypeResponse
     special_flags: dict[str, Any]
+
+    def __post_init__(self):
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            field_type = field.type if not isinstance(field.type, str) else locate(field.type)
+            assert isinstance(field_type, type)
+            if not isinstance(value, field_type):
+                setattr(self, field.name, field_type(value))
 
 
 @dataclass
@@ -46,3 +72,11 @@ class IterationInformationResponse:
     bwmf_version: str
     iteration: int
     changelog: str
+
+    def __post_init__(self):
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            field_type = field.type if not isinstance(field.type, str) else locate(field.type)
+            assert isinstance(field_type, type)
+            if not isinstance(value, field_type):
+                setattr(self, field.name, field_type(value))

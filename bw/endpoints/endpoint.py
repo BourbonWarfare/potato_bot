@@ -14,31 +14,29 @@ class Endpoint:
         return Resolver(cls())
 
 
-class VariableResolver:
-    resolver: 'Resolver'
-
-    def __init__(self, resolver: 'Resolver'):
-        self.resolver = resolver
-
-    def var(self, value: str) -> 'Resolver':
-        self.resolver.path.append(f'{quote_plus(value)}')
-        return self.resolver
-
-
 class Resolver:
     endpoint: Endpoint
     path: list[str]
 
     def __init__(self, endpoint: Endpoint):
         self.endpoint = endpoint
+        # Roots are always concrete string endpoints; variable endpoints only
+        # appear mid-chain and are populated via .var().
+        assert isinstance(endpoint.endpoint, str), 'Resolver root must be a string endpoint'
         self.path = [endpoint.endpoint]
 
-    def __getattr__(self, attr: str) -> Self | VariableResolver:
+    def __getattr__(self, attr: str) -> Self:
         next = self.endpoint.__getattribute__(attr)
         self.endpoint = next
-        if isinstance(next.endpoint, VariableEndpoint):
-            return VariableResolver(self)
-        self.path.append(next.endpoint)
+        if not isinstance(next.endpoint, VariableEndpoint):
+            self.path.append(next.endpoint)
+        return self
+
+    def var(self, value: str) -> Self:
+        assert isinstance(self.endpoint.endpoint, VariableEndpoint), (
+            f'.var() called on non-variable endpoint {type(self.endpoint).__name__}'
+        )
+        self.path.append(quote_plus(value))
         return self
 
     def resolve(self) -> str:
