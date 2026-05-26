@@ -49,7 +49,7 @@ def sample_iteration(sample_mission):
         upload_date=SAMPLE_UPLOAD,
         bwmf_version='1.0.0',
         iteration=7,
-        changelog='Fixed briefing typo',
+        changelog='{"description": "Fixed briefing typo"}',
     )
 
 
@@ -66,7 +66,7 @@ def sample_iteration_payload():
         'upload_date': SAMPLE_UPLOAD.isoformat(),
         'bwmf_version': '1.0.0',
         'iteration': 7,
-        'changelog': 'Fixed briefing typo',
+        'changelog': {'description': 'Fixed briefing typo'},
         'mission': {
             'uuid': str(SAMPLE_MISSION_UUID),
             'server': 'main',

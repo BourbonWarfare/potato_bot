@@ -43,25 +43,21 @@ def patched_port(mocker):
 
 
 @pytest.mark.asyncio
-async def test__user__iteration_information__parses_full_payload(
-    patched_port, fake_aiohttp_session, sample_iteration_payload
-):
+async def test__user__iteration_information__parses_full_payload(patched_port, fake_aiohttp_session, sample_iteration_payload):
     fake_aiohttp_session(FakeResponse(payload=sample_iteration_payload))
 
     result = await User(StubClient()).iteration_information(IterationUuid(SAMPLE_ITERATION_UUID))
 
     assert result.iteration == 7
     assert result.bwmf_version == '1.0.0'
-    assert result.changelog == 'Fixed briefing typo'
+    assert result.changelog == {'description': 'Fixed briefing typo'}
     assert result.mission.title == 'tcvm_coop_20'
     assert result.mission.mission_type.name == 'Co-Op'
     assert result.mission.mission_type.signoffs_required == 1
 
 
 @pytest.mark.asyncio
-async def test__user__iteration_information__sends_auth_header(
-    patched_port, fake_aiohttp_session, sample_iteration_payload
-):
+async def test__user__iteration_information__sends_auth_header(patched_port, fake_aiohttp_session, sample_iteration_payload):
     session = fake_aiohttp_session(FakeResponse(payload=sample_iteration_payload))
 
     await User(StubClient()).iteration_information(IterationUuid(SAMPLE_ITERATION_UUID))
@@ -90,9 +86,7 @@ async def test__user__iteration_information__non_200_raises(patched_port, fake_a
 
 
 @pytest.mark.asyncio
-async def test__user__mission_information__parses_payload(
-    patched_port, fake_aiohttp_session, sample_mission_payload
-):
+async def test__user__mission_information__parses_payload(patched_port, fake_aiohttp_session, sample_mission_payload):
     fake_aiohttp_session(FakeResponse(payload=sample_mission_payload))
 
     result = await User(StubClient()).mission_information(MissionUuid(SAMPLE_MISSION_UUID))
@@ -104,9 +98,7 @@ async def test__user__mission_information__parses_payload(
 
 
 @pytest.mark.asyncio
-async def test__user__mission_information__sends_auth_header(
-    patched_port, fake_aiohttp_session, sample_mission_payload
-):
+async def test__user__mission_information__sends_auth_header(patched_port, fake_aiohttp_session, sample_mission_payload):
     session = fake_aiohttp_session(FakeResponse(payload=sample_mission_payload))
 
     await User(StubClient()).mission_information(MissionUuid(SAMPLE_MISSION_UUID))
