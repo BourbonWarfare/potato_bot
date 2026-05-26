@@ -21,6 +21,12 @@ from bw.error import ResponseError, CannotReachBwBackend
 logger = logging.getLogger('bw.interface')
 
 
+def server_url(path: str) -> str:
+    address = 'localhost'
+    port = ENVIRONMENT.backend_port()
+    return f'http://{address}:{port}{path}'
+
+
 class BaseClient(ABC):
     @asynccontextmanager
     async def backend_session(self, session: aiohttp.ClientSession | None = None):
@@ -42,7 +48,9 @@ class ApiClient(BaseClient):
     @backoff(delay=0.5, retries=5)
     async def refresh_session(self, session: None | aiohttp.ClientSession = None):
         async def refresh(session: aiohttp.ClientSession):
-            async with session.get(Root.get().api.v1.auth.login.bot.resolve(), json={'bot_token': self.bot_token}) as response:
+            async with session.get(
+                server_url(Root.get().api.v1.auth.login.bot.resolve()), json={'bot_token': self.bot_token}
+            ) as response:
                 response.raise_for_status()
                 session = await response.json()
                 self.session = BwSession(
@@ -109,13 +117,10 @@ class Interface:
         self.address = 'localhost'
         self.port = ENVIRONMENT.backend_port()
 
-    def url(self, path: str) -> str:
-        return f'http://{self.address}:{self.port}{path}'
-
     async def healthcheck(self) -> bool:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(self.url(Root.get().api.v1.healthcheck.resolve())) as response:
+                async with session.get(server_url(Root.get().api.v1.healthcheck.resolve())) as response:
                     return response.status == 200
         except aiohttp.ClientConnectionError as e:
             logger.error(f'Cannot reach BW Backend: {e}')
@@ -125,7 +130,7 @@ class Interface:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
                 ) as response:
                     return response.status == 200
         except aiohttp.ClientConnectionError as e:
@@ -136,7 +141,7 @@ class Interface:
         headers = {'Authorization': f'Bearer {state}'}
         try:
             async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
+                async with session.get(server_url(Root.get().api.v1.auth.login.discord.resolve())) as response:
                     response.raise_for_status()
                     return await response.json()
         except aiohttp.ClientConnectionError as e:
@@ -146,7 +151,7 @@ class Interface:
     async def login_to_backend(self, oauth_session: OAuthSession) -> dict:
         try:
             async with aiohttp.ClientSession(headers=oauth_session.as_header()) as session:
-                async with session.post(self.url(Root.get().api.v1.auth.login.discord.resolve())) as response:
+                async with session.post(server_url(Root.get().api.v1.auth.login.discord.resolve())) as response:
                     response.raise_for_status()
                     return await response.json()
         except aiohttp.ClientConnectionError as e:
@@ -156,7 +161,7 @@ class Interface:
     async def get_arma_servers(self) -> list[str]:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(self.url(Root.get().api.v1.server_ops.arma.servers.resolve())) as response:
+                async with session.get(server_url(Root.get().api.v1.server_ops.arma.servers.resolve())) as response:
                     response.raise_for_status()
                     return (await response.json()).get('servers')
         except aiohttp.ClientConnectionError as e:
@@ -173,7 +178,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session):
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve())
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve())
                 ) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -182,7 +187,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session):
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve())
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve())
                 ) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -191,7 +196,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session):
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve())
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve())
                 ) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -200,7 +205,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session):
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -209,7 +214,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.post(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
                     headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
@@ -219,7 +224,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.get(
-                    self.url(Root.get().api.v1.server_ops.arma.server.var(server).status.resolve()),
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).status.resolve()),
                     headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
@@ -230,7 +235,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.post(
-                    self.url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
+                    server_url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
                     headers=client.auth_header,
                     json=payload,
                 ) as response:
@@ -245,7 +250,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.get(
-                    self.url(Root.get().api.v1.missions.iteration.iteration_id.var(str(iteration_uuid)).resolve()),
+                    server_url(Root.get().api.v1.missions.iteration.iteration_id.var(str(iteration_uuid)).resolve()),
                     headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
@@ -261,7 +266,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.get(
-                    self.url(Root.get().api.v1.missions.mission.mission_id.var(str(mission_uuid)).resolve()),
+                    server_url(Root.get().api.v1.missions.mission.mission_id.var(str(mission_uuid)).resolve()),
                     headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
