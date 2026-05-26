@@ -7,7 +7,7 @@ class MissionId(Endpoint):
 
 class Mission(Endpoint):
     endpoint = 'mission'
-    iteration_id = MissionId()
+    mission_id = MissionId()
 
 
 class IterationId(Endpoint):

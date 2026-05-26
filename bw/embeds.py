@@ -2,7 +2,7 @@ import discord
 import datetime
 import urllib
 from bw.environment import ENVIRONMENT
-from bw.missions.response import MissionInformationResponse, MissionTypeResponse
+from bw.missions.response import IterationInformationResponse, MissionInformationResponse, MissionTypeResponse
 
 
 def default() -> discord.Embed:
@@ -318,5 +318,21 @@ def mission_information(mission: MissionInformationResponse) -> tuple[discord.Em
     )
 
 
-def iteration_information(mission: MissionInformationResponse) -> discord.Embed:
-    pass
+def iteration_information(iteration: IterationInformationResponse) -> discord.Embed:
+    mission_length = f'{iteration.mission_length // 60:02d}:{iteration.mission_length % 60:02d}'
+    safe_start_length = f'{iteration.safe_start_length // 60:02d}:{iteration.safe_start_length % 60:02d}'
+    upload_timestamp = int(iteration.upload_date.timestamp())
+
+    embed = discord.Embed(
+        title=f'🆕 Iteration #{iteration.iteration}',
+        description=iteration.changelog or '_No changelog provided._',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+    embed.add_field(name='Players (min / desired / max)',
+                    value=f'{iteration.min_player_count} / {iteration.desired_player_count} / {iteration.max_player_count}',
+                    inline=False)
+    embed.add_field(name='Safe Start', value=safe_start_length, inline=True)
+    embed.add_field(name='Mission Length', value=mission_length, inline=True)
+    embed.add_field(name='BWMF Version', value=iteration.bwmf_version, inline=True)
+    embed.add_field(name='Uploaded', value=f'<t:{upload_timestamp}:R>', inline=False)
+    return embed

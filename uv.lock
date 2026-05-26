@@ -396,7 +396,7 @@ requires-dist = [
     { name = "aiohttp" },
     { name = "alembic" },
     { name = "beautifulsoup4" },
-    { name = "discord-py", specifier = ">=2.7.1" },
+    { name = "discord-py", specifier = "==2.7.1" },
     { name = "pre-commit", marker = "extra == 'development'" },
     { name = "pytest", marker = "extra == 'tests'" },
     { name = "pytest-asyncio", marker = "extra == 'tests'" },

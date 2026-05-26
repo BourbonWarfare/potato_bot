@@ -245,7 +245,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.get(
-                    self.url(Root.get().api.v1.missions.iteration.iteration_id.var(iteration_uuid).resolve()),
+                    self.url(Root.get().api.v1.missions.iteration.iteration_id.var(str(iteration_uuid)).resolve()),
                     headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
@@ -261,7 +261,7 @@ class User(Interface):
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.get(
-                    self.url(Root.get().api.v1.missions.mission.mission_id.var(mission_uuid).resolve()),
+                    self.url(Root.get().api.v1.missions.mission.mission_id.var(str(mission_uuid)).resolve()),
                     headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()

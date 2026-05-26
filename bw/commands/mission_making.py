@@ -1,6 +1,7 @@
 from bw.missions.types import IterationUuid
 from bw.environment import ENVIRONMENT
 from bw.discord.api import DiscordApi
+from bw.embeds import iteration_information as iteration_information_embed
 from bw.events.decoder import ServerSentEvent
 import discord
 import logging
@@ -17,7 +18,7 @@ from bw.embeds import get_bwmf, failed_to_reach_bw_backend, failed_to_reach_disc
 from bw.commands.utils import get_session
 from bw.state import State
 from bw.interface import User, UserClient
-from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, NoServersToUploadTo
+from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, NoServersToUploadTo, MisconfiguredForumChannel
 from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot.command')
@@ -192,13 +193,34 @@ class MissionMaking(commands.Cog, name='Mission Making'):
 
     async def mission_event_handler(self, event: ServerSentEvent) -> None:
         channel = self.bot.get_channel(ENVIRONMENT.mission_forum_id())
-        assert isinstance(channel, ForumChannel)
+        if not isinstance(channel, ForumChannel):
+            raise MisconfiguredForumChannel(str(channel))
 
         if event.event == 'uploaded':
-            iteration_information = await User(State.state.api_client()).iteration_information(
+            iteration_information = await User(State.state.api_client).iteration_information(
                 IterationUuid(uuid.UUID(hex=event.data['iteration']))
             )
             mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information.mission)
 
             forum = self.bot.get_channel(mission_thread.thread_id)
-            assert isinstance(forum, Thread)
+            if not isinstance(forum, Thread):
+                raise MisconfiguredForumChannel(f'expected Thread for {mission_thread.thread_id}, got {forum}')
+
+            await forum.send(embed=iteration_information_embed(iteration_information))
+        elif event.event == 'reviewed':
+            iteration_information = await User(State.state.api_client).iteration_information(
+                IterationUuid(uuid.UUID(hex=event.data['iteration']))
+            )
+            mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information.mission)
+
+            forum = self.bot.get_channel(mission_thread.thread_id)
+            if not isinstance(forum, Thread):
+                raise MisconfiguredForumChannel(f'expected Thread for {mission_thread.thread_id}, got {forum}')
+
+            await forum.send(f'📝 A new test review was submitted for iteration #{iteration_information.iteration}.')
+        elif event.event == 'cosigned':
+            # `cosigned` only carries a review uuid; mapping it to an iteration/mission needs a
+            # backend lookup we don't have yet. Skip until the db exposes that.
+            logger.debug(f'Skipping mission:cosigned event {event.id}: lookup not implemented')
+        else:
+            logger.debug(f'Ignoring unhandled mission event "{event.event}" ({event.id})')
