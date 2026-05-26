@@ -45,7 +45,7 @@ class Authentication(commands.Cog, name='Authentication'):
 
         try:
             await interaction.response.defer()
-            await self.internal_login_oauth(interaction.followup, DiscordSnowflake(str(interaction.user.id)))
+            await self.internal_login_oauth(interaction.followup, DiscordSnowflake(interaction.user.id))
         except CannotLogin as e:
             logger.info(e)
             await interaction.followup.send(embed=failed_to_login_with_discord(), ephemeral=True)

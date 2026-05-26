@@ -15,7 +15,7 @@ logger = logging.getLogger('bw.potbot.command')
 
 
 async def get_session(followup: discord.Webhook, user: discord.User | discord.Member) -> tuple[BwSession, OAuthSession]:
-    user_id = DiscordSnowflake(str(user.id))
+    user_id = DiscordSnowflake(user.id)
 
     async def show_login() -> tuple[BwSession, OAuthSession]:
         oauth_session = await Authentication(None).internal_login_oauth(followup, user_id)

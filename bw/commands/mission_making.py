@@ -8,7 +8,6 @@ import logging
 import datetime
 import tempfile
 import time
-import uuid
 from zoneinfo import ZoneInfo
 from pathlib import Path
 from discord import app_commands, ui, ForumChannel, Thread
@@ -200,7 +199,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
 
         if event.event == 'uploaded':
             iteration_information = await User(State.state.api_client).iteration_information(
-                IterationUuid(uuid.UUID(hex=event.data['iteration']))
+                IterationUuid(event.data['iteration'])
             )
             mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information.mission)
 
@@ -211,7 +210,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
             await forum.send(embed=iteration_information_embed(iteration_information))
         elif event.event == 'reviewed':
             iteration_information = await User(State.state.api_client).iteration_information(
-                IterationUuid(uuid.UUID(hex=event.data['iteration']))
+                IterationUuid(event.data['iteration'])
             )
             mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information.mission)
 
