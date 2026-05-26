@@ -43,20 +43,9 @@ def config() -> dict[str, Any]:
             'handlers': ['stdout', 'file'],
         },
         'loggers': {
-            'discord': {
-                'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else PRODUCTION_LOG_CONFIG['discord'],
-            },
-            'bw': {
-                'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else PRODUCTION_LOG_CONFIG['bw'],
-            },
-            'bw.state': {
-                'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else PRODUCTION_LOG_CONFIG['bw.state'],
-            },
-            'bw.potbot': {
-                'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else PRODUCTION_LOG_CONFIG['bw.potbot'],
-            },
-            'bw.potbot.command': {
-                'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else PRODUCTION_LOG_CONFIG['bw.potbot.command'],
-            },
+            logger: {
+                'level': 'DEBUG' if isinstance(ENVIRONMENT, Local) else level,
+            }
+            for logger, level in PRODUCTION_LOG_CONFIG.items()
         },
     }
