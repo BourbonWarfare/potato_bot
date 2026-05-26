@@ -194,7 +194,9 @@ class MissionMaking(commands.Cog, name='Mission Making'):
     async def mission_event_handler(self, event: ServerSentEvent) -> None:
         channel = self.bot.get_channel(ENVIRONMENT.mission_forum_id())
         if not isinstance(channel, ForumChannel):
-            raise MisconfiguredForumChannel(f'forum id "{ENVIRONMENT.mission_forum_id()}" = {str(channel)}')
+            raise MisconfiguredForumChannel(
+                f'forum id {type(ENVIRONMENT.mission_forum_id())}({ENVIRONMENT.mission_forum_id()}) = {str(channel)}'
+            )
 
         if event.event == 'uploaded':
             iteration_information = await User(State.state.api_client).iteration_information(

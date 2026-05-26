@@ -36,10 +36,6 @@ class Environment:
     def backend_bot_token(self, key: str) -> str:
         return GC[key]
 
-    @config_fetch('mission_forum_id')
-    def mission_forum_id(self, key: str) -> ForumId:
-        return ForumId(int(GC[key]))
-
     @config_fetch('discord_token')
     def discord_token(self, key: str) -> str:
         return GC[key]
@@ -57,7 +53,11 @@ class Environment:
         return GC[key]
 
     @config_fetch('recruitment_channel_id', int)
-    def recruitment_channel(self, key: str) -> str:
+    def recruitment_channel(self, key: str) -> int:
+        return GC[key]
+
+    @config_fetch('mission_forum_id', int)
+    def mission_forum_id(self, key: str) -> int:
         return GC[key]
 
     @config_fetch('backend_address', str, require=False)
