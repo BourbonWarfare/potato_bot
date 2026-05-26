@@ -1,3 +1,4 @@
+import uuid
 from abc import ABC
 from bw.missions.types import IterationUuid, MissionUuid
 import aiohttp
@@ -258,6 +259,10 @@ class User(Interface):
                     mission: dict[str, Any] = payload.pop('mission')
                     tag: dict[str, Any] = mission.pop('mission_type')
 
+                    mission['uuid'] = uuid.UUID(hex=mission['uuid'])
+                    mission['creation_date'] = datetime.datetime.fromisoformat(mission['creation_date'])
+                    mission['author_uuid'] = uuid.UUID(hex=mission['author_uuid'])
+
                     return IterationInformationResponse(
                         **payload, mission=MissionInformationResponse(**mission, mission_type=MissionTypeResponse(**tag))
                     )
@@ -272,5 +277,9 @@ class User(Interface):
                     response.raise_for_status()
                     payload: dict[str, Any] = await response.json()
                     tag: dict[str, Any] = payload.pop('mission_type')
+
+                    payload['uuid'] = uuid.UUID(hex=payload['uuid'])
+                    payload['author_uuid'] = uuid.UUID(hex=payload['author_uuid'])
+                    payload['creation_date'] = datetime.datetime.fromisoformat(payload['creation_date'])
 
                     return MissionInformationResponse(**payload, mission_type=MissionTypeResponse(**tag))
