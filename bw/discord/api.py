@@ -24,7 +24,6 @@ class DiscordApi:
             if not forum:
                 default_tags: list[ForumTag] = []
                 for available_tag in channel.available_tags:
-                    print(available_tag.name, mission_information.mission_type)
                     if available_tag.name == mission_information.mission_type.name:
                         default_tags.append(available_tag)
 
