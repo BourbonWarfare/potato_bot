@@ -1,6 +1,6 @@
 import bw.embeds
 from bw.missions.response import MissionInformationResponse
-from discord import ForumChannel
+from discord import ForumChannel, ForumTag
 from bw.discord.types import ForumId
 from sqlalchemy import select
 
@@ -22,16 +22,20 @@ class DiscordApi:
             query = select(MissionForum).where(MissionForum.mission_uuid == mission_information.uuid)
             forum = session.scalar(query)
             if not forum:
-                tag = None
+                default_tags: list[ForumTag] = []
                 for available_tag in channel.available_tags:
+                    print(available_tag.name, mission_information.mission_type)
                     if available_tag.name == mission_information.mission_type.name:
-                        tag = available_tag
-                        break
+                        default_tags.append(available_tag)
+
+                    if available_tag.name == 'Needs Testing':
+                        default_tags.append(available_tag)
+
                 discord_forum, _ = await channel.create_thread(
                     name=mission_information.title,
                     embeds=bw.embeds.mission_information(mission_information),
                     reason='Automated mission thread creation',
-                    applied_tags=[tag] if tag is not None else [],
+                    applied_tags=default_tags,
                 )
                 forum_id = ForumId(discord_forum.id)
                 forum = MissionForum(mission_uuid=mission_information.uuid, thread_id=forum_id)

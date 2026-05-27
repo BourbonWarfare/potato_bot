@@ -114,7 +114,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             send_message_response = await interaction.response.send_message(f'`{filename}` is being uploaded to {server}')
             response_message = send_message_response.resource
             assert isinstance(response_message, discord.InteractionMessage)
-            thread = await response_message.create_thread(name='Test Log')
+            thread = await response_message.create_thread(name='Upload Log')
 
         logger.debug('Sending to thread')
         today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
