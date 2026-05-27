@@ -90,7 +90,7 @@ class Broker:
                 elif prefix == 'data':
                     latest_event.with_data(json.loads(following.strip()))
 
-    @tasks.loop()
+    @tasks.loop(seconds=15, name='sse loop')
     async def backend_event_handler(self):
         async with asyncio.TaskGroup() as tasks:
             async with aiohttp.ClientSession() as session:
