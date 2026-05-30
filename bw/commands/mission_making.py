@@ -91,22 +91,8 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
         mission_attachment: discord.Attachment = self.mission_file.component.values[0]
         filename = mission_attachment.filename
 
-        logger.debug('Getting BW session')
-        try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
-            return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
-            return
-        interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
-
         if isinstance(interaction.channel, discord.Thread):
             logger.debug('Retrieving thread')
-            await interaction.response.defer(thinking=True)
             thread = interaction.channel
             await thread.send(f'`{filename}` is being uploaded to {server}')
         else:
@@ -115,6 +101,22 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             response_message = send_message_response.resource
             assert isinstance(response_message, discord.InteractionMessage)
             thread = await response_message.create_thread(name='Upload Log')
+
+        logger.debug('Getting BW session')
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await thread.send('❌ Failed to upload: the BW server is not responding')
+            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await thread.send('❌ Failed to upload: we cannot reach Discord for OAuth')
+            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            return
+
+        interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
 
         logger.debug('Sending to thread')
         today = datetime.datetime.now(tz=ZoneInfo('America/Chicago'))
