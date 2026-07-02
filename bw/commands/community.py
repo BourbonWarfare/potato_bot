@@ -1,3 +1,6 @@
+from bw.missions.types import MissionUuid
+from bw.state import State
+from bw.arma.api import ArmaApi
 import aiohttp
 import discord
 import logging
@@ -6,9 +9,14 @@ import re
 from discord import app_commands
 from discord.ext import commands
 from bs4 import BeautifulSoup
+from uuid import UUID
 
 from bw.settings import GLOBAL_CONFIGURATION
-from bw.embeds import modlist_html, modlist_website
+from bw.environment import ENVIRONMENT
+from bw.embeds import modlist_html, modlist_website, upcoming_session, safe_start_ended, mission_ended
+from bw.events.broker import global_event_broker
+from bw.events.decoder import ServerSentEvent
+from bw.interface import User
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -16,10 +24,13 @@ logger = logging.getLogger('bw.potbot.command')
 class Community(commands.Cog, name='Community'):
     def __init__(self, bot):
         self.bot = bot
+        global_event_broker.add_handler(self.session_event_handler, namespace='session', event=None)
 
     @app_commands.command(name='html', description='Get the latest version of the BW Modlist HTML')
     async def html(self, interaction: discord.Interaction):
         html_url = GLOBAL_CONFIGURATION.require('html_url').get()
+        assert isinstance(html_url, str)
+
         logger.info(f'{interaction.user} requested the HTML modlist')
         async with aiohttp.ClientSession() as session:
             logger.info(f'Fetching HTML modlist from {html_url}')
@@ -35,6 +46,7 @@ class Community(commands.Cog, name='Community'):
         logger.info('HTML modlist fetched successfully, attempting to find XML')
 
         modlist_name = ''
+        assert soup.head is not None
         if soup.head.find('script') is None:
             logger.warning('No script tag found in HTML, using default modlist name')
         else:
@@ -72,3 +84,69 @@ class Community(commands.Cog, name='Community'):
         file = discord.File(modlist, filename=modlist_name)
 
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
+
+    async def post_session_notification(self, event: ServerSentEvent):
+        arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
+        message = await arma_channel.send(embed=upcoming_session())
+        await message.add_reaction(':pingMe')
+
+        session_id = UUID(hex=event.data['session'])
+        logger.info(f'Posting session notification to channel [{arma_channel.id}] with session [{session_id}]')
+
+        ArmaApi().create_session_message(State.state, session_id, message.id)
+
+    async def post_safe_start_ended(self, event: ServerSentEvent):
+        channels_to_post = [
+            self.bot.get_channel(ENVIRONMENT.arma_channel_id()),
+            self.bot.get_channel(ENVIRONMENT.tech_channel_id()),
+        ]
+
+        mission_id = UUID(hex=event.data['mission'])
+        session_id = UUID(hex=event.data['session'])
+        logger.info(f'Posting safe-start ending notification for mission [{mission_id}] in session [{session_id}]')
+
+        mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
+
+        groups: list[dict] = event.data['orbat']['groups']
+        player_count = sum([len(group['members']) for group in groups])
+
+        for channel in channels_to_post:
+            await channel.send(embed=safe_start_ended(mission_information, player_count))
+
+    async def post_mission_end(self, event: ServerSentEvent):
+        channels_to_post = [
+            self.bot.get_channel(ENVIRONMENT.arma_channel_id()),
+            self.bot.get_channel(ENVIRONMENT.tech_channel_id()),
+        ]
+
+        mission_id = UUID(hex=event.data['mission'])
+        session_id = UUID(hex=event.data['session'])
+
+        logger.info(f'Posting mission end message for mission [{mission_id}] in session [{session_id}]')
+        mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
+        for channel in channels_to_post:
+            await channel.send(embed=mission_ended(mission_information, event.data['orbat']))
+
+        if mission_information.mission_type.tag.is_coop():
+            ArmaApi().inform_coop_played(State.state, session_id)
+        elif mission_information.mission_type.tag.is_tvt() and not ArmaApi().has_coop_been_played(State.state, session_id):
+            # Only post if we ended a TVT and a coop has not been played yet
+            # We have an unhandled edge case where is seeding gets > 15 players AND its marked as a coop, we will think that
+            # the main Co-op has already ended and we will notify people at TVT slotting
+            # If this occurs we will fix it, until then though...
+            notify_message = self.bot.get_channel(ArmaApi().session_notification_message(State.state, session_id))
+            reacted: set[str] = set()
+            for reaction in notify_message.reactions:
+                async for user in reaction.users():
+                    reacted.add(user.mention)
+            await channel.send(f'The TvT has ended, Co-Op slotting is starting soon! {" ".join(reacted)}')
+
+    async def session_event_handler(self, event: ServerSentEvent) -> None:
+        if event.event == 'started':
+            await self.post_session_notification(event)
+        elif event.event == 'safestart off':
+            await self.post_safe_start_ended(event)
+        elif event.event == 'finished mission':
+            await self.post_mission_end(event)
+        else:
+            logger.warning(f'No handler defined for event "{event.event}"')

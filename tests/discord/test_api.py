@@ -30,9 +30,7 @@ async def test__discord_api__get_or_create_mission_thread__creates_thread_when_m
 
 
 @pytest.mark.asyncio
-async def test__discord_api__get_or_create_mission_thread__persists_row(
-    in_memory_state, fake_forum_channel, sample_mission
-):
+async def test__discord_api__get_or_create_mission_thread__persists_row(in_memory_state, fake_forum_channel, sample_mission):
     await DiscordApi().get_or_create_mission_thread(in_memory_state, fake_forum_channel, sample_mission)
 
     with in_memory_state.Session() as session:
@@ -68,9 +66,7 @@ async def test__discord_api__get_or_create_mission_thread__applies_matching_tag(
 
 
 @pytest.mark.asyncio
-async def test__discord_api__get_or_create_mission_thread__no_matching_tag_passes_empty_tags(
-    in_memory_state, sample_mission
-):
+async def test__discord_api__get_or_create_mission_thread__no_matching_tag_passes_empty_tags(in_memory_state, sample_mission):
     channel = FakeForumChannel(available_tags=[FakeForumTag(name='WAT', id=7)], new_thread_id=999)
 
     await DiscordApi().get_or_create_mission_thread(in_memory_state, channel, sample_mission)

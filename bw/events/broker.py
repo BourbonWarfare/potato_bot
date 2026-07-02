@@ -9,7 +9,7 @@ from collections.abc import Callable, Awaitable
 from discord.ext import tasks
 from dataclasses import dataclass
 
-from bw.interface import Interface, server_url
+from bw.interface import server_url
 from bw.endpoints.root import Root
 from bw.events.decoder import ServerSentEventBuilder, ServerSentEvent
 

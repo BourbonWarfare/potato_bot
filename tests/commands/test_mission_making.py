@@ -68,9 +68,7 @@ def cog(patched_env, patched_globals, mock_user, mock_discord_api, forum_thread)
 
 
 @pytest.mark.asyncio
-async def test__mission_event_handler__non_forum_channel_raises_misconfigured(
-    patched_env, patched_globals, uploaded_event
-):
+async def test__mission_event_handler__non_forum_channel_raises_misconfigured(patched_env, patched_globals, uploaded_event):
     bot = FakeBot(channels={FORUM_CHANNEL_ID: 'not-a-forum-channel'})
     cog = MissionMaking(bot)
 
@@ -79,9 +77,7 @@ async def test__mission_event_handler__non_forum_channel_raises_misconfigured(
 
 
 @pytest.mark.asyncio
-async def test__mission_event_handler__channel_missing_raises_misconfigured(
-    patched_env, patched_globals, uploaded_event
-):
+async def test__mission_event_handler__channel_missing_raises_misconfigured(patched_env, patched_globals, uploaded_event):
     bot = FakeBot(channels={})  # get_channel returns None
     cog = MissionMaking(bot)
 
@@ -101,9 +97,7 @@ async def test__mission_event_handler__uploaded__posts_iteration_embed(
 
 
 @pytest.mark.asyncio
-async def test__mission_event_handler__uploaded__looks_up_iteration_from_event_data(
-    cog, mock_user, uploaded_event
-):
+async def test__mission_event_handler__uploaded__looks_up_iteration_from_event_data(cog, mock_user, uploaded_event):
     await cog.mission_event_handler(uploaded_event)
 
     mock_user.iteration_information.assert_awaited_once()
@@ -147,9 +141,7 @@ async def test__mission_event_handler__reviewed__posts_review_notice(
 
 
 @pytest.mark.asyncio
-async def test__mission_event_handler__cosigned__is_skipped(
-    cog, forum_thread, mock_user, mock_discord_api, cosigned_event
-):
+async def test__mission_event_handler__cosigned__is_skipped(cog, forum_thread, mock_user, mock_discord_api, cosigned_event):
     await cog.mission_event_handler(cosigned_event)
 
     assert forum_thread.sent == []
@@ -158,9 +150,7 @@ async def test__mission_event_handler__cosigned__is_skipped(
 
 
 @pytest.mark.asyncio
-async def test__mission_event_handler__unknown_event__is_skipped(
-    cog, forum_thread, mock_user, mock_discord_api, unknown_event
-):
+async def test__mission_event_handler__unknown_event__is_skipped(cog, forum_thread, mock_user, mock_discord_api, unknown_event):
     await cog.mission_event_handler(unknown_event)
 
     assert forum_thread.sent == []

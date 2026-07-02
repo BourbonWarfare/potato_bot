@@ -1,12 +1,21 @@
 import uuid
 
+TVT_TAGS = [2, 4]
+COOP_TAGS = [1, 3, 5]
+
 
 class MissionTypeTag(int):
-    def __new__(cls, value: int | str) -> "MissionTypeTag":
+    def __new__(cls, value: int | str) -> 'MissionTypeTag':
         return super().__new__(cls, int(value))
 
     def __repr__(self) -> str:
-        return f"MissionTypeTag({super().__repr__()})"
+        return f'MissionTypeTag({super().__repr__()})'
+
+    def is_coop(self) -> bool:
+        return self in COOP_TAGS
+
+    def is_tvt(self) -> bool:
+        return self in TVT_TAGS
 
 
 class IterationUuid(uuid.UUID):

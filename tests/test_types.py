@@ -23,6 +23,7 @@ SAMPLE_UUID = uuid.UUID(SAMPLE_UUID_STR)
 
 # ---- DiscordSnowflake ------------------------------------------------------
 
+
 def test__discord_snowflake__accepts_str__is_str_instance():
     snowflake = DiscordSnowflake('123456789')
     assert isinstance(snowflake, str)
@@ -59,6 +60,7 @@ def test__discord_snowflake__hashable_as_dict_key():
 
 # ---- OAuthToken / OAuthRefreshToken / SessionToken -------------------------
 
+
 @pytest.mark.parametrize('wrapper', [OAuthToken, OAuthRefreshToken, SessionToken])
 def test__token_wrappers__accept_str__are_str_instances(wrapper):
     token = wrapper('secret')
@@ -83,6 +85,7 @@ def test__oauth_token__bearer_header_f_string():
 
 
 # ---- ForumId ---------------------------------------------------------------
+
 
 def test__forum_id__accepts_int__is_int_instance():
     forum = ForumId(7)
@@ -111,6 +114,7 @@ def test__forum_id__hashable_as_dict_key():
 
 
 # ---- MissionTypeTag --------------------------------------------------------
+
 
 def test__mission_type_tag__accepts_int_and_string_digits():
     assert MissionTypeTag(5) == 5

@@ -1,4 +1,3 @@
-from bw.discord.types import ForumId
 import discord
 import logging
 import datetime
@@ -58,6 +57,14 @@ class Environment:
 
     @config_fetch('mission_forum_id', int)
     def mission_forum_id(self, key: str) -> int:
+        return GC[key]
+
+    @config_fetch('arma_channel_id', int)
+    def arma_channel_id(self, key: str) -> int:
+        return GC[key]
+
+    @config_fetch('tech_channel_id', int)
+    def tech_channel_id(self, key: str) -> int:
         return GC[key]
 
     @config_fetch('backend_address', str, require=False)
