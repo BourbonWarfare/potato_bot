@@ -23,7 +23,7 @@ class User(commands.Cog, name='User'):
         self.bot = bot
 
     @app_commands.command(name='join', description='Join a group')
-    @app_commands.autocomplete(server=groups_autocomplete)
+    @app_commands.autocomplete(group=groups_autocomplete)
     @app_commands.describe(group='The group you want to join.')
     async def join(self, interaction: discord.Interaction, group: str):
         logger.debug('Getting BW session')
