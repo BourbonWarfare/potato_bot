@@ -35,13 +35,25 @@ class PotatoBot(commands.Bot):
     async def on_ready(self):
         from bw.events.broker import global_event_broker
 
-        path = Path('version.txt')
-        if path.exists():
-            with open(path) as f:
+        version_path = Path('version.txt')
+
+        clear_commands_path = Path('CLEAR_COMMANDS.txt')
+        if clear_commands_path.exists():
+            logger.info('Found the request to clear all commands. This is expensive, you better have a good reason.')
+            for guild_id in [guild.id for guild in self.guilds]:
+                guild = discord.Object(id=guild_id)
+                self.tree.clear_commands(guild=guild, type=None)
+                await self.tree.sync(guild=guild)
+            clear_commands_path.unlink()
+            # we want to force a re-sync with our true commands, so we delete this file to force it
+            version_path.unlink(missing_ok=True)
+
+        if version_path.exists():
+            with open(version_path) as f:
                 current_version = Version.from_string(f.read())
         else:
             current_version = Version(0, 0, 0)
-        with open(path, mode='w') as f:
+        with open(version_path, mode='w') as f:
             f.write(f'{VERSION}')
 
         logger.info(f'Current version: {current_version}')
