@@ -5,7 +5,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from bw.commands import community, helpers, mission_making, recruitment, staff, authentication
+from bw.commands import community, helpers, mission_making, recruitment, staff, authentication, user
 from bw.version import VERSION, Version
 
 logger = logging.getLogger('bw.potbot')
@@ -28,6 +28,7 @@ class PotatoBot(commands.Bot):
         await self.add_cog(recruitment.Recruitment(self))
         await self.add_cog(staff.Staff(self))
         await self.add_cog(authentication.Authentication(self))
+        await self.add_cog(user.User(self))
 
         logger.info(f'Setup as {self.user}. Ready to go! :3')
 

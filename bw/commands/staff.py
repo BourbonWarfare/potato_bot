@@ -270,3 +270,52 @@ class Staff(commands.Cog, name='Staff Commands'):
         finally:
             if embed is not None:
                 await interaction.followup.send(embed=embed)
+
+    @app_commands.command(
+        name='rpt',
+        description='Retrieve RPT file for a server.',
+    )
+    @app_commands.autocomplete(server=arma_servers_autocomplete)
+    @app_commands.describe(server='The server which to retrieve the RPT for.')
+    async def get_server_rpt(self, interaction: discord.Interaction, server: str):
+        logger.info(f'{interaction.user} is trying to get RPT for "{server}"')
+
+        await interaction.response.defer()
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
+            return
+
+        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
+
+        embed = None
+        try:
+            response = await interface.get_arma_server_rpt(server)
+        except aiohttp.ClientResponseError as e:
+            logger.warning(f'User {interaction.user} failed to update server: {e}')
+            if e.status == 401 or e.status == 403:
+                embed = embeds.not_permitted()
+            elif e.status == 404:
+                embed = embeds.arma_server_not_found(interaction.user, server)
+            else:
+                embed = embeds.failed_to_get_rpt(server, e.message)
+        except RefreshFailed as e:
+            logger.warning(f'{e}. Reattempting whole method...')
+            raise
+        except CannotReachBwBackend as e:
+            logger.error(f'Failed to operate on server: {e}')
+            embed = embeds.failed_to_reach_bw_backend()
+        except Exception as e:
+            logger.warning(f'Failed to operate on server: {e}')
+            embed = embeds.failed_to_get_rpt(server, str(e))
+        else:
+            await interaction.followup.send(f'💬 Latest RPT for {server}:\n```{response}```')
+        finally:
+            if embed is not None:
+                await interaction.followup.send(embed=embed)

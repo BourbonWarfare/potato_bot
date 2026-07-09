@@ -1,3 +1,4 @@
+from bw.group_cache import GroupCache
 from sqlalchemy.util import classproperty
 import logging
 from typing import Optional
@@ -33,6 +34,7 @@ class State:
             return
         self.engine_map = {}
         self.arma_server_cache_ = ArmaServerCache()
+        self.group_cache_ = GroupCache()
         self.api_client_ = ApiClient()
         State.state_ = self
 
@@ -50,6 +52,10 @@ class State:
     @property
     def arma_server_cache(self) -> ArmaServerCache:
         return self.arma_server_cache_
+
+    @property
+    def group_cache(self) -> GroupCache:
+        return self.group_cache_
 
     @property
     def default_engine(self) -> DatabaseConnection:

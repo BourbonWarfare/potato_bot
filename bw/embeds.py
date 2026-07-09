@@ -400,3 +400,43 @@ def mission_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) ->
         colour=ENVIRONMENT.embed_colour_member(),
     )
     return embed
+
+
+def failed_to_get_rpt(server: str, reason: str) -> discord.Embed:
+    return discord.Embed(
+        title='❌ Failed to get server RPT!',
+        description=f'Could not get RPT for {server}: {reason}',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+
+
+def successfully_joined_group(group: str) -> discord.Embed:
+    return discord.Embed(
+        title='📢 Joined group!',
+        description=f'You are now apart of "{group}"',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
+def no_group_with_name(group: str) -> discord.Embed:
+    return discord.Embed(
+        title='📢 Could not join group!',
+        description=f'No group called "{group}" exists',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
+def already_apart_of_group(group: str) -> discord.Embed:
+    return discord.Embed(
+        title='📢 Could not join group!',
+        description=f'You are already apart of "{group}"',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )
+
+
+def could_not_join_group(group: str) -> discord.Embed:
+    return discord.Embed(
+        title='📢 Could not join group!',
+        description=f'Did not successfully join "{group}"',
+        colour=ENVIRONMENT.embed_colour_member(),
+    )

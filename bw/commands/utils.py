@@ -70,3 +70,17 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
         logger.debug(f'{servers_with_distances}')
         logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
         return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
+
+
+async def groups_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
+    async with State.state.group_cache.groups as groups:
+        logger.debug('Starting autocomplete')
+        start_time = time.time()
+        if len(groups) == 0:
+            logger.error('Could not find any configured groups')
+            return []
+
+        groups_with_distances = sorted([(server, levenshtein_distance(current, server)) for server in groups], key=lambda a: a[1])
+        logger.debug(f'{groups_with_distances}')
+        logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
+        return [app_commands.Choice(name=server, value=server) for server, _ in groups_with_distances][:3]

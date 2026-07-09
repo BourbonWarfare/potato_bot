@@ -175,6 +175,33 @@ class User(Interface):
         self.client = client
         super().__init__()
 
+    async def get_groups(self) -> dict:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session):
+                async with session.get(server_url(Root.get().api.v1.group.list.resolve())) as response:
+                    response.raise_for_status()
+                    return await response.json()
+
+    async def join_group(self, group: str):
+        payload = {'group_name': group}
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session):
+                async with session.post(server_url(Root.get().api.v1.group.join.resolve()), json=payload) as response:
+                    try:
+                        err_body = await response.text()
+                        response.raise_for_status()
+                    except aiohttp.ClientResponseError as e:
+                        raise ResponseError(err_body, e)
+
+    async def get_arma_server_rpt(self, server: str) -> str:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session):
+                async with session.post(
+                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).rpt.resolve())
+                ) as response:
+                    response.raise_for_status()
+                    return await response.text()
+
     async def start_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session):

@@ -1,6 +1,10 @@
 from bw.endpoints.endpoint import Endpoint, VariableEndpoint
 
 
+class Rpt(Endpoint):
+    endpoint = 'rpt'
+
+
 class Start(Endpoint):
     endpoint = 'start'
 
@@ -38,6 +42,7 @@ class Server(Endpoint):
     update_mods = UpdateMods()
     healthcheck = Healthcheck()
     status = Status()
+    rpt = Rpt()
 
 
 class Servers(Endpoint):

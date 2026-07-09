@@ -5,6 +5,10 @@ class Permission(Endpoint):
     endpoint = 'permission'
 
 
+class List(Endpoint):
+    endpoint = 'list'
+
+
 class Create(Endpoint):
     endpoint = 'create'
     permission = Permission()
