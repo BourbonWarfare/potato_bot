@@ -440,3 +440,17 @@ def could_not_join_group(group: str) -> discord.Embed:
         description=f'Did not successfully join "{group}"',
         colour=ENVIRONMENT.embed_colour_member(),
     )
+
+
+def cron_run(cron: str) -> discord.Embed:
+    return discord.Embed(
+        title=f'🤖 Cron {cron} is running!',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )
+
+
+def server_event(event: str, server: str) -> discord.Embed:
+    return discord.Embed(
+        title=f'🖧 {server} has performed {event}!',
+        colour=ENVIRONMENT.embed_colour_staff(),
+    )

@@ -67,6 +67,10 @@ class Environment:
     def tech_channel_id(self, key: str) -> int:
         return GC[key]
 
+    @config_fetch('command_channel_id', int)
+    def command_channel_id(self, key: str) -> int:
+        return GC[key]
+
     @config_fetch('backend_address', str, require=False)
     def backend_address(self, key: str) -> str:
         return GC.get(key, 'localhost')

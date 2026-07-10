@@ -8,8 +8,11 @@ from discord.ext import commands
 
 from bw import embeds
 from bw.error import RefreshFailed, CannotReachBwBackend, CannotReachDiscord
+from bw.events.broker import global_event_broker
+from bw.events.decoder import ServerSentEvent
 from bw.interface import User, UserClient
 from bw.commands.utils import get_session, arma_servers_autocomplete
+from bw.environment import ENVIRONMENT
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -28,6 +31,8 @@ class UpdateChoices(StrEnum):
 class Staff(commands.Cog, name='Staff Commands'):
     def __init__(self, bot):
         self.bot = bot
+        global_event_broker.add_handler(self.arma_server_event_handler, namespace='arma_server', event=None)
+        global_event_broker.add_handler(self.cron_event_handler, namespace='cron', event=None)
 
     @app_commands.command(
         name='arma',
@@ -323,3 +328,35 @@ class Staff(commands.Cog, name='Staff Commands'):
         finally:
             if embed is not None:
                 await interaction.followup.send(embed=embed)
+
+    async def arma_server_event_handler(self, event: ServerSentEvent):
+        channels_to_post = [
+            self.bot.get_channel(ENVIRONMENT.command_channel_id()),
+        ]
+        if event.event == 'started':
+            for channel in channels_to_post:
+                await channel.send(embed=embeds.server_event('started', event.data['server']))
+        elif event.event == 'stopped':
+            for channel in channels_to_post:
+                await channel.send(embed=embeds.server_event('started', event.data['server']))
+        elif event.event == 'restarted':
+            for channel in channels_to_post:
+                await channel.send(embed=embeds.server_event('started', event.data['server']))
+        elif event.event == 'updated':
+            for channel in channels_to_post:
+                await channel.send(embed=embeds.server_event('updated', event.data['server']))
+        elif event.event == 'deployed_mods':
+            for channel in channels_to_post:
+                await channel.send(embed=embeds.server_event('deploy mods', event.data['server']))
+        elif event.event == 'deployed_keys':
+            for channel in channels_to_post:
+                await channel.send(embed=embeds.server_event('deploy keys', event.data['server']))
+
+    async def cron_event_handler(self, event: ServerSentEvent):
+        if event.event == 'run':
+            channels_to_post = [
+                self.bot.get_channel(ENVIRONMENT.command_channel_id()),
+            ]
+            logger.info(f'Posting cron run for {event.data["cron"]}')
+            for channel in channels_to_post:
+                await channel.send(embed=embeds.cron_run(event.data['cron']))
