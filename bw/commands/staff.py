@@ -265,12 +265,19 @@ class Staff(commands.Cog, name='Staff Commands'):
                 mod_update_log = []
                 for mod in mods:
                     mod_update_log.append(f'{mod.get("title", "Unknown")}({mod.get("workshop_id", "No Workshop ID")})')
-                update_file = io.BytesIO(('\n'.join(mod_update_log)).encode('utf-8'))
-                await interaction.followup.send(
-                    f'💬 {len(mods)} mods updated',
-                    embeds=embed_list,
-                    file=discord.File(update_file, filename='mods_updated.txt'),
-                )
+                mod_update_log_text = '\n'.join(mod_update_log)
+                if len(mod_update_log_text) > 1900:
+                    update_file = io.BytesIO(mod_update_log_text.encode('utf-8'))
+                    await interaction.followup.send(
+                        f'💬 {len(mods)} mods updated',
+                        embeds=embed_list,
+                        file=discord.File(update_file, filename='mods_updated.txt'),
+                    )
+                else:
+                    await interaction.followup.send(
+                        f'💬 {len(mods)} mods updated\n{mod_update_log_text}',
+                        embeds=embed_list,
+                    )
             else:
                 embed = embeds.successful_server_update(
                     server,
