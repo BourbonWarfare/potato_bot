@@ -4,6 +4,7 @@ from bw.missions.types import IterationUuid, MissionUuid
 import aiohttp
 import datetime
 import logging
+import json
 from pathlib import Path
 from contextlib import asynccontextmanager
 from typing import Any
@@ -236,7 +237,12 @@ class User(Interface):
                     server_url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
                     response.raise_for_status()
-                    return await response.json()
+                    final_object = {}
+                    async for line in response.content:
+                        if not line.strip():
+                            continue
+                        final_object.update(**json.loads(line))
+                    return final_object
 
     async def update_arma_server_mods(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:

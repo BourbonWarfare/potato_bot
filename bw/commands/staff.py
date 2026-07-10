@@ -250,7 +250,6 @@ class Staff(commands.Cog, name='Staff Commands'):
             embed = embeds.failed_arma_server_operation(interaction.user, update_option, server)
         else:
             if update_option == UpdateChoices.MODS:
-                print(response)
                 servers: dict[str, dict] = response['affected_servers']
                 mods: list[dict] = response['updated_mods']
                 embed_list = []
