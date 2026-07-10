@@ -237,12 +237,7 @@ class User(Interface):
                     server_url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
                     response.raise_for_status()
-                    final_object = {}
-                    async for line in response.content:
-                        if not line.strip():
-                            continue
-                        final_object.update(**json.loads(line))
-                    return final_object
+                    await response.json()
 
     async def update_arma_server_mods(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
@@ -252,7 +247,17 @@ class User(Interface):
                     headers=client.auth_header,
                 ) as response:
                     response.raise_for_status()
-                    return await response.json()
+                    affected_servers = {}
+                    updated_mods = []
+                    async for line in response.content:
+                        if not line.strip():
+                            continue
+                        loaded_json = json.loads(line)
+                        if 'affected_servers' in loaded_json:
+                            affected_servers = loaded_json
+                        else:
+                            updated_mods.append(loaded_json)
+                    return {'affected_servers': affected_servers, 'updated_mods': updated_mods}
 
     async def get_arma_server_status(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
