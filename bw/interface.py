@@ -196,7 +196,7 @@ class User(Interface):
     async def get_arma_server_rpt(self, server: str) -> str:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session):
-                async with session.post(
+                async with session.get(
                     server_url(Root.get().api.v1.server_ops.arma.server.var(server).rpt.resolve())
                 ) as response:
                     response.raise_for_status()
