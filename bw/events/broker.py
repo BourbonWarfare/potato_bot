@@ -3,6 +3,7 @@ import logging
 import json
 import asyncio
 import traceback
+import random
 
 from aiohttp import hdrs
 from collections.abc import Callable, Awaitable
@@ -94,10 +95,15 @@ class Broker:
     async def backend_event_handler(self):
         async with asyncio.TaskGroup() as tasks:
             async with aiohttp.ClientSession() as session:
-                try:
-                    await self._get_sse(session, tasks)
-                except aiohttp.ClientConnectionError as err:
-                    logging.warning(f'Cannot connect to backend: {err}')
+                while True:
+                    try:
+                        await self._get_sse(session, tasks)
+                    except aiohttp.ClientConnectionError as err:
+                        logging.warning(f'Cannot connect to backend: {err}')
+                        await asyncio.sleep(1 + 5 * random.random())
+                    except aiohttp.ServerConnectionError as err:
+                        logging.warning(f'Lost connection to backend: {err}')
+                        await asyncio.sleep(1 + 5 * random.random())
 
 
 global_event_broker = Broker()
