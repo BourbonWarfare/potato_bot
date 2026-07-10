@@ -27,7 +27,7 @@ class User(commands.Cog, name='User'):
     @app_commands.describe(group='The group you want to join.')
     async def join(self, interaction: discord.Interaction, group: str):
         logger.debug('Getting BW session')
-        interaction.response.defer()
+        await interaction.response.defer()
         try:
             bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
         except CannotReachBwBackend as e:
