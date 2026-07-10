@@ -27,3 +27,4 @@ class Group(Endpoint):
     create = Create()
     join = Join()
     leave = Leave()
+    list = List()
