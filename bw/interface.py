@@ -237,7 +237,7 @@ class User(Interface):
                     server_url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
                 ) as response:
                     response.raise_for_status()
-                    await response.json()
+                    return await response.json()
 
     async def update_arma_server_mods(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
