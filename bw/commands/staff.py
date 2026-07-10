@@ -265,7 +265,12 @@ class Staff(commands.Cog, name='Staff Commands'):
                 mod_update_log = []
                 for mod in mods:
                     mod_update_log.append(f'{mod.get("title", "Unknown")}({mod.get("workshop_id", "No Workshop ID")})')
-                await interaction.followup.send(f'Mods Updated:\n```{"\n".join(mod_update_log)}```', embeds=embed_list)
+                update_file = io.BytesIO(('\n'.join(mod_update_log)).encode('utf-8'))
+                await interaction.followup.send(
+                    f'💬 {len(mods)} mods updated',
+                    embeds=embed_list,
+                    file=discord.File(update_file, filename='mods_updated.txt'),
+                )
             else:
                 embed = embeds.successful_server_update(
                     server,
