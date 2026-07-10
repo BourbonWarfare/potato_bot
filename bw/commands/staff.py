@@ -275,7 +275,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                     )
                 else:
                     await interaction.followup.send(
-                        f'💬 {len(mods)} mods updated\n{mod_update_log_text}',
+                        f'💬 {len(mods)} mods updated\n```{mod_update_log_text}```',
                         embeds=embed_list,
                     )
             else:
