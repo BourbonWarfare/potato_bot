@@ -338,10 +338,10 @@ class Staff(commands.Cog, name='Staff Commands'):
                 await channel.send(embed=embeds.server_event('started', event.data['server']))
         elif event.event == 'stopped':
             for channel in channels_to_post:
-                await channel.send(embed=embeds.server_event('started', event.data['server']))
+                await channel.send(embed=embeds.server_event('stopped', event.data['server']))
         elif event.event == 'restarted':
             for channel in channels_to_post:
-                await channel.send(embed=embeds.server_event('started', event.data['server']))
+                await channel.send(embed=embeds.server_event('restarted', event.data['server']))
         elif event.event == 'updated':
             for channel in channels_to_post:
                 await channel.send(embed=embeds.server_event('updated', event.data['server']))
