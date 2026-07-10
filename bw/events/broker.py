@@ -104,6 +104,9 @@ class Broker:
                     except aiohttp.ServerConnectionError as err:
                         logging.warning(f'Lost connection to backend: {err}')
                         await asyncio.sleep(1 + 5 * random.random())
+                    except Exception as err:
+                        logging.warning(f'An error occured while handling SSE stream: {err}')
+                        await asyncio.sleep(1 + 5 * random.random())
 
 
 global_event_broker = Broker()
