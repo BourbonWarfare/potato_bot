@@ -1,6 +1,7 @@
 import discord
 import logging
 import aiohttp
+import io
 from enum import StrEnum
 from discord import app_commands
 from discord.ext import commands
@@ -315,7 +316,10 @@ class Staff(commands.Cog, name='Staff Commands'):
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_to_get_rpt(server, str(e))
         else:
-            await interaction.followup.send(f'💬 Latest RPT for {server}:\n```{response}```')
+            rpt_file = io.BytesIO(response.encode('utf-8'))
+            await interaction.followup.send(
+                f'💬 Latest RPT for {server}', file=discord.File(rpt_file, filename=f'{server}_latest.rpt')
+            )
         finally:
             if embed is not None:
                 await interaction.followup.send(embed=embed)
