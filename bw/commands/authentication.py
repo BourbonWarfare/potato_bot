@@ -70,7 +70,7 @@ class Authentication(commands.Cog, name='Authentication'):
         logger.info('waiting for user...')
         await asyncio.sleep(4)
 
-        @backoff(delay=1, retries=10, max_delay=9)
+        @backoff(delay=1, retries=15, max_delay=9)
         async def get_code(state: str) -> str:
             logger.info('attempting getting access code')
             return (await Interface().auth_get_access_code(state)).get('access_code')
