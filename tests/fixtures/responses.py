@@ -31,6 +31,7 @@ def sample_mission(sample_mission_type):
         author_uuid=SAMPLE_AUTHOR_UUID,
         author_name='tcvm',
         title='tcvm_coop_20',
+        map='Altis',
         mission_type=sample_mission_type,
         special_flags={'is_night': True, 'has_armor': False},
     )
@@ -48,6 +49,7 @@ def sample_iteration(sample_mission):
         mission_length=70,
         upload_date=SAMPLE_UPLOAD,
         bwmf_version='1.0.0',
+        filename='tcvm_coop_20_v4.Altis',
         iteration=7,
         changelog='{"description": "Fixed briefing typo"}',
     )
@@ -66,6 +68,7 @@ def sample_iteration_payload():
         'upload_date': SAMPLE_UPLOAD.isoformat(),
         'bwmf_version': '1.0.0',
         'iteration': 7,
+        'filename': 'tcvm_coop_20_v4.Altis',
         'changelog': {'description': 'Fixed briefing typo'},
         'mission': {
             'uuid': str(SAMPLE_MISSION_UUID),
@@ -74,6 +77,7 @@ def sample_iteration_payload():
             'author_uuid': str(SAMPLE_AUTHOR_UUID),
             'author_name': 'tcvm',
             'title': 'tcvm_coop_20',
+            'map': 'Altis',
             'special_flags': {'is_night': True},
             'mission_type': {'name': 'Co-Op', 'signoffs_required': 1, 'tag': 1},
         },

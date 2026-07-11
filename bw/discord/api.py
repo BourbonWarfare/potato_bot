@@ -1,5 +1,6 @@
+import re
 import bw.embeds
-from bw.missions.response import MissionInformationResponse
+from bw.missions.response import IterationInformationResponse, MissionInformationResponse
 from discord import ForumChannel, ForumTag
 from bw.discord.types import ForumId
 from sqlalchemy import select
@@ -16,8 +17,9 @@ class DiscordApi:
             return bool(forum)
 
     async def get_or_create_mission_thread(
-        self, state: State, channel: ForumChannel, mission_information: MissionInformationResponse
+        self, state: State, channel: ForumChannel, iteration_information: IterationInformationResponse
     ) -> MissionForum:
+        mission_information = iteration_information.mission
         with state.Session.begin() as session:
             query = select(MissionForum).where(MissionForum.mission_uuid == mission_information.uuid)
             forum = session.scalar(query)
@@ -30,8 +32,9 @@ class DiscordApi:
                     if available_tag.name == 'Needs Testing':
                         default_tags.append(available_tag)
 
+                mission_file_no_version = re.sub('_[vV][0-9]+', '', iteration_information.filename)
                 discord_forum, _ = await channel.create_thread(
-                    name=mission_information.title,
+                    name=mission_file_no_version,
                     embeds=bw.embeds.mission_information(mission_information),
                     reason='Automated mission thread creation',
                     applied_tags=default_tags,

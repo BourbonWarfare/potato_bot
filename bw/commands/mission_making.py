@@ -206,7 +206,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
             iteration_information = await User(State.state.api_client).iteration_information(
                 IterationUuid(event.data['iteration'])
             )
-            mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information.mission)
+            mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information)
 
             forum = self.bot.get_channel(mission_thread.thread_id)
             if not isinstance(forum, Thread):
@@ -217,7 +217,7 @@ class MissionMaking(commands.Cog, name='Mission Making'):
             iteration_information = await User(State.state.api_client).iteration_information(
                 IterationUuid(event.data['iteration'])
             )
-            mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information.mission)
+            mission_thread = await DiscordApi().get_or_create_mission_thread(State.state, channel, iteration_information)
 
             forum = self.bot.get_channel(mission_thread.thread_id)
             if not isinstance(forum, Thread):

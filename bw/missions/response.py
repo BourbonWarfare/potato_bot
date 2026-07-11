@@ -56,6 +56,7 @@ class MissionInformationResponse(_CoerceFields):
     author_uuid: UserUuid
     author_name: str
     title: str
+    map: str
     mission_type: MissionTypeResponse
     special_flags: dict[str, Any]
 
@@ -70,6 +71,7 @@ class IterationInformationResponse(_CoerceFields):
     safe_start_length: int
     mission_length: int
     upload_date: datetime.datetime
+    filename: str
     bwmf_version: str
     iteration: int
     changelog: dict[str, str]
