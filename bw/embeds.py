@@ -312,10 +312,7 @@ def mission_information(mission: MissionInformationResponse) -> tuple[discord.Em
         discord.Embed(
             title='🪖 Mission Information',
             description=(
-                f'🪧 Name: {mission.title}\n'
-                '🖥️ Server: {mission.server}\n'
-                '👀 Author: {mission.author_name}\n'
-                '🗺️ Map: {mission.map}'
+                f'🪧 Name: {mission.title}\n🖥️ Server: {mission.server}\n👀 Author: {mission.author_name}\n🗺️ Map: {mission.map}'
             ),
             colour=ENVIRONMENT.embed_colour_member(),
         ),
