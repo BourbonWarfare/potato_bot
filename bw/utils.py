@@ -51,20 +51,22 @@ def levenshtein_distance(a: str, b: str) -> int:
 
 
 def orbat_to_string(orbat: dict[str, Any]) -> str:
+    all_groups: list[dict] = orbat['groups']
+    id_to_name_map = {}
+    for group in all_groups:
+        for member in group['members']:
+            id_to_name_map[member['steam_id']] = member['name']
+
     def side_to_string(side: str, groups: list[dict[str, Any]]) -> str:
         if len(groups) == 0:
             return ''
 
         return f'**{side}**\n' + '\n'.join(
-            [f'{group["name"]}: {id_to_name_map[group["leader"]]} (_leading +{len(group["members"]) - 1}_)' for group in groups]
+            [
+                f'{group["name"]}: {id_to_name_map.get(group["leader"], "Unknown")} (_leading +{len(group["members"]) - 1}_)'
+                for group in groups
+            ]
         )
-
-    all_groups: list[dict] = orbat['groups']
-
-    id_to_name_map = {}
-    for group in all_groups:
-        for member in group['members']:
-            id_to_name_map[member['steam_id']] = member['name']
 
     blufor_groups = [group for group in all_groups if group['side'] == 'WEST']
     opfor_groups = [group for group in all_groups if group['side'] == 'EAST']
