@@ -1,3 +1,4 @@
+from bw.utils import orbat_to_string
 import discord
 import datetime
 import urllib.parse
@@ -356,10 +357,11 @@ def upcoming_session() -> discord.Embed:
     return embed
 
 
-def safe_start_ended(mission: MissionInformationResponse, player_count: int) -> discord.Embed:
+def safe_start_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
+    player_count = sum([len(group['members']) for group in orbat['groups']])
     embed = discord.Embed(
         title=f'🦺 Safe Start has ended for {mission.title} by {mission.author_name} [{mission.mission_type.name} ]',
-        description=f'{player_count} players are present!',
+        description=f'{player_count} players are present.\n{orbat_to_string(orbat)}',
         colour=ENVIRONMENT.embed_colour_member(),
     )
     embed.set_image(
@@ -368,10 +370,11 @@ def safe_start_ended(mission: MissionInformationResponse, player_count: int) -> 
     return embed
 
 
-def safe_start_ended_basic(player_count: int) -> discord.Embed:
+def safe_start_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
+    player_count = sum([len(group['members']) for group in orbat['groups']])
     embed = discord.Embed(
         title='🦺 Safe Start has ended!',
-        description=f'{player_count} players are present!',
+        description=f'{player_count} players are present.\n{orbat_to_string(orbat)}',
         colour=ENVIRONMENT.embed_colour_member(),
     )
     embed.set_image(
@@ -381,72 +384,18 @@ def safe_start_ended_basic(player_count: int) -> discord.Embed:
 
 
 def mission_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
-    all_groups: list[dict] = orbat['groups']
-
-    id_to_name_map = {}
-    for group in all_groups:
-        for member in group['members']:
-            id_to_name_map[member['steam_id']] = member['name']
-
-    blufor_groups = [group for group in all_groups if group['side'] == 'WEST']
-    opfor_groups = [group for group in all_groups if group['side'] == 'EAST']
-    indfor_groups = [group for group in all_groups if group['side'] == 'GUER']
-    civilian_groups = [group for group in all_groups if group['side'] == 'CIV']
-    spectator_groups = [group for group in all_groups if group['side'] == 'LOGIC']
-
-    blufor_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in blufor_groups]
-    )
-    opfor_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in opfor_groups]
-    )
-    indfor_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in indfor_groups]
-    )
-    civilian_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in civilian_groups]
-    )
-    spectator_string = f'{sum([len(group["members"]) for group in spectator_groups])} spectators'
-
     embed = discord.Embed(
         title=f'🏁 The {mission.mission_type.name} has finished!',
-        description='\n'.join([blufor_string, opfor_string, indfor_string, civilian_string, spectator_string]),
+        description=orbat_to_string(orbat),
         colour=ENVIRONMENT.embed_colour_member(),
     )
     return embed
 
 
 def mission_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
-    all_groups: list[dict] = orbat['groups']
-
-    id_to_name_map = {}
-    for group in all_groups:
-        for member in group['members']:
-            id_to_name_map[member['steam_id']] = member['name']
-
-    blufor_groups = [group for group in all_groups if group['side'] == 'WEST']
-    opfor_groups = [group for group in all_groups if group['side'] == 'EAST']
-    indfor_groups = [group for group in all_groups if group['side'] == 'GUER']
-    civilian_groups = [group for group in all_groups if group['side'] == 'CIV']
-    spectator_groups = [group for group in all_groups if group['side'] == 'LOGIC']
-
-    blufor_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in blufor_groups]
-    )
-    opfor_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in opfor_groups]
-    )
-    indfor_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in indfor_groups]
-    )
-    civilian_string = '\n'.join(
-        [f'{group["name"]}: {id_to_name_map[group["leader"]]} ({len(group["members"]) - 1} reports)' for group in civilian_groups]
-    )
-    spectator_string = f'{sum([len(group["members"]) for group in spectator_groups])} spectators'
-
     embed = discord.Embed(
         title='🏁 The mission has finished!',
-        description='\n'.join([blufor_string, opfor_string, indfor_string, civilian_string, spectator_string]),
+        description=orbat_to_string(orbat),
         colour=ENVIRONMENT.embed_colour_member(),
     )
     return embed

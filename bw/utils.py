@@ -2,6 +2,7 @@ import re
 import functools
 import asyncio
 import random
+from typing import Any
 
 
 def backoff(delay=2, retries=3, max_delay=float('inf')):
@@ -47,6 +48,37 @@ def levenshtein_distance(a: str, b: str) -> int:
                 new_distances.append(1 + min(distances[a_index], distances[a_index + 1], new_distances[-1]))
         distances = new_distances
     return distances[-1]
+
+
+def orbat_to_string(orbat: dict[str, Any]) -> str:
+    def side_to_string(groups: list[dict[str, Any]]):
+        return '\n'.join(
+            [
+                f'{group["name"]}: {id_to_name_map[group["leader"]]} (leading +{len(group["members"]) - 1})'
+                for group in blufor_groups
+            ]
+        )
+
+    all_groups: list[dict] = orbat['groups']
+
+    id_to_name_map = {}
+    for group in all_groups:
+        for member in group['members']:
+            id_to_name_map[member['steam_id']] = member['name']
+
+    blufor_groups = [group for group in all_groups if group['side'] == 'WEST']
+    opfor_groups = [group for group in all_groups if group['side'] == 'EAST']
+    indfor_groups = [group for group in all_groups if group['side'] == 'GUER']
+    civilian_groups = [group for group in all_groups if group['side'] == 'CIV']
+    spectator_groups = [group for group in all_groups if group['side'] == 'LOGIC']
+
+    blufor_string = side_to_string(blufor_groups)
+    opfor_string = side_to_string(opfor_groups)
+    indfor_string = side_to_string(indfor_groups)
+    civilian_string = side_to_string(civilian_groups)
+    spectator_string = f'{sum([len(group["members"]) for group in spectator_groups])} spectators'
+
+    return '\n'.join([blufor_string, opfor_string, indfor_string, civilian_string, spectator_string])
 
 
 EMOJI_PATTERN = re.compile(
