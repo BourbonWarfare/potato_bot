@@ -78,7 +78,13 @@ def orbat_to_string(orbat: dict[str, Any]) -> str:
     civilian_string = side_to_string('Civilian', civilian_groups)
     spectator_string = f'{sum([len(group["members"]) for group in spectator_groups])} spectators'
 
-    return '\n\n'.join([blufor_string, opfor_string, indfor_string, civilian_string, spectator_string])
+    sides = []
+    for string in [blufor_string, opfor_string, indfor_string, civilian_string, spectator_string]:
+        if string == '':
+            continue
+        sides.append(string)
+
+    return '\n\n'.join(sides)
 
 
 EMOJI_PATTERN = re.compile(
