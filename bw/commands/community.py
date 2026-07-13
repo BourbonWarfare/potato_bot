@@ -134,6 +134,14 @@ class Community(commands.Cog, name='Community'):
             self.bot.get_channel(ENVIRONMENT.tech_channel_id()),
         ]
 
+        async def notify_mission_end(message: str):
+            notify_message = self.bot.get_channel(ArmaApi().session_notification_message(State.state, session_id))
+            reacted: set[str] = set()
+            for reaction in notify_message.reactions:
+                async for user in reaction.users():
+                    reacted.add(user.mention)
+            await channel.send(f'{message} {" ".join(reacted)}')
+
         mission_id = UUID(hex=event.data['mission'])
         session_id = UUID(hex=event.data['session'])
         logger.info(f'Posting mission end message for mission [{mission_id}] in session [{session_id}]')
@@ -143,13 +151,8 @@ class Community(commands.Cog, name='Community'):
             for channel in channels_to_post:
                 await channel.send(embed=mission_ended_basic(event.data['orbat']))
 
-            notify_message = self.bot.get_channel(ArmaApi().session_notification_message(State.state, session_id))
-            reacted: set[str] = set()
-            for reaction in notify_message.reactions:
-                async for user in reaction.users():
-                    reacted.add(user.mention)
-            await channel.send(
-                f"A mission has ended! I don't know if its a TvT or Co-op, so everyone is being pinged just in case. {' '.join(reacted)}"
+            await notify_mission_end(
+                "A mission has ended! I don't know if its a TvT or Co-op, so everyone is being pinged just in case."
             )
             return
 
@@ -164,12 +167,7 @@ class Community(commands.Cog, name='Community'):
             # We have an unhandled edge case where is seeding gets > 15 players AND its marked as a coop, we will think that
             # the main Co-op has already ended and we will notify people at TVT slotting
             # If this occurs we will fix it, until then though...
-            notify_message = self.bot.get_channel(ArmaApi().session_notification_message(State.state, session_id))
-            reacted: set[str] = set()
-            for reaction in notify_message.reactions:
-                async for user in reaction.users():
-                    reacted.add(user.mention)
-            await channel.send(f'The TvT has ended, Co-Op slotting is starting soon! {" ".join(reacted)}')
+            await notify_mission_end('The TvT has ended, Co-Op slotting is starting soon!')
 
     async def session_event_handler(self, event: ServerSentEvent) -> None:
         if event.event == 'started':
