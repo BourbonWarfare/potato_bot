@@ -55,8 +55,8 @@ def orbat_to_string(orbat: dict[str, Any]) -> str:
         if len(groups) == 0:
             return ''
 
-        return f'{side}\n' + '\n'.join(
-            [f'{group["name"]}: {id_to_name_map[group["leader"]]} (leading +{len(group["members"]) - 1})' for group in groups]
+        return f'**{side}**\n' + '\n'.join(
+            [f'{group["name"]}: {id_to_name_map[group["leader"]]} (_leading +{len(group["members"]) - 1}_)' for group in groups]
         )
 
     all_groups: list[dict] = orbat['groups']
