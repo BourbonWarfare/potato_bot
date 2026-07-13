@@ -9,7 +9,7 @@ from bw.state import State
 class ArmaApi:
     def create_session_message(self, state: State, session_id: UUID, message_id: int):
         with state.Session.begin() as session:
-            new_session = ArmaSessionMessage(session_id=session_id, message_id=message_id)
+            new_session = ArmaSessionMessage(session_id=session_id, message_id=message_id, has_coop_ended=False)
             session.add(new_session)
 
     def inform_coop_played(self, state: State, session_id: UUID):
