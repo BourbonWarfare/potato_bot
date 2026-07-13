@@ -343,10 +343,15 @@ def iteration_information(iteration: IterationInformationResponse) -> discord.Em
     return embed
 
 
-def upcoming_session() -> discord.Embed:
+def upcoming_session(roles_to_ping: list[discord.Role]) -> discord.Embed:
+    if len(roles_to_ping) > 1:
+        ping_string = ', '.join([role.mention for role in roles_to_ping[:-1]]) + f'and {roles_to_ping[-1].mention}'
+    else:
+        ping_string = roles_to_ping[0].mention
+
     embed = discord.Embed(
         title='⏰ Session is coming up!',
-        description='@Members and @Recruits session time starts in one hour.\n'
+        description=f'{ping_string} session time starts in one hour.\n'
         'Make sure that you have updated your mods.\n\n'
         'Use the bell to be pinged for Co-Op slotting.',
         colour=ENVIRONMENT.embed_colour_member(),
@@ -361,7 +366,7 @@ def _safe_start_ended(title: str, orbat: dict[str, Any]) -> discord.Embed:
     player_count = sum([len(group['members']) for group in orbat['groups']])
     embed = discord.Embed(
         title=title,
-        description=f'{player_count} players are present.\nInitial Orbat\n{orbat_to_string(orbat)}',
+        description=f'**Initial Orbat**\n{orbat_to_string(orbat)}\n_**{player_count}** players are present._\n',
         colour=ENVIRONMENT.embed_colour_member(),
     )
     return embed
@@ -369,7 +374,7 @@ def _safe_start_ended(title: str, orbat: dict[str, Any]) -> discord.Embed:
 
 def safe_start_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
     return _safe_start_ended(
-        f'🦺 Safe Start has ended for {mission.title} by {mission.author_name} [{mission.mission_type.name} ]', orbat
+        f'🦺 Safe Start has ended for {mission.title} by {mission.author_name} [{mission.mission_type.name}]', orbat
     )
 
 

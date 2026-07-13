@@ -32,7 +32,7 @@ logger = logging.getLogger('bw.potbot.command')
 
 class Community(commands.Cog, name='Community'):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: discord.Client = bot
         global_event_broker.add_handler(self.session_event_handler, namespace='session', event=None)
 
     @app_commands.command(name='html', description='Get the latest version of the BW Modlist HTML')
@@ -95,9 +95,16 @@ class Community(commands.Cog, name='Community'):
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
 
     async def post_session_notification(self, event: ServerSentEvent):
+        roles_to_ping = [ENVIRONMENT.member_role(), ENVIRONMENT.recruit_role()]
         arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
-        message = await arma_channel.send(embed=upcoming_session())
-        await message.add_reaction(':pingMe')
+
+        message = await arma_channel.send(embed=upcoming_session(roles_to_ping))
+        emoji_to_attach: str | discord.Emoji = '🔔'
+        for emoji in self.bot.emojis:
+            if emoji.name == ENVIRONMENT.session_reminder_emoji_name():
+                emoji_to_attach = emoji
+                break
+        await message.add_reaction(emoji_to_attach)
 
         session_id = UUID(hex=event.data['session'])
         logger.info(f'Posting session notification to channel [{arma_channel.id}] with session [{session_id}]')

@@ -39,6 +39,10 @@ class Environment:
     def discord_token(self, key: str) -> str:
         return GC[key]
 
+    @config_fetch('session_reminder_emoji', str)
+    def session_reminder_emoji_name(self, key: str) -> str:
+        return GC[key]
+
     @config_fetch('orientation_role_id', int)
     def orientor_role(self, key: str) -> str:
         return GC[key]
@@ -49,6 +53,10 @@ class Environment:
 
     @config_fetch('recruit_role_id', int)
     def recruit_role(self, key: str) -> str:
+        return GC[key]
+
+    @config_fetch('member_role_id', int)
+    def member_role(self, key: str) -> str:
         return GC[key]
 
     @config_fetch('recruitment_channel_id', int)
