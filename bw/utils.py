@@ -51,8 +51,11 @@ def levenshtein_distance(a: str, b: str) -> int:
 
 
 def orbat_to_string(orbat: dict[str, Any]) -> str:
-    def side_to_string(groups: list[dict[str, Any]]):
-        return '\n'.join(
+    def side_to_string(side: str, groups: list[dict[str, Any]]) -> str:
+        if len(groups) == 0:
+            return ''
+
+        return f'{side}\n' + '\n'.join(
             [f'{group["name"]}: {id_to_name_map[group["leader"]]} (leading +{len(group["members"]) - 1})' for group in groups]
         )
 
@@ -69,13 +72,13 @@ def orbat_to_string(orbat: dict[str, Any]) -> str:
     civilian_groups = [group for group in all_groups if group['side'] == 'CIV']
     spectator_groups = [group for group in all_groups if group['side'] == 'LOGIC']
 
-    blufor_string = 'BluFor\n' + side_to_string(blufor_groups)
-    opfor_string = 'OpFor\n' + side_to_string(opfor_groups)
-    indfor_string = 'IndFor\n' + side_to_string(indfor_groups)
-    civilian_string = 'Civilian\n' + side_to_string(civilian_groups)
+    blufor_string = side_to_string('BluFor', blufor_groups)
+    opfor_string = side_to_string('OpFor', opfor_groups)
+    indfor_string = side_to_string('IndFor', indfor_groups)
+    civilian_string = side_to_string('Civilian', civilian_groups)
     spectator_string = f'{sum([len(group["members"]) for group in spectator_groups])} spectators'
 
-    return '\n'.join([blufor_string, opfor_string, indfor_string, civilian_string, spectator_string])
+    return '\n\n'.join([blufor_string, opfor_string, indfor_string, civilian_string, spectator_string])
 
 
 EMOJI_PATTERN = re.compile(
