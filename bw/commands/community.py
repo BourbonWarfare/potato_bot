@@ -1,3 +1,4 @@
+from bw.session.types import DiscordSnowflake
 from bw.missions.types import MissionUuid
 from bw.state import State
 from bw.arma.api import ArmaApi
@@ -99,7 +100,7 @@ class Community(commands.Cog, name='Community'):
         guild = arma_channel.guild
         roles_to_ping = [guild.get_role(ENVIRONMENT.member_role()), guild.get_role(ENVIRONMENT.recruit_role())]
 
-        message = await arma_channel.send(embed=upcoming_session(roles_to_ping))
+        message: discord.Message = await arma_channel.send(embed=upcoming_session(roles_to_ping))
         emoji_to_attach: str | discord.Emoji = '🔔'
         for emoji in self.bot.emojis:
             if emoji.name == ENVIRONMENT.session_reminder_emoji_name():
@@ -110,7 +111,7 @@ class Community(commands.Cog, name='Community'):
         session_id = UUID(hex=event.data['session'])
         logger.info(f'Posting session notification to channel [{arma_channel.id}] with session [{session_id}]')
 
-        ArmaApi().create_session_message(State.state, session_id, message.id)
+        ArmaApi().create_session_message(State.state, session_id, DiscordSnowflake(message.id))
 
     async def post_safe_start_ended(self, event: ServerSentEvent):
         channels_to_post = [
@@ -143,12 +144,15 @@ class Community(commands.Cog, name='Community'):
         ]
 
         async def notify_mission_end(message: str):
-            notify_message = self.bot.get_channel(ArmaApi().session_notification_message(State.state, session_id))
+            arma_channel: discord.TextChannel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
+            notify_message: discord.Message = await arma_channel.fetch_message(
+                int(ArmaApi().session_notification_message(State.state, session_id))
+            )
             reacted: set[str] = set()
             for reaction in notify_message.reactions:
                 async for user in reaction.users():
                     reacted.add(user.mention)
-            await channel.send(f'{message} {" ".join(reacted)}')
+            await arma_channel.send(f'{message} {" ".join(reacted)}')
 
         mission_id = UUID(hex=event.data['mission'])
         session_id = UUID(hex=event.data['session'])
