@@ -111,18 +111,19 @@ class Community(commands.Cog, name='Community'):
 
         mission_id = UUID(hex=event.data['mission'])
         session_id = UUID(hex=event.data['session'])
+
+        groups: list[dict] = event.data['orbat']['groups']
+        player_count = sum([len(group['members']) for group in groups])
+
         logger.info(f'Posting safe-start ending notification for mission [{mission_id}] in session [{session_id}]')
 
         if mission_id == UUID(int=0) or session_id == UUID(int=0):
             logger.info('Unknown mission or iteration, posting basic info')
             for channel in channels_to_post:
-                await channel.send(embed=safe_start_ended_basic(event.data['orbat']))
+                await channel.send(embed=safe_start_ended_basic(player_count))
             return
 
         mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
-
-        groups: list[dict] = event.data['orbat']['groups']
-        player_count = sum([len(group['members']) for group in groups])
 
         for channel in channels_to_post:
             await channel.send(embed=safe_start_ended(mission_information, player_count))

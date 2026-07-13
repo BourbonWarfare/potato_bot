@@ -356,10 +356,10 @@ def upcoming_session() -> discord.Embed:
     return embed
 
 
-def safe_start_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
+def safe_start_ended(mission: MissionInformationResponse, player_count: int) -> discord.Embed:
     embed = discord.Embed(
         title=f'🦺 Safe Start has ended for {mission.title} by {mission.author_name} [{mission.mission_type.name} ]',
-        description=f'{len(orbat)} players are present!',
+        description=f'{player_count} players are present!',
         colour=ENVIRONMENT.embed_colour_member(),
     )
     embed.set_image(
@@ -368,10 +368,10 @@ def safe_start_ended(mission: MissionInformationResponse, orbat: dict[str, Any])
     return embed
 
 
-def safe_start_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
+def safe_start_ended_basic(player_count: int) -> discord.Embed:
     embed = discord.Embed(
         title='🦺 Safe Start has ended!',
-        description=f'{len(orbat)} players are present!',
+        description=f'{player_count} players are present!',
         colour=ENVIRONMENT.embed_colour_member(),
     )
     embed.set_image(
