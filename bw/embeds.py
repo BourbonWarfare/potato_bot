@@ -1,4 +1,4 @@
-from bw.utils import orbat_to_string
+from bw.utils import orbat_to_string, orbat_diff_to_string
 import discord
 import datetime
 import urllib.parse
@@ -382,21 +382,23 @@ def safe_start_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
     return _safe_start_ended('🦺 Safe Start has ended!', orbat)
 
 
-def _mission_ended(title: str, orbat: dict[str, Any]) -> discord.Embed:
+def _mission_ended(title: str, starting_orbat: dict[str, Any], final_orbat: dict[str, Any]) -> discord.Embed:
     embed = discord.Embed(
         title=title,
-        description=f'Final Orbat\n{orbat_to_string(orbat)}',
+        description=f'Final Orbat\n{orbat_diff_to_string(starting_orbat, final_orbat)}',
         colour=ENVIRONMENT.embed_colour_member(),
     )
     return embed
 
 
-def mission_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
-    return _mission_ended(f'🏁 The {mission.mission_type.name} has finished!', orbat)
+def mission_ended(
+    mission: MissionInformationResponse, starting_orbat: dict[str, Any], final_orbat: dict[str, Any]
+) -> discord.Embed:
+    return _mission_ended(f'🏁 The {mission.mission_type.name} has finished!', starting_orbat, final_orbat)
 
 
-def mission_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
-    return _mission_ended('🏁 The mission has finished!', orbat)
+def mission_ended_basic(starting_orbat: dict[str, Any], final_orbat: dict[str, Any]) -> discord.Embed:
+    return _mission_ended('🏁 The mission has finished!', starting_orbat, final_orbat)
 
 
 def failed_to_get_rpt(server: str, reason: str) -> discord.Embed:

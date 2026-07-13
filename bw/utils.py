@@ -63,7 +63,7 @@ def orbat_to_string(orbat: dict[str, Any]) -> str:
 
         return f'**{side}**\n' + '\n'.join(
             [
-                f'{group["name"]}: {id_to_name_map.get(group["leader"], "Unknown")} (_leading +{len(group["members"]) - 1}_)'
+                f'{group["name"]}: {id_to_name_map.get(group["leader"], "Unknown")} (_leading {len(group["members"]) - 1}_)'
                 for group in groups
             ]
         )
@@ -87,6 +87,101 @@ def orbat_to_string(orbat: dict[str, Any]) -> str:
         sides.append(string)
 
     return '\n\n'.join(sides)
+
+
+def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, Any]) -> str:
+    all_members: list[dict[str, Any]] = [
+        *[group['members'] for group in starting_orbat['groups']],
+        *[group['members'] for group in final_orbat['groups']],
+    ]
+    id_to_name_map: dict[str, str] = {}
+    for member in all_members:
+        id_to_name_map[member['steam_id']] = member['name']
+
+    starting_groups: list[dict[str, Any]] = starting_orbat['groups']
+    groups_in_start: set[str] = {group['name'] for group in starting_groups}
+
+    final_groups: list[dict[str, Any]] = final_orbat['groups']
+    groups_in_final: dict[str, int] = {group['name']: idx for idx, group in enumerate(final_groups)}
+
+    destroyed_groups: list[(dict[str, Any])] = []
+    reinforced_groups: list[dict[str, Any]] = []
+    existing_groups: list[tuple[dict[str, Any], dict[str, Any]]] = []
+
+    for group in starting_groups:
+        group_name: str = group['name']
+        if group_name in groups_in_final:
+            final_group_idx = groups_in_final[group_name]
+            final_group = final_groups[final_group_idx]
+            existing_groups.append((group, final_group))
+        else:
+            destroyed_groups.append(group)
+
+    for group in final_groups:
+        group_name: str = group['name']
+        if group_name not in groups_in_start:
+            reinforced_groups.append(group)
+
+    final_strs: list[str] = []
+    for side, name in [('WEST', 'BluFor'), ('EAST', 'OpFor'), ('GUER', 'IndFor'), ('CIV', 'Civilian')]:
+        existing_groups: list[tuple[dict[str, Any], dict[str, Any]]] = [
+            (starting_group, final_group) for starting_group, final_group in existing_groups if starting_group['side'] == side
+        ]
+        reinforced_groups: list[dict[str, Any]] = [group for group in reinforced_groups if group['side'] == side]
+        destroyed_groups: list[dict[str, Any]] = [group for group in destroyed_groups if group['side'] == side]
+
+        existing_group_strs: list[str] = []
+        for starting_group, final_group in existing_groups:
+            member_delta = len(final_group['members']) - len(starting_group['members'])
+            if member_delta < 0:
+                delta_str = f'lost {abs(member_delta)}'
+            elif member_delta > 0:
+                delta_str = f'gained {abs(member_delta)}'
+            else:
+                delta_str = f'kept {len(starting_group["members"])}'
+
+            existing_group_strs.append(
+                f'{starting_group["name"]}: {id_to_name_map.get(final_group["leader"], "Unknown")} '
+                f'(_{delta_str}, leading {len(final_group["members"] - 1)}_)'
+            )
+        existing_group_str = '\n'.join(existing_group_strs)
+
+        reinforced_group_str: str = '\n'.join(
+            [
+                f'{group["name"]}: {id_to_name_map.get(group["leader"], "Unknown")} (_leading {len(group["members"]) - 1}_)'
+                for group in reinforced_groups
+            ]
+        )
+
+        destroyed_group_str: str = '\n'.join([f'{group["name"]}: {len(group["members"])} killed' for group in destroyed_groups])
+
+        to_join = []
+        if existing_group_str != '':
+            to_join.append(existing_group_str)
+
+        if reinforced_group_str != '':
+            to_join.append('\n_Reinforced_')
+            to_join.append(reinforced_group_str)
+
+        if destroyed_group_str != '':
+            to_join.append('\n_Destroyed_')
+            to_join.append(destroyed_group_str)
+
+        final_strs.append(f'**{name}**\n' + '\n'.join(to_join))
+
+    return '\n\n'.join(final_strs)
+
+
+def recruits_in_orbats(*orbats: dict[str, Any]) -> list[str]:
+    seen_recruits: set[str] = set()
+    for orbat in orbats:
+        all_groups: list[dict] = orbat['groups']
+        for group in all_groups:
+            for member in group['members']:
+                if not member['is_member']:
+                    seen_recruits.add(member['name'])
+
+    return list(seen_recruits)
 
 
 EMOJI_PATTERN = re.compile(

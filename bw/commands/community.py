@@ -163,7 +163,7 @@ class Community(commands.Cog, name='Community'):
         except Exception as err:
             logger.info(f'Unknown mission, posting basic info: {err}')
             for channel in channels_to_post:
-                await channel.send(embed=mission_ended_basic(event.data['orbat']))
+                await channel.send(embed=mission_ended_basic(event.data['starting_orbat'], event.data['final_orbat']))
 
             await notify_mission_end(
                 "A mission has ended! I don't know if its a TvT or Co-op, so everyone is being pinged just in case."
@@ -171,7 +171,7 @@ class Community(commands.Cog, name='Community'):
             raise
 
         for channel in channels_to_post:
-            await channel.send(embed=mission_ended(mission_information, event.data['orbat']))
+            await channel.send(embed=mission_ended(mission_information, event.data['starting_orbat'], event.data['final_orbat']))
 
         if mission_information.mission_type.tag.is_coop():
             ArmaApi().inform_coop_played(State.state, session_id)
