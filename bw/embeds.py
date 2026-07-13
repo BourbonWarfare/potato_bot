@@ -357,48 +357,41 @@ def upcoming_session() -> discord.Embed:
     return embed
 
 
-def safe_start_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
+def _safe_start_ended(title: str, orbat: dict[str, Any]) -> discord.Embed:
     player_count = sum([len(group['members']) for group in orbat['groups']])
     embed = discord.Embed(
-        title=f'🦺 Safe Start has ended for {mission.title} by {mission.author_name} [{mission.mission_type.name} ]',
-        description=f'{player_count} players are present.\n{orbat_to_string(orbat)}',
+        title=title,
+        description=f'{player_count} players are present.\nInitial Orbat\n{orbat_to_string(orbat)}',
         colour=ENVIRONMENT.embed_colour_member(),
-    )
-    embed.set_image(
-        url='https://cdn.discordapp.com/attachments/285837079139844096/724897893315641404/unknown.png?ex=6a1b4305&is=6a19f185&hm=f42610bea54e238a34e60309a141e865dc758f8e1e0bdbbd30677f67df1e5ff7&'
     )
     return embed
 
 
-def safe_start_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
-    player_count = sum([len(group['members']) for group in orbat['groups']])
-    embed = discord.Embed(
-        title='🦺 Safe Start has ended!',
-        description=f'{player_count} players are present.\n{orbat_to_string(orbat)}',
-        colour=ENVIRONMENT.embed_colour_member(),
+def safe_start_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
+    return _safe_start_ended(
+        f'🦺 Safe Start has ended for {mission.title} by {mission.author_name} [{mission.mission_type.name} ]', orbat
     )
-    embed.set_image(
-        url='https://cdn.discordapp.com/attachments/285837079139844096/724897893315641404/unknown.png?ex=6a1b4305&is=6a19f185&hm=f42610bea54e238a34e60309a141e865dc758f8e1e0bdbbd30677f67df1e5ff7&'
+
+
+def safe_start_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
+    return _safe_start_ended('🦺 Safe Start has ended!', orbat)
+
+
+def _mission_ended(title: str, orbat: dict[str, Any]) -> discord.Embed:
+    embed = discord.Embed(
+        title=title,
+        description=f'Final Orbat\n{orbat_to_string(orbat)}',
+        colour=ENVIRONMENT.embed_colour_member(),
     )
     return embed
 
 
 def mission_ended(mission: MissionInformationResponse, orbat: dict[str, Any]) -> discord.Embed:
-    embed = discord.Embed(
-        title=f'🏁 The {mission.mission_type.name} has finished!',
-        description=orbat_to_string(orbat),
-        colour=ENVIRONMENT.embed_colour_member(),
-    )
-    return embed
+    return _mission_ended(f'🏁 The {mission.mission_type.name} has finished!', orbat)
 
 
 def mission_ended_basic(orbat: dict[str, Any]) -> discord.Embed:
-    embed = discord.Embed(
-        title='🏁 The mission has finished!',
-        description=orbat_to_string(orbat),
-        colour=ENVIRONMENT.embed_colour_member(),
-    )
-    return embed
+    return _mission_ended('🏁 The mission has finished!', orbat)
 
 
 def failed_to_get_rpt(server: str, reason: str) -> discord.Embed:
