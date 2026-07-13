@@ -126,13 +126,13 @@ class Community(commands.Cog, name='Community'):
 
         logger.info(f'Posting safe-start ending notification for mission [{mission_id}] in session [{session_id}]')
 
-        if mission_id == UUID(int=0) or session_id == UUID(int=0):
-            logger.info('Unknown mission or iteration, posting basic info')
+        try:
+            mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
+        except Exception as err:
+            logger.info(f'Unknown mission or iteration, posting basic info: {err}')
             for channel in channels_to_post:
                 await channel.send(embed=safe_start_ended_basic(orbat))
-            return
-
-        mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
+            raise
 
         for channel in channels_to_post:
             await channel.send(embed=safe_start_ended(mission_information, orbat))
@@ -158,17 +158,18 @@ class Community(commands.Cog, name='Community'):
         session_id = UUID(hex=event.data['session'])
         logger.info(f'Posting mission end message for mission [{mission_id}] in session [{session_id}]')
 
-        if mission_id == UUID(int=0) or session_id == UUID(int=0):
-            logger.info('Unknown mission or iteration, posting basic info')
+        try:
+            mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
+        except Exception as err:
+            logger.info(f'Unknown mission, posting basic info: {err}')
             for channel in channels_to_post:
                 await channel.send(embed=mission_ended_basic(event.data['orbat']))
 
             await notify_mission_end(
                 "A mission has ended! I don't know if its a TvT or Co-op, so everyone is being pinged just in case."
             )
-            return
+            raise
 
-        mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
         for channel in channels_to_post:
             await channel.send(embed=mission_ended(mission_information, event.data['orbat']))
 
