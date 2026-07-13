@@ -95,8 +95,9 @@ class Community(commands.Cog, name='Community'):
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
 
     async def post_session_notification(self, event: ServerSentEvent):
-        roles_to_ping = [ENVIRONMENT.member_role(), ENVIRONMENT.recruit_role()]
         arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
+        guild = arma_channel.guild
+        roles_to_ping = [guild.get_role(ENVIRONMENT.member_role()), guild.get_role(ENVIRONMENT.recruit_role())]
 
         message = await arma_channel.send(embed=upcoming_session(roles_to_ping))
         emoji_to_attach: str | discord.Emoji = '🔔'
