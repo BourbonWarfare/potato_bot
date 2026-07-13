@@ -80,7 +80,7 @@ async def groups_autocomplete(_, current: str) -> list[app_commands.Choice[str]]
             logger.error('Could not find any configured groups')
             return []
 
-        groups_with_distances = sorted([(server, levenshtein_distance(current, server)) for server in groups], key=lambda a: a[1])
+        groups_with_distances = sorted([(group, levenshtein_distance(current, group)) for group in groups], key=lambda a: a[1])
         logger.debug(f'{groups_with_distances}')
         logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
-        return [app_commands.Choice(name=server, value=server) for server, _ in groups_with_distances][:3]
+        return [app_commands.Choice(name=group, value=group) for group, _ in groups_with_distances][:3]
