@@ -142,6 +142,15 @@ class Community(commands.Cog, name='Community'):
             logger.info('Unknown mission or iteration, posting basic info')
             for channel in channels_to_post:
                 await channel.send(embed=mission_ended_basic(event.data['orbat']))
+
+            notify_message = self.bot.get_channel(ArmaApi().session_notification_message(State.state, session_id))
+            reacted: set[str] = set()
+            for reaction in notify_message.reactions:
+                async for user in reaction.users():
+                    reacted.add(user.mention)
+            await channel.send(
+                f"A mission has ended! I don't know if its a TvT or Co-op, so everyone is being pinged just in case. {' '.join(reacted)}"
+            )
             return
 
         mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
