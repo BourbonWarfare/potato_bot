@@ -163,7 +163,7 @@ class Community(commands.Cog, name='Community'):
         final_orbat: dict[str, Any] = event.data['final_orbat']
 
         channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
-        await channel.send(f'Recruits Present:\n{"\n".join(recruits_in_orbats(starting_orbat, final_orbat))}')
+        await channel.send(f'**Recruits Present:**\n{"\n".join(recruits_in_orbats(starting_orbat, final_orbat))}')
 
         try:
             mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))

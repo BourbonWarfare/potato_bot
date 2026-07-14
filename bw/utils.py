@@ -127,14 +127,14 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
 
     final_strs: list[str] = []
     for side, name in [('WEST', 'BluFor'), ('EAST', 'OpFor'), ('GUER', 'IndFor'), ('CIV', 'Civilian')]:
-        existing_groups: list[tuple[dict[str, Any], dict[str, Any]]] = [
+        side_existing_groups: list[tuple[dict[str, Any], dict[str, Any]]] = [
             (starting_group, final_group) for starting_group, final_group in existing_groups if starting_group['side'] == side
         ]
-        reinforced_groups: list[dict[str, Any]] = [group for group in reinforced_groups if group['side'] == side]
-        destroyed_groups: list[dict[str, Any]] = [group for group in destroyed_groups if group['side'] == side]
+        side_reinforced_groups: list[dict[str, Any]] = [group for group in reinforced_groups if group['side'] == side]
+        side_destroyed_groups: list[dict[str, Any]] = [group for group in destroyed_groups if group['side'] == side]
 
         existing_group_strs: list[str] = []
-        for starting_group, final_group in existing_groups:
+        for starting_group, final_group in side_existing_groups:
             member_delta = len(final_group['members']) - len(starting_group['members'])
             if member_delta < 0:
                 delta_str = f'lost {abs(member_delta)}'
@@ -152,19 +152,13 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
         reinforced_group_str: str = '\n'.join(
             [
                 f'{group["name"]}: {id_to_name_map.get(group["leader"], "Unknown")} (_leading {len(group["members"]) - 1}_)'
-                for group in reinforced_groups
+                for group in side_reinforced_groups
             ]
         )
 
-        destroyed_group_str: str = '\n'.join([f'{group["name"]}: {len(group["members"])} killed' for group in destroyed_groups])
-
-        print(side)
-        print(groups_in_start)
-        print(groups_in_final)
-
-        print(existing_groups)
-        print(reinforced_groups)
-        print(destroyed_groups)
+        destroyed_group_str: str = '\n'.join(
+            [f'{group["name"]}: {len(group["members"])} killed' for group in side_destroyed_groups]
+        )
 
         to_join = []
         if existing_group_str:
