@@ -170,7 +170,8 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
             to_join.append('\n_Destroyed_')
             to_join.append(destroyed_group_str)
 
-        final_strs.append(f'**{name}**\n' + '\n'.join(to_join))
+        if to_join:
+            final_strs.append(f'**{name}**\n' + '\n'.join(to_join))
 
     return '\n\n'.join(final_strs)
 
