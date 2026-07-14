@@ -145,7 +145,7 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
 
             existing_group_strs.append(
                 f'{starting_group["name"]}: {id_to_name_map.get(final_group["leader"], "Unknown")} '
-                f'(_{delta_str}, leading {len(final_group["members"] - 1)}_)'
+                f'(_{delta_str}, leading {len(final_group["members"]) - 1}_)'
             )
         existing_group_str = '\n'.join(existing_group_strs)
 
