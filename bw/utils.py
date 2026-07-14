@@ -158,6 +158,10 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
 
         destroyed_group_str: str = '\n'.join([f'{group["name"]}: {len(group["members"])} killed' for group in destroyed_groups])
 
+        print(side)
+        print(groups_in_start)
+        print(groups_in_final)
+
         print(existing_group_str)
         print(reinforced_group_str)
         print(destroyed_group_str)
