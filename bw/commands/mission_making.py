@@ -8,6 +8,7 @@ import logging
 import datetime
 import tempfile
 import time
+import re
 from zoneinfo import ZoneInfo
 from pathlib import Path
 from discord import app_commands, ui, ForumChannel, Thread
@@ -21,6 +22,34 @@ from bw.error import ResponseError, CannotReachBwBackend, CannotReachDiscord, No
 from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot.command')
+
+
+ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
+    (re.compile('mission needs to be binarized to upload'), 'Missions need to be binarized to be uploaded to the server'),
+    (re.compile('missing mission type'), 'You have not selected a mission type in the Mission Testing Attributes'),
+    (
+        re.compile('mission does not have attached mission testing attributes'),
+        'You have not saved this mission in the editor with POTATO loaded',
+    ),
+    (re.compile('Stored mission has no attached map'), 'Uploaded files need to have a map in the filename'),
+    (
+        re.compile('no mission type with tag "[0-9]+" exists'),
+        'You have somehow uploaded a mission without a known mission tag.'
+        'Either pick one that exists, or someone needs to update our database.',
+    ),
+    (
+        re.compile('mission cannot be copied since it already exists'),
+        'The mission you have uploaded already exists on the server. Rename the file and try again.',
+    ),
+    (
+        re.compile('mission (?:"[a-zA-Z0-9-]+" )?does not exist'),
+        'Something went wrong, the mission does not exist in the database. This is probably not your fault, tell the Tech Mods.',
+    ),
+    (
+        re.compile('could not create mission iteration'),
+        'This mission iteration already exists. Try again, and if this error does not happen again you have gotten very lucky.',
+    ),
+)
 
 
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
@@ -165,7 +194,11 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                     elif e.exception.status == 422:
                         await thread.send('The mission could not be processed.')
                     if e.body:
-                        await thread.send(f'Message from server: {e.body}')
+                        information = f'Message from server: {e.body}'
+                        for pattern, human_reason in ERROR_TO_HUMAN:
+                            if pattern.search(e.body):
+                                information = human_reason
+                        await thread.send(information)
                     return
         await thread.send(f'Mission downloaded in {time.time() - download_t0:.2f} second(s)')
         await thread.send(f'Mission iteration #{upload_response.iteration_number}')
