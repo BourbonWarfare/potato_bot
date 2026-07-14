@@ -161,15 +161,18 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
         )
 
         to_join = []
+        newline = ''
         if existing_group_str:
             to_join.append(existing_group_str)
+            newline = '\n'
 
         if reinforced_group_str:
-            to_join.append('\n_Reinforced_')
+            to_join.append(f'{newline}_Reinforced_')
             to_join.append(reinforced_group_str)
+            newline = '\n'
 
         if destroyed_group_str:
-            to_join.append('\n_Destroyed_')
+            to_join.append(f'{newline}_Destroyed_')
             to_join.append(destroyed_group_str)
 
         if to_join:
