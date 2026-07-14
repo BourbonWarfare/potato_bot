@@ -162,10 +162,7 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
         print(groups_in_start)
         print(groups_in_final)
 
-        print(existing_group_str)
-        print(reinforced_group_str)
-        print(destroyed_group_str)
-
+        print(existing_groups)
         print(reinforced_groups)
         print(destroyed_groups)
 
