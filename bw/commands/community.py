@@ -162,6 +162,9 @@ class Community(commands.Cog, name='Community'):
         starting_orbat: dict[str, Any] = event.data['starting_orbat']
         final_orbat: dict[str, Any] = event.data['final_orbat']
 
+        channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
+        await channel.send(f'Recruits Present:\n{"\n".join(recruits_in_orbats(starting_orbat, final_orbat))}')
+
         try:
             mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
         except Exception as err:
@@ -184,9 +187,6 @@ class Community(commands.Cog, name='Community'):
             # the main Co-op has already ended and we will notify people at TVT slotting
             # If this occurs we will fix it, until then though...
             await notify_mission_end('The TvT has ended, Co-Op slotting is starting soon!')
-
-        channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
-        await channel.send(f'Recruits Present:\n{"\n".join(recruits_in_orbats(starting_orbat, final_orbat))}')
 
     async def session_event_handler(self, event: ServerSentEvent) -> None:
         if event.event == 'started':
