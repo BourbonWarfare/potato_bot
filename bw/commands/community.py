@@ -169,9 +169,8 @@ class Community(commands.Cog, name='Community'):
             for channel in channels_to_post:
                 await channel.send(embed=mission_ended_basic(starting_orbat, final_orbat))
 
-            await notify_mission_end(
-                "A mission has ended! I don't know if its a TvT or Co-op, so everyone is being pinged just in case."
-            )
+            if 'tvt' in event.data['mission_name_with_version'].lower():
+                await notify_mission_end("A mission has ended! I think it's a TvT, so the Co-Op slotting may be happening!")
             raise
 
         for channel in channels_to_post:
