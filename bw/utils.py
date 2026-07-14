@@ -181,7 +181,7 @@ def recruits_in_orbats(*orbats: dict[str, Any]) -> list[str]:
                 if not member['is_member']:
                     seen_recruits.add(member['name'])
 
-    return list(seen_recruits)
+    return sorted(list(seen_recruits))
 
 
 EMOJI_PATTERN = re.compile(

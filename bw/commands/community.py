@@ -27,6 +27,7 @@ from bw.embeds import (
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
 from bw.interface import User
+from bw.utils import recruits_in_orbats
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -158,12 +159,15 @@ class Community(commands.Cog, name='Community'):
         session_id = UUID(hex=event.data['session'])
         logger.info(f'Posting mission end message for mission [{mission_id}] in session [{session_id}]')
 
+        starting_orbat: dict[str, Any] = event.data['starting_orbat']
+        final_orbat: dict[str, Any] = event.data['final_orbat']
+
         try:
             mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
         except Exception as err:
             logger.info(f'Unknown mission, posting basic info: {err}')
             for channel in channels_to_post:
-                await channel.send(embed=mission_ended_basic(event.data['starting_orbat'], event.data['final_orbat']))
+                await channel.send(embed=mission_ended_basic(starting_orbat, final_orbat))
 
             await notify_mission_end(
                 "A mission has ended! I don't know if its a TvT or Co-op, so everyone is being pinged just in case."
@@ -171,7 +175,7 @@ class Community(commands.Cog, name='Community'):
             raise
 
         for channel in channels_to_post:
-            await channel.send(embed=mission_ended(mission_information, event.data['starting_orbat'], event.data['final_orbat']))
+            await channel.send(embed=mission_ended(mission_information, starting_orbat, final_orbat))
 
         if mission_information.mission_type.tag.is_coop():
             ArmaApi().inform_coop_played(State.state, session_id)
@@ -181,6 +185,9 @@ class Community(commands.Cog, name='Community'):
             # the main Co-op has already ended and we will notify people at TVT slotting
             # If this occurs we will fix it, until then though...
             await notify_mission_end('The TvT has ended, Co-Op slotting is starting soon!')
+
+        channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
+        await channel.send(f'Recruits Present:\n{"\n".join(recruits_in_orbats(starting_orbat, final_orbat))}')
 
     async def session_event_handler(self, event: ServerSentEvent) -> None:
         if event.event == 'started':
