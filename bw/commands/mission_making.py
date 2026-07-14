@@ -102,6 +102,20 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             assert isinstance(response_message, discord.InteractionMessage)
             thread = await response_message.create_thread(name='Upload Log')
 
+        logger.debug('Verifying user input')
+        max_char_length = 1750
+        if len(description) > max_char_length:
+            await thread.send(
+                'Your wrote too much in the upload description, mission cannot be uploaded.'
+                f'({len(description)} / {max_char_length})'
+            )
+            return
+        if len(potential_issues) > 1750:
+            await thread.send(
+                'Your wrote too much in the potential issues, mission cannot be uploaded.'
+                f'({len(potential_issues)} / {max_char_length})'
+            )
+
         logger.debug('Getting BW session')
         try:
             bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
