@@ -1,3 +1,4 @@
+import itertools
 import re
 import functools
 import asyncio
@@ -90,10 +91,12 @@ def orbat_to_string(orbat: dict[str, Any]) -> str:
 
 
 def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, Any]) -> str:
-    all_members: list[dict[str, Any]] = [
-        *[group['members'] for group in starting_orbat['groups']],
-        *[group['members'] for group in final_orbat['groups']],
-    ]
+    all_members: list[dict[str, Any]] = list(
+        itertools.chain(
+            *[group['members'] for group in starting_orbat['groups']],
+            *[group['members'] for group in final_orbat['groups']],
+        )
+    )
     id_to_name_map: dict[str, str] = {}
     for member in all_members:
         id_to_name_map[member['steam_id']] = member['name']

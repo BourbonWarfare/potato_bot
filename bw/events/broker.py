@@ -49,7 +49,7 @@ class Broker:
                 continue
             if handler.filtered_event and event.event != handler.filtered_event:
                 logger.debug(
-                    f'Filtering handler due to event mismatch:Expected: "{event.event}". Handler: "{handler.filtered_event}"'
+                    f'Filtering handler due to event mismatch: Expected: "{event.event}". Handler: "{handler.filtered_event}"'
                 )
                 continue
 
