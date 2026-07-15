@@ -63,11 +63,12 @@ ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
 
 
 class ForceUploadButton(ui.Button):
-    def __init__(self, uploaded_file: Path, thread: discord.Thread):
+    def __init__(self, server: str, uploaded_file: Path, thread: discord.Thread):
         super().__init__(style=discord.ButtonStyle.danger, label='Continue Upload')
 
         self.uploaded_file = uploaded_file
         self.thread = thread
+        self.server = server
 
     async def callback(self, interaction: discord.Interaction):
         logger.debug('Getting BW session')
@@ -87,11 +88,36 @@ class ForceUploadButton(ui.Button):
 
         logger.info('Uploading mission to server by force')
         interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
-        interaction.response.followup.send('Mission has been uploaded to the server.\n## This will **not** be played in session')
+        try:
+            await interface.upload_mission(self.uploaded_file, self.server, {}, play_in_session=False)
+        except CannotReachBwBackend as e:
+            logger.error(f'Failed to operate on server: {e}')
+            await interaction.followup.send(
+                f'❌ {interaction.user.mention} your mission could not be uploaded.', embed=failed_to_reach_bw_backend()
+            )
+            return
+        except ResponseError as e:
+            await interaction.followup.send(
+                f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
+            )
+            if e.exception.status == 409:
+                await self.thread.send('A mission with this filename already exists on this server.')
+            elif e.exception.status == 422:
+                await self.thread.send('The mission could not be processed.')
+            if e.body:
+                information = f'Message from server: {e.body}'
+                for pattern, human_reason in ERROR_TO_HUMAN:
+                    if pattern.search(e.body):
+                        information = human_reason
+                await self.thread.send(information)
+        else:
+            interaction.response.followup.send(
+                'Mission has been uploaded to the server.\n## This will **not** be played in session'
+            )
 
 
 class UploadOverwriteView(ui.LayoutView):
-    def __init__(self, *, uploaded_file: Path, owner: DiscordSnowflake, thread: discord.Thread):
+    def __init__(self, *, uploaded_file: Path, owner: DiscordSnowflake, thread: discord.Thread, server: str):
         super().__init__()
 
         with tempfile.TemporaryDirectory(delete=False) as directory:
@@ -104,7 +130,7 @@ class UploadOverwriteView(ui.LayoutView):
         self.text = ui.TextDisplay(
             '## This mission is not saved with BWMF.\nYou can continue to upload it, but it will _**not**_ be played in session.'
         )
-        self.go_ahead = ForceUploadButton(new_uploaded_file, thread)
+        self.go_ahead = ForceUploadButton(server, new_uploaded_file, thread)
         self.buttons = ui.ActionRow(self.go_ahead)
 
         container = ui.Container(self.text, self.buttons)
@@ -272,7 +298,10 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                                 logger.info('Error can allow a forced uploaded')
                                 await thread.send(
                                     view=UploadOverwriteView(
-                                        uploaded_file=temp_file, owner=DiscordSnowflake(interaction.user.id), thread=thread
+                                        server=server,
+                                        uploaded_file=temp_file,
+                                        owner=DiscordSnowflake(interaction.user.id),
+                                        thread=thread,
                                     )
                                 )
                                 break
