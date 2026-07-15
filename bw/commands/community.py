@@ -107,7 +107,7 @@ class Community(commands.Cog, name='Community'):
         else:
             ping_string = roles_to_ping[0].mention
 
-        message: discord.Message = await arma_channel.send(f'{ping_string}', embed=upcoming_session(roles_to_ping))
+        message: discord.Message = await arma_channel.send(f'{ping_string}', embed=upcoming_session())
         emoji_to_attach: str | discord.Emoji = '🔔'
         for emoji in self.bot.emojis:
             if emoji.name == ENVIRONMENT.session_reminder_emoji_name():

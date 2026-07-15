@@ -343,15 +343,10 @@ def iteration_information(iteration: IterationInformationResponse) -> discord.Em
     return embed
 
 
-def upcoming_session(roles_to_ping: list[discord.Role]) -> discord.Embed:
-    if len(roles_to_ping) > 1:
-        ping_string = ', '.join([role.mention for role in roles_to_ping[:-1]]) + f'and {roles_to_ping[-1].mention}'
-    else:
-        ping_string = roles_to_ping[0].mention
-
+def upcoming_session() -> discord.Embed:
     embed = discord.Embed(
         title='⏰ Session is coming up!',
-        description=f'{ping_string} session time starts in one hour.\n'
+        description='Session starts in one hour.\n'
         'Make sure that you have updated your mods.\n\n'
         'Use the bell to be pinged for Co-Op slotting.',
         colour=ENVIRONMENT.embed_colour_member(),
