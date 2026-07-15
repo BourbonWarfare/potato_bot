@@ -265,7 +265,9 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                         await thread.send(information)
 
                         for pattern in ALLOW_TO_UPLOAD_FORCE:
+                            logger.debug(f'Checking {pattern} agains {e.body}')
                             if pattern.search(e.body):
+                                logger.info('Error can allow a forced uploaded')
                                 await thread.send(
                                     view=UploadOverwriteView(
                                         uploaded_file=temp_file, owner=DiscordSnowflake(interaction.user.id), thread=thread
