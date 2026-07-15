@@ -101,11 +101,12 @@ class UploadOverwriteView(ui.LayoutView):
         self.owner = owner
 
         self.text = ui.TextDisplay(
-            '##This mission is not saved with BWMF.\nYou can continue to upload it, but it will _**not**_ be played in session.'
+            '## This mission is not saved with BWMF.\nYou can continue to upload it, but it will _**not**_ be played in session.'
         )
         self.go_ahead = ForceUploadButton(new_uploaded_file, thread)
+        self.buttons = ui.ActionRow(self.go_ahead)
 
-        container = ui.Container(self.text)
+        container = ui.Container(self.text, self.buttons)
         self.add_item(container)
 
     async def interaction_check(self, interaction: discord.Interaction):
