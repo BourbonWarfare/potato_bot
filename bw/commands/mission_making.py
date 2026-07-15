@@ -26,10 +26,17 @@ from bw.events.broker import global_event_broker
 logger = logging.getLogger('bw.potbot.command')
 
 NOT_SAVED_WITH_POTATO_REGEX = re.compile('not saved with POTATO')
+NO_CUSTOM_ATTRIBUTES = re.compile('missing CustomAttributes')
+
+ALLOW_TO_UPLOAD_FORCE: tuple[re.Pattern, ...] = (NOT_SAVED_WITH_POTATO_REGEX, NO_CUSTOM_ATTRIBUTES)
 
 ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
     (re.compile('mission needs to be binarized to upload'), 'Missions need to be binarized to be uploaded to the server'),
     (re.compile('missing mission type'), 'You have not selected a mission type in the Mission Testing Attributes'),
+    (
+        NO_CUSTOM_ATTRIBUTES,
+        'This is not a BWMF mission',
+    ),
     (
         NOT_SAVED_WITH_POTATO_REGEX,
         'You have not saved this mission in the editor with POTATO loaded',
@@ -257,12 +264,14 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                                 information = human_reason
                         await thread.send(information)
 
-                        if NOT_SAVED_WITH_POTATO_REGEX.search(e.body):
-                            await thread.send(
-                                view=UploadOverwriteView(
-                                    uploaded_file=temp_file, owner=DiscordSnowflake(interaction.user.id), thread=thread
+                        for pattern in ALLOW_TO_UPLOAD_FORCE:
+                            if pattern.search(e.body):
+                                await thread.send(
+                                    view=UploadOverwriteView(
+                                        uploaded_file=temp_file, owner=DiscordSnowflake(interaction.user.id), thread=thread
+                                    )
                                 )
-                            )
+                            break
 
                     return
         await thread.send(f'Mission downloaded in {time.time() - download_t0:.2f} second(s)')
