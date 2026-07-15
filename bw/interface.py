@@ -285,8 +285,8 @@ class User(Interface):
                         raise ResponseError(err_body, e)
                     return MissionUploadResponse(**await response.json())
 
-    async def force_upload_mission(self, mission_path: Path, server: str, changelog: dict[str, str]) -> None:
-        payload = {'pbo_path': str(mission_path), 'changelog': changelog, 'play_in_session': True}
+    async def force_upload_mission(self, mission_path: Path, server: str) -> None:
+        payload = {'pbo_path': str(mission_path), 'changelog': {}, 'play_in_session': False}
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.post(

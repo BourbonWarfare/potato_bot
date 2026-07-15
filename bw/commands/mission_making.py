@@ -88,7 +88,7 @@ class ForceUploadButton(ui.Button):
         logger.info('Uploading mission to server by force')
         interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
         try:
-            await interface.force_upload_mission(self.uploaded_file, self.server, {})
+            await interface.force_upload_mission(self.uploaded_file, self.server)
         except CannotReachBwBackend as e:
             logger.error(f'Failed to operate on server: {e}')
             await interaction.response.send_message(
