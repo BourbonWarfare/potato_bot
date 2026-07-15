@@ -96,7 +96,7 @@ class UploadOverwriteView(ui.LayoutView):
         with tempfile.TemporaryDirectory(delete=False) as directory:
             self.copied_directory = Path(directory)
             new_uploaded_file = self.copied_directory / uploaded_file.name
-            shutil.copytree(uploaded_file, new_uploaded_file)
+            shutil.copyfile(uploaded_file, new_uploaded_file)
 
         self.owner = owner
 
