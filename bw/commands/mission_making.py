@@ -77,12 +77,12 @@ class ForceUploadButton(ui.Button):
         except CannotReachBwBackend as e:
             logger.error(e)
             await self.thread.send('❌ Failed to upload: the BW server is not responding')
-            await interaction.response.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
             return
         except CannotReachDiscord as e:
             logger.error(e)
             await self.thread.send('❌ Failed to upload: we cannot reach Discord for OAuth')
-            await interaction.response.send(embed=failed_to_reach_discord(), ephemeral=True)
+            await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
             return
 
         logger.info('Uploading mission to server by force')
@@ -91,13 +91,13 @@ class ForceUploadButton(ui.Button):
             await interface.force_upload_mission(self.uploaded_file, self.server, {})
         except CannotReachBwBackend as e:
             logger.error(f'Failed to operate on server: {e}')
-            await interaction.response.send(
+            await interaction.response.send_message(
                 f'❌ {interaction.user.mention} your mission could not be uploaded.', embed=failed_to_reach_bw_backend()
             )
             return
         except ResponseError as e:
-            await interaction.response.send(
-                f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
+            await interaction.response.send_message(
+                f'❌ {interaction.user.mention} your mission could not be uploaded regardless.'
             )
             if e.exception.status == 409:
                 await self.thread.send('A mission with this filename already exists on this server.')
