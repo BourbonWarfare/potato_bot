@@ -101,7 +101,12 @@ class Community(commands.Cog, name='Community'):
         guild = arma_channel.guild
         roles_to_ping = [guild.get_role(ENVIRONMENT.member_role()), guild.get_role(ENVIRONMENT.recruit_role())]
 
-        message: discord.Message = await arma_channel.send(embed=upcoming_session(roles_to_ping))
+        if len(roles_to_ping) > 1:
+            ping_string = ', '.join([role.mention for role in roles_to_ping[:-1]]) + f'and {roles_to_ping[-1].mention}'
+        else:
+            ping_string = roles_to_ping[0].mention
+
+        message: discord.Message = await arma_channel.send(f'{ping_string}', embed=upcoming_session(roles_to_ping))
         emoji_to_attach: str | discord.Emoji = '🔔'
         for emoji in self.bot.emojis:
             if emoji.name == ENVIRONMENT.session_reminder_emoji_name():
