@@ -100,6 +100,7 @@ class Community(commands.Cog, name='Community'):
         arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
         guild = arma_channel.guild
         roles_to_ping = [guild.get_role(ENVIRONMENT.member_role()), guild.get_role(ENVIRONMENT.recruit_role())]
+        roles_to_ping = [role for role in roles_to_ping if role]
 
         if len(roles_to_ping) > 1:
             ping_string = ', '.join([role.mention for role in roles_to_ping[:-1]]) + f'and {roles_to_ping[-1].mention}'
