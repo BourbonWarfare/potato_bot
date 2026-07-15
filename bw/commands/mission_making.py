@@ -25,13 +25,14 @@ from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot.command')
 
+NOT_BINARIZED = re.compile('mission needs to be binarized to upload')
 NOT_SAVED_WITH_POTATO_REGEX = re.compile('not saved with POTATO')
 NO_CUSTOM_ATTRIBUTES = re.compile('missing CustomAttributes')
 
-ALLOW_TO_UPLOAD_FORCE: tuple[re.Pattern, ...] = (NOT_SAVED_WITH_POTATO_REGEX, NO_CUSTOM_ATTRIBUTES)
+ALLOW_TO_UPLOAD_FORCE: tuple[re.Pattern, ...] = (NOT_BINARIZED, NOT_SAVED_WITH_POTATO_REGEX, NO_CUSTOM_ATTRIBUTES)
 
 ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
-    (re.compile('mission needs to be binarized to upload'), 'Missions need to be binarized to be uploaded to the server'),
+    (NOT_BINARIZED, 'Missions need to be binarized to be uploaded to the server'),
     (re.compile('missing mission type'), 'You have not selected a mission type in the Mission Testing Attributes'),
     (
         NO_CUSTOM_ATTRIBUTES,
