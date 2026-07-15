@@ -105,7 +105,7 @@ class UploadOverwriteView(ui.LayoutView):
         )
         self.go_ahead = ForceUploadButton(new_uploaded_file, thread)
 
-        container = ui.Container(self.text, self.go_ahead)
+        container = ui.Container(self.text)
         self.add_item(container)
 
     async def interaction_check(self, interaction: discord.Interaction):
