@@ -269,8 +269,10 @@ class User(Interface):
                     response.raise_for_status()
                     return await response.json()
 
-    async def upload_mission(self, mission_path: Path, server: str, changelog: dict[str, str]) -> MissionUploadResponse:
-        payload = {'pbo_path': str(mission_path), 'changelog': changelog}
+    async def upload_mission(
+        self, mission_path: Path, server: str, changelog: dict[str, str], play_in_session: bool = True
+    ) -> MissionUploadResponse:
+        payload = {'pbo_path': str(mission_path), 'changelog': changelog, 'play_in_session': play_in_session}
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.post(

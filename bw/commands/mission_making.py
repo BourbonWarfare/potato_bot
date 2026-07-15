@@ -87,6 +87,7 @@ class ForceUploadButton(ui.Button):
 
         logger.info('Uploading mission to server by force')
         interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
+        interaction.response.followup.send('Mission has been uploaded to the server.\n## This will **not** be played in session')
 
 
 class UploadOverwriteView(ui.LayoutView):
