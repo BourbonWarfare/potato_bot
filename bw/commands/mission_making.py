@@ -72,18 +72,17 @@ class ForceUploadButton(ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         logger.debug('Getting BW session')
-        interaction.response.defer(ephemeral=True)
         try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+            bw_session, oauth_session = await get_session(self.thread, interaction.user)
         except CannotReachBwBackend as e:
             logger.error(e)
             await self.thread.send('❌ Failed to upload: the BW server is not responding')
-            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            await interaction.response.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
             return
         except CannotReachDiscord as e:
             logger.error(e)
             await self.thread.send('❌ Failed to upload: we cannot reach Discord for OAuth')
-            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            await interaction.response.send(embed=failed_to_reach_discord(), ephemeral=True)
             return
 
         logger.info('Uploading mission to server by force')
@@ -92,12 +91,12 @@ class ForceUploadButton(ui.Button):
             await interface.force_upload_mission(self.uploaded_file, self.server, {})
         except CannotReachBwBackend as e:
             logger.error(f'Failed to operate on server: {e}')
-            await interaction.followup.send(
+            await interaction.response.send(
                 f'❌ {interaction.user.mention} your mission could not be uploaded.', embed=failed_to_reach_bw_backend()
             )
             return
         except ResponseError as e:
-            await interaction.followup.send(
+            await interaction.response.send(
                 f'❌ {interaction.user.mention} your mission could not be uploaded. Please check logs for further details'
             )
             if e.exception.status == 409:
@@ -111,7 +110,7 @@ class ForceUploadButton(ui.Button):
                         information = human_reason
                 await self.thread.send(information)
         else:
-            await interaction.followup.send('Mission has been uploaded to the server.\n## This will **not** be played in session')
+            await interaction.response.send('Mission has been uploaded to the server.\n## This will **not** be played in session')
 
 
 class UploadOverwriteView(ui.LayoutView):

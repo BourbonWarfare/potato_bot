@@ -61,11 +61,14 @@ class Authentication(commands.Cog, name='Authentication'):
             logger.info('successfully logged in')
             await interaction.followup.send(embed=logged_in_with_discord(), ephemeral=True)
 
-    async def internal_login_oauth(self, followup: discord.Webhook, user_id: DiscordSnowflake) -> OAuthSession:
+    async def internal_login_oauth(self, followup: discord.Webhook | discord.Thread, user_id: DiscordSnowflake) -> OAuthSession:
         logger.info(f'Attempting new login for {user_id}')
         state = secrets.token_urlsafe(64)[:32]
         logger.info('sending login link')
-        await followup.send(embed=login_with_discord(state), ephemeral=True)
+        if isinstance(followup, discord.Webhook):
+            await followup.send(embed=login_with_discord(state), ephemeral=True)
+        else:
+            await followup.send(embed=login_with_discord(state))
 
         logger.info('waiting for user...')
         await asyncio.sleep(4)
@@ -73,7 +76,7 @@ class Authentication(commands.Cog, name='Authentication'):
         @backoff(delay=1, retries=15, max_delay=9)
         async def get_code(state: str) -> str:
             logger.info('attempting getting access code')
-            return (await Interface().auth_get_access_code(state)).get('access_code')
+            return (await Interface().auth_get_access_code(state)).get('access_code', '')
 
         try:
             access_code = await get_code(state)
