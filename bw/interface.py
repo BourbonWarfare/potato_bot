@@ -269,10 +269,8 @@ class User(Interface):
                     response.raise_for_status()
                     return await response.json()
 
-    async def upload_mission(
-        self, mission_path: Path, server: str, changelog: dict[str, str], play_in_session: bool = True
-    ) -> MissionUploadResponse:
-        payload = {'pbo_path': str(mission_path), 'changelog': changelog, 'play_in_session': play_in_session}
+    async def upload_mission(self, mission_path: Path, server: str, changelog: dict[str, str]) -> MissionUploadResponse:
+        payload = {'pbo_path': str(mission_path), 'changelog': changelog}
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session) as client:
                 async with session.post(
@@ -286,6 +284,21 @@ class User(Interface):
                     except aiohttp.ClientResponseError as e:
                         raise ResponseError(err_body, e)
                     return MissionUploadResponse(**await response.json())
+
+    async def force_upload_mission(self, mission_path: Path, server: str, changelog: dict[str, str]) -> None:
+        payload = {'pbo_path': str(mission_path), 'changelog': changelog, 'play_in_session': True}
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session) as client:
+                async with session.post(
+                    server_url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
+                    headers=client.auth_header,
+                    json=payload,
+                ) as response:
+                    try:
+                        err_body = await response.text()
+                        response.raise_for_status()
+                    except aiohttp.ClientResponseError as e:
+                        raise ResponseError(err_body, e)
 
     async def iteration_information(self, iteration_uuid: IterationUuid) -> IterationInformationResponse:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
