@@ -1,3 +1,5 @@
+import shutil
+from bw.session.types import DiscordSnowflake
 from bw.missions.types import IterationUuid
 from bw.environment import ENVIRONMENT
 from bw.discord.api import DiscordApi
@@ -23,12 +25,13 @@ from bw.events.broker import global_event_broker
 
 logger = logging.getLogger('bw.potbot.command')
 
+NOT_SAVED_WITH_POTATO_REGEX = re.compile('not saved with POTATO')
 
 ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
     (re.compile('mission needs to be binarized to upload'), 'Missions need to be binarized to be uploaded to the server'),
     (re.compile('missing mission type'), 'You have not selected a mission type in the Mission Testing Attributes'),
     (
-        re.compile('mission does not have attached mission testing attributes'),
+        NOT_SAVED_WITH_POTATO_REGEX,
         'You have not saved this mission in the editor with POTATO loaded',
     ),
     (re.compile('Stored mission has no attached map'), 'Uploaded files need to have a map in the filename'),
@@ -50,6 +53,60 @@ ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
         'This mission iteration already exists. Try again, and if this error does not happen again you have gotten very lucky.',
     ),
 )
+
+
+class ForceUploadButton(ui.Button):
+    def __init__(self, uploaded_file: Path, thread: discord.Thread):
+        super().__init__(style=discord.ButtonStyle.danger, label='Continue Upload')
+
+        self.uploaded_file = uploaded_file
+        self.thread = thread
+
+    async def callback(self, interaction: discord.Interaction):
+        logger.debug('Getting BW session')
+        interaction.response.defer(ephemeral=True)
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await self.thread.send('❌ Failed to upload: the BW server is not responding')
+            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await self.thread.send('❌ Failed to upload: we cannot reach Discord for OAuth')
+            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            return
+
+        logger.info('Uploading mission to server by force')
+        interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
+
+
+class UploadOverwriteView(ui.LayoutView):
+    def __init__(self, *, uploaded_file: Path, owner: DiscordSnowflake, thread: discord.Thread):
+        super().__init__()
+
+        with tempfile.TemporaryDirectory(delete=False) as directory:
+            self.copied_directory = Path(directory)
+            new_uploaded_file = self.copied_directory / uploaded_file.name
+            shutil.copytree(uploaded_file, new_uploaded_file)
+
+        self.owner = owner
+
+        self.text = ui.TextDisplay(
+            '##This mission is not saved with BWMF.\nYou can continue to upload it, but it will _**not**_ be played in session.'
+        )
+        self.go_ahead = ForceUploadButton(new_uploaded_file, thread)
+
+        container = ui.Container(self.text, self.go_ahead)
+        self.add_item(container)
+
+    async def interaction_check(self, interaction: discord.Interaction):
+        return interaction.user.id == int(self.owner)
+
+    async def on_timeout(self):
+        logger.info(f'Cleaning up directory {self.copied_directory} (view expired)')
+        shutil.rmtree(self.copied_directory)
 
 
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
@@ -129,17 +186,17 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
             send_message_response = await interaction.response.send_message(f'`{filename}` is being uploaded to {server}')
             response_message = send_message_response.resource
             assert isinstance(response_message, discord.InteractionMessage)
-            thread = await response_message.create_thread(name='Upload Log')
+            thread: discord.Thread = await response_message.create_thread(name='Upload Log')
 
         logger.debug('Verifying user input')
-        max_char_length = 1750
+        max_char_length = 1950
         if len(description) > max_char_length:
             await thread.send(
                 'Your wrote too much in the upload description, mission cannot be uploaded.'
                 f'({len(description)} / {max_char_length})'
             )
             return
-        if len(potential_issues) > 1750:
+        if len(potential_issues) > 1950:
             await thread.send(
                 'Your wrote too much in the potential issues, mission cannot be uploaded.'
                 f'({len(potential_issues)} / {max_char_length})'
@@ -199,6 +256,14 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                             if pattern.search(e.body):
                                 information = human_reason
                         await thread.send(information)
+
+                        if NOT_SAVED_WITH_POTATO_REGEX.search(e.body):
+                            await thread.send(
+                                view=UploadOverwriteView(
+                                    uploaded_file=temp_file, owner=DiscordSnowflake(interaction.user.id), thread=thread
+                                )
+                            )
+
                     return
         await thread.send(f'Mission downloaded in {time.time() - download_t0:.2f} second(s)')
         await thread.send(f'Mission iteration #{upload_response.iteration_number}')
