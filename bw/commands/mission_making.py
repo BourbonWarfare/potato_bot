@@ -110,7 +110,9 @@ class ForceUploadButton(ui.Button):
                         information = human_reason
                 await self.thread.send(information)
         else:
-            await interaction.response.send('Mission has been uploaded to the server.\n## This will **not** be played in session')
+            await interaction.response.send_message(
+                'Mission has been uploaded to the server.\n## This will **not** be played in session'
+            )
 
 
 class UploadOverwriteView(ui.LayoutView):
