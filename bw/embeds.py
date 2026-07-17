@@ -153,7 +153,7 @@ def relative_session_time(
 def login_with_discord(state: str) -> discord.Embed:
     redirect_uri = urllib.parse.quote(ENVIRONMENT.discord_oauth_redirect_uri(), safe='')
     return discord.Embed(
-        title='Login to POTBOT with Discord',
+        title='Click to login to POTBOT',
         description='Logs into POTBOT to perform restricted commands.',
         url=f'https://discord.com/oauth2/authorize?client_id={ENVIRONMENT.discord_client_id()}'
         f'&response_type=code&redirect_uri={redirect_uri}&scope=identify&state={state}',
