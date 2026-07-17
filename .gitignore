@@ -4,6 +4,7 @@ auth.txt*
 server.log*
 .env*
 *.env
+*.db
 logs/
 bin/
 temp/
