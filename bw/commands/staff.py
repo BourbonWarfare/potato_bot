@@ -94,21 +94,14 @@ class Staff(commands.Cog, name='Staff Commands'):
             logger.warning(f'Failed to operate on server: {e}')
             embed = embeds.failed_arma_server_operation(interaction.user, option, server)
         else:
-            if response.get('startup_status', 'Failed') == 'Failed':
-                embed = embeds.failed_arma_server_operation(
-                    interaction.user,
-                    option,
-                    server,
-                )
-            else:
-                embed = embeds.successful_arma_server_operation(
-                    interaction.user,
-                    option,
-                    server,
-                    server_status=response.get('server_status', 'Unknown'),
-                    hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown'),
-                )
+            embed = embeds.successful_arma_server_operation(
+                interaction.user,
+                option,
+                server,
+                server_status=response.get('server_status', 'Unknown'),
+                hc_status=response.get('hc_status', 'Unknown'),
+                startup_status=response.get('startup_status', 'Unknown'),
+            )
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(

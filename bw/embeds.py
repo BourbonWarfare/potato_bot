@@ -3,6 +3,7 @@ import discord
 import datetime
 import urllib.parse
 from typing import Any
+from collections.abc import Iterable
 from bw.environment import ENVIRONMENT
 from bw.missions.response import IterationInformationResponse, MissionInformationResponse, MissionTypeResponse
 
@@ -183,16 +184,17 @@ def failed_to_login_with_discord() -> discord.Embed:
 
 
 def successful_arma_server_operation(
-    user: discord.User, operation: str, server: str, server_status: str, hc_status: str, startup_status: str
+    user: discord.User, operation: str, server: str, server_running: bool, hcs_running: Iterable[bool]
 ) -> discord.Embed:
     embed = discord.Embed(
         title='Success!',
         description=f'{user.mention} has succesfully performed "{operation}" on server {server}',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    embed.add_field(name='Server Status', value=server_status, inline=True)
-    embed.add_field(name='HC Status', value=hc_status, inline=True)
-    embed.add_field(name='Process Status', value=startup_status, inline=True)
+    running_strings = ['Stopped', 'Running']
+    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    for idx, hc_status in enumerate(hcs_running):
+        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
     return embed
 
 
