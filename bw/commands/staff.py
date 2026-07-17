@@ -98,9 +98,8 @@ class Staff(commands.Cog, name='Staff Commands'):
                 interaction.user,
                 option,
                 server,
-                server_status=response.get('server_status', 'Unknown'),
-                hc_status=response.get('hc_status', 'Unknown'),
-                startup_status=response.get('startup_status', 'Unknown'),
+                server_running=response.get('running', False),
+                hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
             )
         await interaction.followup.send(embed=embed)
 
