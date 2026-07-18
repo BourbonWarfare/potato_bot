@@ -140,9 +140,8 @@ class Staff(commands.Cog, name='Staff Commands'):
                 embed = embeds.couldnt_get_arma_server_status(
                     interaction.user,
                     server,
-                    server_status=response.get('server_status', 'Unknown'),
-                    hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown'),
+                    server_running=response.get('running', False),
+                    hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
                 )
         except CannotReachBwBackend as e:
             logger.error(f'Failed to operate on server: {e}')
@@ -155,9 +154,8 @@ class Staff(commands.Cog, name='Staff Commands'):
             embed = embeds.couldnt_get_arma_server_status(
                 interaction.user,
                 server,
-                server_status=response.get('server_status', 'Unknown'),
-                hc_status=response.get('hc_status', 'Unknown'),
-                startup_status=response.get('startup_status', 'Unknown'),
+                server_running=response.get('running', False),
+                hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
             )
         else:
             result = response.get('result', 'failure')
@@ -174,9 +172,8 @@ class Staff(commands.Cog, name='Staff Commands'):
                 embed = embeds.couldnt_get_arma_server_status(
                     interaction.user,
                     server,
-                    server_status=response.get('server_status', 'Unknown'),
-                    hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown'),
+                    server_running=response.get('running', False),
+                    hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
                 )
             elif result == 'unresponsive':
                 embed = embeds.arma_server_unresponsive(interaction.user, server=server)
@@ -249,9 +246,8 @@ class Staff(commands.Cog, name='Staff Commands'):
                     embed_list.append(
                         embeds.arma_server_state(
                             server_name,
-                            server_status=server_status.get('server_status', 'Unknown'),
-                            hc_status=server_status.get('hc_status', 'Unknown'),
-                            startup_status=server_status.get('startup_status', 'Unknown'),
+                            server_running=response.get('running', False),
+                            hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
                         )
                     )
                 mod_update_log = []
@@ -266,16 +262,21 @@ class Staff(commands.Cog, name='Staff Commands'):
                         file=discord.File(update_file, filename='mods_updated.txt'),
                     )
                 else:
-                    await interaction.followup.send(
-                        f'💬 {len(mods)} mods updated\n```{mod_update_log_text}```',
-                        embeds=embed_list,
-                    )
+                    if mod_update_log_text:
+                        await interaction.followup.send(
+                            f'💬 {len(mods)} mods updated\n```{mod_update_log_text}```',
+                            embeds=embed_list,
+                        )
+                    else:
+                        await interaction.followup.send(
+                            '💬 No mods updated!',
+                            embeds=embed_list,
+                        )
             else:
                 embed = embeds.successful_server_update(
                     server,
-                    server_status=response.get('server_status', 'Unknown'),
-                    hc_status=response.get('hc_status', 'Unknown'),
-                    startup_status=response.get('startup_status', 'Unknown'),
+                    server_running=response.get('running', False),
+                    hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
                 )
         finally:
             if embed is not None:

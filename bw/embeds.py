@@ -223,16 +223,17 @@ def failed_arma_server_operation(user: discord.User, operation: str, server: str
 
 
 def couldnt_get_arma_server_status(
-    user: discord.User, server: str, server_status: str, hc_status: str, startup_status: str
+    user: discord.User, server: str, server_running: bool, hcs_running: list[bool]
 ) -> discord.Embed:
     embed = discord.Embed(
         title='Failed!',
         description=f'{user.mention} has tried to get "{server}"\'s status, but it did not complete successfully',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    embed.add_field(name='Server Status', value=server_status, inline=True)
-    embed.add_field(name='HC Status', value=hc_status, inline=True)
-    embed.add_field(name='Process Status', value=startup_status, inline=True)
+    running_strings = ['Stopped', 'Running']
+    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    for idx, hc_status in enumerate(hcs_running):
+        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
     return embed
 
 
@@ -248,25 +249,27 @@ def arma_server_status(server: str, mission: str, state: str, map: str, players:
     return embed
 
 
-def arma_server_state(server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+def arma_server_state(server: str, server_running: bool, hcs_running: list[bool]) -> discord.Embed:
     embed = discord.Embed(
         title=f'Status of server "{server}"',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    embed.add_field(name='Server Status', value=server_status, inline=True)
-    embed.add_field(name='HC Status', value=hc_status, inline=True)
-    embed.add_field(name='Process Status', value=startup_status, inline=True)
+    running_strings = ['Stopped', 'Running']
+    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    for idx, hc_status in enumerate(hcs_running):
+        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
     return embed
 
 
-def successful_server_update(server: str, server_status: str, hc_status: str, startup_status: str) -> discord.Embed:
+def successful_server_update(server: str, server_running: bool, hcs_running: list[bool]) -> discord.Embed:
     embed = discord.Embed(
         title=f'Successfully updated "{server}"',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    embed.add_field(name='Server Status', value=server_status, inline=True)
-    embed.add_field(name='HC Status', value=hc_status, inline=True)
-    embed.add_field(name='Process Status', value=startup_status, inline=True)
+    running_strings = ['Stopped', 'Running']
+    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    for idx, hc_status in enumerate(hcs_running):
+        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
     return embed
 
 
