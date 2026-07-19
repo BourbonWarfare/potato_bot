@@ -3,9 +3,14 @@ import discord
 import datetime
 import urllib.parse
 from typing import Any
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from bw.environment import ENVIRONMENT
 from bw.missions.response import IterationInformationResponse, MissionInformationResponse, MissionTypeResponse
+
+
+def _running_from_bool(running: bool) -> str:
+    running_strings = ['Stopped', 'Running']
+    return running_strings[int(running)]
 
 
 def default() -> discord.Embed:
@@ -191,10 +196,9 @@ def successful_arma_server_operation(
         description=f'{user.mention} has succesfully performed "{operation}" on server {server}',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    running_strings = ['Stopped', 'Running']
-    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    embed.add_field(name='Server Status', value=_running_from_bool(server_running), inline=True)
     for idx, hc_status in enumerate(hcs_running):
-        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
+        embed.add_field(name=f'HC {idx + 1} Status', value=_running_from_bool(hc_status), inline=True)
     return embed
 
 
@@ -230,10 +234,9 @@ def couldnt_get_arma_server_status(
         description=f'{user.mention} has tried to get "{server}"\'s status, but it did not complete successfully',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    running_strings = ['Stopped', 'Running']
-    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    embed.add_field(name='Server Status', value=_running_from_bool(server_running), inline=True)
     for idx, hc_status in enumerate(hcs_running):
-        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
+        embed.add_field(name=f'HC {idx + 1} Status', value=_running_from_bool(hc_status), inline=True)
     return embed
 
 
@@ -254,10 +257,9 @@ def arma_server_state(server: str, server_running: bool, hcs_running: list[bool]
         title=f'Status of server "{server}"',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    running_strings = ['Stopped', 'Running']
-    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    embed.add_field(name='Server Status', value=_running_from_bool(server_running), inline=True)
     for idx, hc_status in enumerate(hcs_running):
-        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
+        embed.add_field(name=f'HC {idx + 1} Status', value=_running_from_bool(hc_status), inline=True)
     return embed
 
 
@@ -266,10 +268,9 @@ def successful_server_update(server: str, server_running: bool, hcs_running: lis
         title=f'Successfully updated "{server}"',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
-    running_strings = ['Stopped', 'Running']
-    embed.add_field(name='Server Status', value=running_strings[int(server_running)], inline=True)
+    embed.add_field(name='Server Status', value=_running_from_bool(server_running), inline=True)
     for idx, hc_status in enumerate(hcs_running):
-        embed.add_field(name=f'HC {idx + 1} Status', value=running_strings[int(hc_status)], inline=True)
+        embed.add_field(name=f'HC {idx + 1} Status', value=_running_from_bool(hc_status), inline=True)
     return embed
 
 
@@ -453,3 +454,20 @@ def server_event(event: str, server: str) -> discord.Embed:
         title=f'🖧 {server} has performed {event}!',
         colour=ENVIRONMENT.embed_colour_staff(),
     )
+
+
+def server_event_with_status(event: str, server: str, server_running: bool, hcs_running: Iterable[bool]) -> discord.Embed:
+    embed = server_event(event, server)
+    embed.add_field(name='Server Status', value=_running_from_bool(server_running), inline=True)
+    for idx, hc_status in enumerate(hcs_running):
+        embed.add_field(name=f'HC {idx + 1} Status', value=_running_from_bool(hc_status), inline=True)
+    return embed
+
+
+def server_event_with_mods(event: str, server: str, mods: Sequence[str], *, cutoff: int = 10) -> discord.Embed:
+    embed = server_event(event, server)
+
+    cut_mods = len(mods) - cutoff
+    mods_str = ', '.join(mods[:cutoff]) + f'... ({cut_mods} omitted)' if cut_mods > 0 else ''
+    embed.add_field(name=f'{len(mods)} deployed', value=mods_str)
+    return embed

@@ -5,6 +5,8 @@ import io
 from enum import StrEnum
 from discord import app_commands
 from discord.ext import commands
+from typing import Any
+from collections.abc import Iterable
 
 from bw import embeds
 from bw.error import RefreshFailed, CannotReachBwBackend, CannotReachDiscord
@@ -339,20 +341,36 @@ class Staff(commands.Cog, name='Staff Commands'):
             self.bot.get_channel(ENVIRONMENT.command_channel_id()),
         ]
         if event.event == 'started':
+            result: dict[str, Any] = event.data.get('result', {})
+            server_running: bool = result.get('running', False)
+            hcs_running: Iterable[bool] = (hc['running'] for hc in result.get('headless_clients', []))
             for channel in channels_to_post:
-                await channel.send(embed=embeds.server_event('started', event.data['server']))
+                await channel.send(
+                    embed=embeds.server_event_with_status('started', event.data['server'], server_running, hcs_running)
+                )
         elif event.event == 'stopped':
+            result: dict[str, Any] = event.data.get('result', {})
+            server_running: bool = result.get('running', False)
+            hcs_running: Iterable[bool] = (hc['running'] for hc in result.get('headless_clients', []))
             for channel in channels_to_post:
-                await channel.send(embed=embeds.server_event('stopped', event.data['server']))
+                await channel.send(
+                    embed=embeds.server_event_with_status('stopped', event.data['server'], server_running, hcs_running)
+                )
         elif event.event == 'restarted':
+            result: dict[str, Any] = event.data.get('result', {})
+            server_running: bool = result.get('running', False)
+            hcs_running: Iterable[bool] = (hc['running'] for hc in result.get('headless_clients', []))
             for channel in channels_to_post:
-                await channel.send(embed=embeds.server_event('restarted', event.data['server']))
+                await channel.send(
+                    embed=embeds.server_event_with_status('restarted', event.data['server'], server_running, hcs_running)
+                )
         elif event.event == 'updated':
             for channel in channels_to_post:
                 await channel.send(embed=embeds.server_event('updated', event.data['server']))
         elif event.event == 'deployed_mods':
+            mods: list[str] = event.data.get('mods', [])
             for channel in channels_to_post:
-                await channel.send(embed=embeds.server_event('deploy mods', event.data['server']))
+                await channel.send(embed=embeds.server_event_with_mods('deploy mods', event.data['server'], mods))
         elif event.event == 'deployed_keys':
             for channel in channels_to_post:
                 await channel.send(embed=embeds.server_event('deploy keys', event.data['server']))
