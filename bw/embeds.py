@@ -1,3 +1,4 @@
+import itertools
 from bw.utils import orbat_to_string, orbat_diff_to_string
 import discord
 import datetime
@@ -466,8 +467,45 @@ def server_event_with_status(event: str, server: str, server_running: bool, hcs_
 
 def server_event_with_mods(event: str, server: str, mods: Sequence[str], *, cutoff: int = 10) -> discord.Embed:
     embed = server_event(event, server)
+    if len(mods) == 0:
+        embed.add_field(name='0 mods deployed', value='No mods updated, none to deploy')
+        return embed
 
     cut_mods = len(mods) - cutoff
     mods_str = ', '.join(mods[:cutoff]) + f'... ({cut_mods} omitted)' if cut_mods > 0 else ''
     embed.add_field(name=f'{len(mods)} deployed', value=mods_str)
     return embed
+
+
+def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
+    def bytes_to_human(bytes: int) -> str:
+        byte_threshold = 500
+        kilobyte_threshold = 10**6
+        megabyte_threshold = kilobyte_threshold * 1000
+        gigabyte_threshold = megabyte_threshold * 1000
+        if bytes <= byte_threshold:
+            return f'{bytes} bytes'
+        elif bytes < megabyte_threshold:
+            return f'{bytes / (kilobyte_threshold / 1000):.2f} kilobytes'
+        elif bytes < gigabyte_threshold:
+            return f'{bytes / (megabyte_threshold / 1000):.2f} megabytes'
+        else:
+            return f'{bytes / (gigabyte_threshold / 1000):.2f} gigabytes'
+
+    embeds = []
+    for mod in mods:
+        name = mod['name']
+        workshop_id = mod['workshop_id']
+        preview_url = mod['preview_url']
+        bytes = mod['file_size_bytes']
+
+        embed = discord.Embed(
+            title=f'{name} has updated.',
+            description=f'https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id} ({bytes_to_human(bytes)})',
+            url=preview_url,
+            colour=ENVIRONMENT.embed_colour_staff(),
+        )
+
+        embeds.append(embed)
+
+    return embeds

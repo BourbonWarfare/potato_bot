@@ -374,6 +374,11 @@ class Staff(commands.Cog, name='Staff Commands'):
         elif event.event == 'deployed_keys':
             for channel in channels_to_post:
                 await channel.send(embed=embeds.server_event('deploy keys', event.data['server']))
+        elif event.event == 'found out of date mods':
+            mod_channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
+            to_send = embeds.out_of_date_mods(event.data['mods'])
+            for embed in to_send:
+                await mod_channel.send(embed=embed)
 
     async def cron_event_handler(self, event: ServerSentEvent):
         if event.event == 'run':
