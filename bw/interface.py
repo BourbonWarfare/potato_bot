@@ -204,7 +204,7 @@ class User(Interface):
                     disposition = response.headers.get('content-disposition', '')
                     filenames = [line.strip() for line in disposition.split(';') if 'filename' in line]
                     if filenames:
-                        filename = filenames[0].split('=')[1]
+                        filename = filenames[0].split('=')[1].strip('"')
                     else:
                         filename = ''
                     return (await response.text(), filename)
