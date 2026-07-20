@@ -135,6 +135,9 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
 
         existing_group_strs: list[str] = []
         for starting_group, final_group in side_existing_groups:
+            starting_leader = starting_group['leader']
+            final_leader = starting_group['leader']
+
             member_delta = len(final_group['members']) - len(starting_group['members'])
             if member_delta < 0:
                 delta_str = f'lost {abs(member_delta)}'
@@ -143,9 +146,16 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
             else:
                 delta_str = f'kept {len(starting_group["members"])}'
 
+            starting_leader_str = id_to_name_map.get(starting_leader, 'Unknown')
+            final_leader_str = id_to_name_map.get(final_leader, 'Unknown')
+
+            if starting_leader == final_leader:
+                leader_str = final_leader_str
+            else:
+                leader_str = f'{starting_leader_str} -> {final_leader_str}'
+
             existing_group_strs.append(
-                f'{starting_group["name"]}: {id_to_name_map.get(final_group["leader"], "Unknown")} '
-                f'(_{delta_str}, leading {len(final_group["members"]) - 1}_)'
+                f'{starting_group["name"]}: {leader_str} (_{delta_str}, leading {len(final_group["members"]) - 1}_)'
             )
         existing_group_str = '\n'.join(existing_group_strs)
 
