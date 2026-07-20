@@ -194,14 +194,20 @@ class User(Interface):
                     except aiohttp.ClientResponseError as e:
                         raise ResponseError(err_body, e)
 
-    async def get_arma_server_rpt(self, server: str) -> str:
+    async def get_arma_server_rpt(self, server: str) -> tuple[str, str]:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
             async with self.client.backend_session(session=session):
                 async with session.get(
                     server_url(Root.get().api.v1.server_ops.arma.server.var(server).rpt.resolve())
                 ) as response:
                     response.raise_for_status()
-                    return await response.text()
+                    disposition = response.headers.get('content-disposition', '')
+                    filenames = [line.strip() for line in disposition.split(';') if 'filename' in line]
+                    if filenames:
+                        filename = filenames[0].split('=')[1]
+                    else:
+                        filename = ''
+                    return (await response.text(), filename)
 
     async def start_arma_server(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:

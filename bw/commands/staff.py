@@ -309,7 +309,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         embed = None
         try:
-            response = await interface.get_arma_server_rpt(server)
+            response, filename = await interface.get_arma_server_rpt(server)
         except aiohttp.ClientResponseError as e:
             logger.warning(f'User {interaction.user} failed to update server: {e}')
             if e.status == 401 or e.status == 403:
@@ -329,9 +329,9 @@ class Staff(commands.Cog, name='Staff Commands'):
             embed = embeds.failed_to_get_rpt(server, str(e))
         else:
             rpt_file = io.BytesIO(response.encode('utf-8'))
-            await interaction.followup.send(
-                f'💬 Latest RPT for {server}', file=discord.File(rpt_file, filename=f'{server}_latest.rpt')
-            )
+            if not filename:
+                filename = f'{server}_latest.rpt'
+            await interaction.followup.send(f'💬 Latest RPT for {server}', file=discord.File(rpt_file, filename=filename))
         finally:
             if embed is not None:
                 await interaction.followup.send(embed=embed)
