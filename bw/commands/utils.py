@@ -2,6 +2,7 @@ from bw.session.types import DiscordSnowflake
 import discord
 import time
 import logging
+import datetime
 from discord import app_commands
 
 from bw.state import State
@@ -86,3 +87,22 @@ async def groups_autocomplete(_, current: str) -> list[app_commands.Choice[str]]
         logger.debug(f'{groups_with_distances}')
         logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
         return [app_commands.Choice(name=group, value=group) for group, _ in groups_with_distances][:10]
+
+
+def date_to_human_string(date: datetime.datetime) -> str:
+    month_mapping = {
+        1: 'January',
+        2: 'February',
+        3: 'March',
+        4: 'April',
+        5: 'May',
+        6: 'June',
+        7: 'July',
+        8: 'August',
+        9: 'September',
+        10: 'October',
+        11: 'November',
+        12: 'December',
+    }
+
+    return f'{month_mapping[date.month]} {date.day} {date.year}'

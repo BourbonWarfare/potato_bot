@@ -1,3 +1,4 @@
+from bw.commands.utils import date_to_human_string
 from bw.session.types import DiscordSnowflake
 from bw.missions.types import MissionUuid
 from bw.state import State
@@ -7,6 +8,7 @@ import discord
 import logging
 import io
 import re
+import datetime
 from discord import app_commands
 from discord.ext import commands
 from bs4 import BeautifulSoup
@@ -123,7 +125,7 @@ class Community(commands.Cog, name='Community'):
     async def post_safe_start_ended(self, event: ServerSentEvent):
         channels_to_post = [
             self.bot.get_channel(ENVIRONMENT.arma_channel_id()),
-            self.bot.get_channel(ENVIRONMENT.tech_channel_id()),
+            self.bot.get_channel(ENVIRONMENT.command_channel_id()),
         ]
 
         mission_id = UUID(hex=event.data['mission'])
@@ -147,7 +149,7 @@ class Community(commands.Cog, name='Community'):
     async def post_mission_end(self, event: ServerSentEvent):
         channels_to_post = [
             self.bot.get_channel(ENVIRONMENT.arma_channel_id()),
-            self.bot.get_channel(ENVIRONMENT.tech_channel_id()),
+            self.bot.get_channel(ENVIRONMENT.command_channel_id()),
         ]
 
         async def notify_mission_end(message: str):
@@ -161,6 +163,14 @@ class Community(commands.Cog, name='Community'):
                     reacted.add(user.mention)
             await arma_channel.send(f'{message} {" ".join(reacted)}')
 
+        async def post_recruits(mission_type: str | None):
+            channel = self.bot.get_channel(ENVIRONMENT.command_channel_id())
+            if mission_type:
+                await channel.send(f'{date_to_human_string(datetime.datetime.today())} {mission_type}')
+            else:
+                await channel.send(date_to_human_string(datetime.datetime.today()))
+            await channel.send(f'**Recruits Present:**\n{"\n".join(recruits_in_orbats(starting_orbat, final_orbat))}')
+
         mission_id = UUID(hex=event.data['mission'])
         session_id = UUID(hex=event.data['session'])
         logger.info(f'Posting mission end message for mission [{mission_id}] in session [{session_id}]')
@@ -168,13 +178,11 @@ class Community(commands.Cog, name='Community'):
         starting_orbat: dict[str, Any] = event.data['starting_orbat']
         final_orbat: dict[str, Any] = event.data['final_orbat']
 
-        channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
-        await channel.send(f'**Recruits Present:**\n{"\n".join(recruits_in_orbats(starting_orbat, final_orbat))}')
-
         try:
             mission_information = await User(State.state.api_client).mission_information(MissionUuid(mission_id))
         except Exception as err:
             logger.info(f'Unknown mission, posting basic info: {err}')
+            await post_recruits(None)
             for channel in channels_to_post:
                 await channel.send(embed=mission_ended_basic(starting_orbat, final_orbat))
 
@@ -182,6 +190,7 @@ class Community(commands.Cog, name='Community'):
                 await notify_mission_end("A mission has ended! I think it's a TvT, so the Co-Op slotting may be happening!")
             raise
 
+        await post_recruits(mission_information.mission_type.name)
         for channel in channels_to_post:
             await channel.send(embed=mission_ended(mission_information, starting_orbat, final_orbat))
 
