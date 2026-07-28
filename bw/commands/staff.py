@@ -40,10 +40,10 @@ class Staff(commands.Cog, name='Staff Commands'):
         name='arma',
         description='Manage an ARMA server.',
     )
+    @app_commands.autocomplete(server=arma_servers_autocomplete)
     @app_commands.choices(
         option=[app_commands.Choice(name=choice.value, value=choice.value) for choice in ArmaCommand],
     )
-    @app_commands.autocomplete(server=arma_servers_autocomplete)
     @app_commands.describe(
         server='The server which to perform the operation on.', option='The operation you wish to perform on the server.'
     )
