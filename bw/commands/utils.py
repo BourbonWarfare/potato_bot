@@ -42,7 +42,7 @@ async def get_session(
         try:
             oauth_session = await SessionApi().refresh_oauth_session(State.state, oauth_session)
             bw_session = await SessionApi().login_to_backend(State.state, oauth_session)
-        except (RefreshFailed, CannotLogin) as e:
+        except (RefreshFailed, CannotLogin, NoSuchSession) as e:
             logger.info(f'Could not refresh session: {e}. Re-logging in')
             SessionApi().revoke_user_session(State.state, user_id)
             bw_session, oauth_session = await show_login()
@@ -51,7 +51,7 @@ async def get_session(
         oauth_session = SessionApi().get_discord_session_from_discord_id(State.state, user_id)
         try:
             bw_session = await SessionApi().login_to_backend(State.state, oauth_session)
-        except CannotLogin:
+        except (CannotLogin, NoSuchSession):
             logger.warning('Cannot login, retrying login')
             SessionApi().revoke_user_session(State.state, user_id)
             bw_session, oauth_session = await show_login()

@@ -60,6 +60,10 @@ ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
         re.compile('could not create mission iteration'),
         'This mission iteration already exists. Try again, and if this error does not happen again you have gotten very lucky.',
     ),
+    (
+        re.compile('User does not have enough permissions to access this resource'),
+        "You don't have permission to upload the mission. Have you `/join`ed the Mission Maker group?.",
+    ),
 )
 
 
