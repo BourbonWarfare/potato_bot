@@ -75,6 +75,10 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
         return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
 
 
+async def arma_servers_autocomplete_with_all(interaction, current: str) -> list[app_commands.Choice[str]]:
+    return (await arma_servers_autocomplete(interaction, current)) + [app_commands.Choice(name='all', value='all')]
+
+
 async def groups_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
     async with State.state.group_cache.groups as groups:
         logger.debug('Starting autocomplete')

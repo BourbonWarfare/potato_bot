@@ -13,8 +13,9 @@ from bw.error import RefreshFailed, CannotReachBwBackend, CannotReachDiscord
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
 from bw.interface import User, UserClient
-from bw.commands.utils import get_session, arma_servers_autocomplete
+from bw.commands.utils import get_session, arma_servers_autocomplete, arma_servers_autocomplete_with_all
 from bw.environment import ENVIRONMENT
+from bw.state import State
 
 logger = logging.getLogger('bw.potbot.command')
 
@@ -109,7 +110,7 @@ class Staff(commands.Cog, name='Staff Commands'):
         name='serverstatus',
         description='Show the status of an ARMA server.',
     )
-    @app_commands.autocomplete(server=arma_servers_autocomplete)
+    @app_commands.autocomplete(server=arma_servers_autocomplete_with_all)
     @app_commands.describe(server='The server which to view the status of.')
     async def get_server_status(self, interaction: discord.Interaction, server: str):
         logger.info(f'{interaction.user} is checking the status of "{server}"')
@@ -128,58 +129,74 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
-        try:
-            response = await interface.get_arma_server_status(server)
-        except aiohttp.ClientResponseError as e:
-            logger.warning(f'User {interaction.user} failed to check server status: {e}')
-            if e.status == 401 or e.status == 403:
-                embed = embeds.not_permitted()
-            elif e.status == 404:
-                embed = embeds.arma_server_not_found(interaction.user, server)
-            elif e.status >= 500:
-                embed = embeds.server_management_failure(e.message)
-            else:
-                embed = embeds.couldnt_get_arma_server_status(
-                    interaction.user,
-                    server,
-                    server_running=response.get('running', False),
-                    hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
-                )
-        except CannotReachBwBackend as e:
-            logger.error(f'Failed to operate on server: {e}')
-            embed = embeds.failed_to_reach_bw_backend()
-        except RefreshFailed as e:
-            logger.error(str(e))
-            raise e
-        except Exception as e:
-            logger.warning(f'Failed to operate on server: {e}')
-            embed = embeds.couldnt_get_arma_server_status(
-                interaction.user,
-                server,
-                server_running=response.get('running', False),
-                hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
-            )
+        if server == 'all':
+            servers = [server async for server in State.state.arma_server_cache.servers]
         else:
-            result = response.get('result', 'failure')
-            if result == 'success':
-                embed = embeds.arma_server_status(
-                    server,
-                    mission=response.get('mission', 'None Selected'),
-                    state=response.get('state', 'Unknown'),
-                    map=response.get('map', 'None'),
-                    players=response.get('players', -1),
-                    max_players=response.get('max_players', -1),
+            servers = [server]
+
+        embeds_to_send: list[discord.Embed] = []
+        for check_server in servers:
+            try:
+                response = await interface.get_arma_server_status(check_server)
+            except aiohttp.ClientResponseError as e:
+                logger.warning(f'User {interaction.user} failed to check server status: {e}')
+                if e.status == 401 or e.status == 403:
+                    embeds_to_send.append(embeds.not_permitted())
+                elif e.status == 404:
+                    embeds_to_send.append(embeds.arma_server_not_found(interaction.user, check_server))
+                elif e.status >= 500:
+                    embeds_to_send.append(embeds.server_management_failure(e.message))
+                else:
+                    embeds_to_send.append(
+                        embeds.couldnt_get_arma_server_status(
+                            interaction.user,
+                            check_server,
+                            server_running=response.get('running', False),
+                            hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
+                        )
+                    )
+            except CannotReachBwBackend as e:
+                logger.error(f'Failed to operate on server: {e}')
+                embeds_to_send.append(embeds.failed_to_reach_bw_backend())
+            except RefreshFailed as e:
+                logger.error(str(e))
+                raise
+            except Exception as e:  # noqa: BLE001
+                logger.warning(f'Failed to operate on server: {e}')
+                embeds_to_send.append(
+                    embeds.couldnt_get_arma_server_status(
+                        interaction.user,
+                        check_server,
+                        server_running=response.get('running', False),
+                        hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
+                    )
                 )
-            elif result == 'failure':
-                embed = embeds.couldnt_get_arma_server_status(
-                    interaction.user,
-                    server,
-                    server_running=response.get('running', False),
-                    hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
-                )
-            elif result == 'unresponsive':
-                embed = embeds.arma_server_unresponsive(interaction.user, server=server)
-        await interaction.followup.send(embed=embed)
+            else:
+                result = response.get('result', 'failure')
+                if result == 'success':
+                    embeds_to_send.append(
+                        embeds.arma_server_status(
+                            check_server,
+                            mission=response.get('mission', 'None Selected'),
+                            state=response.get('state', 'Unknown'),
+                            map=response.get('map', 'None'),
+                            players=response.get('players', -1),
+                            max_players=response.get('max_players', -1),
+                        )
+                    )
+                elif result == 'failure':
+                    embeds_to_send.append(
+                        embeds.couldnt_get_arma_server_status(
+                            interaction.user,
+                            check_server,
+                            server_running=response.get('running', False),
+                            hcs_running=[hc['running'] for hc in response.get('headless_clients', [])],
+                        )
+                    )
+                elif result == 'unresponsive':
+                    embeds_to_send.append(embeds.arma_server_unresponsive(interaction.user, server=check_server))
+
+        await interaction.followup.send(embeds=embeds_to_send)
 
     @app_commands.command(
         name='update',
