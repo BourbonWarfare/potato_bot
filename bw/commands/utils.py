@@ -76,7 +76,7 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
 
 
 async def arma_servers_autocomplete_with_all(interaction, current: str) -> list[app_commands.Choice[str]]:
-    return (await arma_servers_autocomplete(interaction, current)) + [app_commands.Choice(name='all', value='all')]
+    return [app_commands.Choice(name='all', value='all')] + await arma_servers_autocomplete(interaction, current)
 
 
 async def groups_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
