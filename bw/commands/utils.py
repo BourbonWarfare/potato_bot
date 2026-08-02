@@ -14,6 +14,8 @@ from bw.utils import levenshtein_distance
 
 logger = logging.getLogger('bw.potbot.command')
 
+AUTOCOMPLETE_MAX = 5
+
 
 async def get_session(
     followup: discord.Webhook | discord.Thread, user: discord.User | discord.Member
@@ -72,7 +74,7 @@ async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice
         )
         logger.debug(f'{servers_with_distances}')
         logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
-        return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:3]
+        return [app_commands.Choice(name=server, value=server) for server, _ in servers_with_distances][:AUTOCOMPLETE_MAX]
 
 
 async def arma_servers_autocomplete_with_all(interaction, current: str) -> list[app_commands.Choice[str]]:
@@ -90,7 +92,7 @@ async def groups_autocomplete(_, current: str) -> list[app_commands.Choice[str]]
         groups_with_distances = sorted([(group, levenshtein_distance(current, group)) for group in groups], key=lambda a: a[1])
         logger.debug(f'{groups_with_distances}')
         logger.debug(f'Autocomplete took {(time.time() - start_time):.4f} seconds')
-        return [app_commands.Choice(name=group, value=group) for group, _ in groups_with_distances][:10]
+        return [app_commands.Choice(name=group, value=group) for group, _ in groups_with_distances][:AUTOCOMPLETE_MAX]
 
 
 def date_to_human_string(date: datetime.datetime) -> str:
