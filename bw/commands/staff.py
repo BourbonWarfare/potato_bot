@@ -131,7 +131,7 @@ class Staff(commands.Cog, name='Staff Commands'):
         interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         if server == 'all':
-            servers = [server async for server in State.state.arma_server_cache.refresh()]
+            servers = [server for server in await State.state.arma_server_cache.refresh()]
         else:
             servers = [server]
 
