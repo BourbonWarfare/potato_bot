@@ -12,6 +12,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
+from bw.commands.modals.community import SetTagModal
 from bw.commands.utils import date_to_human_string
 from bw.embeds import (
     mission_ended,
@@ -103,7 +104,7 @@ class Community(commands.Cog, name='Community'):
         description='Set your in-game ARMA tag.',
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
-        pass
+        await interaction.response.send_modal(SetTagModal())
 
     async def post_session_notification(self, event: ServerSentEvent):
         arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
