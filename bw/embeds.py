@@ -498,7 +498,7 @@ def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
         name = mod['name']
         workshop_id = mod['workshop_id']
         preview_url = mod['preview_url']
-        bytes = mod['file_size_bytes']
+        bytes = int(mod['file_size_bytes'])
 
         embed = discord.Embed(
             title=f'{name} has updated.',
