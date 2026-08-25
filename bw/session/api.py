@@ -1,14 +1,15 @@
-from sqlalchemy import select, delete
-
-from bw.state import State
-from bw.error import RefreshFailed, NoSuchSession, CannotLogin, CannotReachDiscord
-from bw.models.session import Session
-from bw.environment import ENVIRONMENT
-from bw.session.oauth import OAuthSession, BwSession
-from bw.session.types import DiscordSnowflake
-import aiohttp
 import datetime
 import logging
+
+import aiohttp
+from sqlalchemy import delete, select
+
+from bw.environment import ENVIRONMENT
+from bw.error import CannotLogin, CannotReachDiscord, NoSuchSession, RefreshFailed
+from bw.models.session import Session
+from bw.session.oauth import BwSession, OAuthSession
+from bw.session.types import DiscordSnowflake
+from bw.state import State
 
 logger = logging.getLogger('bw.session')
 

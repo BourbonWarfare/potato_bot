@@ -1,15 +1,16 @@
-from bw.session.types import DiscordSnowflake
-import discord
-import time
-import logging
 import datetime
+import logging
+import time
+
+import discord
 from discord import app_commands
 
-from bw.state import State
-from bw.error import DiscordSessionExpired, NoSuchSession, RefreshFailed, BwSessionExpired, CannotLogin
-from bw.session.oauth import BwSession, OAuthSession
-from bw.session.api import SessionApi
 from bw.commands.authentication import Authentication
+from bw.error import BwSessionExpired, CannotLogin, DiscordSessionExpired, NoSuchSession, RefreshFailed
+from bw.session.api import SessionApi
+from bw.session.oauth import BwSession, OAuthSession
+from bw.session.types import DiscordSnowflake
+from bw.state import State
 from bw.utils import levenshtein_distance
 
 logger = logging.getLogger('bw.potbot.command')

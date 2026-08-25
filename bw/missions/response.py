@@ -1,10 +1,11 @@
 import dataclasses
 import datetime
-import typing
 import json
-from bw.missions.types import MissionTypeTag, IterationUuid, UserUuid
+import typing
 from dataclasses import dataclass
 from typing import Any
+
+from bw.missions.types import IterationUuid, MissionTypeTag, UserUuid
 
 
 @dataclass

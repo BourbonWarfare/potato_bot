@@ -1,8 +1,8 @@
-import itertools
-import re
-import functools
 import asyncio
+import functools
+import itertools
 import random
+import re
 from typing import Any
 
 

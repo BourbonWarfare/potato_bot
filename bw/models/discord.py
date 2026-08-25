@@ -3,8 +3,8 @@ import uuid
 from sqlalchemy import BigInteger, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from bw.models import Base
 from bw.discord.types import ForumId
+from bw.models import Base
 
 
 class MissionForum(Base):

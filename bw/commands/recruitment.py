@@ -1,11 +1,12 @@
-import discord
 import logging
 from enum import StrEnum
+
+import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bw.embeds import call_orientator, get_generic_handbook, get_member_handbook, get_recruit_handbook, not_a_recruit
 from bw.environment import ENVIRONMENT
-from bw.embeds import get_recruit_handbook, get_member_handbook, get_generic_handbook, call_orientator, not_a_recruit
 from bw.utils import strip_emoji
 
 logger = logging.getLogger('bw.potbot.command')

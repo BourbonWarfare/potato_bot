@@ -1,24 +1,26 @@
+import datetime
+import json
+import logging
 import uuid
 from abc import ABC
-from bw.missions.types import IterationUuid, MissionUuid
-import aiohttp
-import datetime
-import logging
-import json
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
-from bw.environment import ENVIRONMENT
+
+import aiohttp
+
 from bw.endpoints import Root
-from bw.session.oauth import OAuthSession, BwSession
-from bw.utils import backoff
+from bw.environment import ENVIRONMENT
+from bw.error import CannotReachBwBackend, ResponseError
 from bw.missions.response import (
-    MissionUploadResponse,
     IterationInformationResponse,
     MissionInformationResponse,
     MissionTypeResponse,
+    MissionUploadResponse,
 )
-from bw.error import ResponseError, CannotReachBwBackend
+from bw.missions.types import IterationUuid, MissionUuid
+from bw.session.oauth import BwSession, OAuthSession
+from bw.utils import backoff
 
 logger = logging.getLogger('bw.interface')
 
@@ -86,8 +88,8 @@ class UserClient(BaseClient):
 
     @backoff(delay=0.5, retries=5)
     async def refresh_session(self):
-        from bw.state import State
         from bw.session.api import SessionApi
+        from bw.state import State
 
         self.discord_session = await SessionApi().refresh_oauth_session(State.state, self.discord_session)
         self.bw_session = await SessionApi().login_to_backend(State.state, self.discord_session)
@@ -130,11 +132,10 @@ class Interface:
 
     async def arma_server_healthcheck(self, server: str) -> bool:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
-                ) as response:
-                    return response.status == 200
+            async with aiohttp.ClientSession() as session, session.get(
+                server_url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
+            ) as response:
+                return response.status == 200
         except aiohttp.ClientConnectionError as e:
             logger.error(f'Cannot reach BW Backend: {e}')
             raise CannotReachBwBackend()

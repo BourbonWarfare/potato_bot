@@ -1,19 +1,21 @@
-import discord
 import logging
+
+import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bw.commands.utils import get_session, groups_autocomplete
 from bw.embeds import (
+    already_apart_of_group,
+    could_not_join_group,
     failed_to_reach_bw_backend,
     failed_to_reach_discord,
     no_group_with_name,
-    already_apart_of_group,
-    could_not_join_group,
     successfully_joined_group,
 )
-from bw.interface import User as UserInterface, UserClient
 from bw.error import CannotReachBwBackend, CannotReachDiscord, ResponseError
-from bw.commands.utils import get_session, groups_autocomplete
+from bw.interface import User as UserInterface
+from bw.interface import UserClient
 
 logger = logging.getLogger('bw.potbot.command')
 

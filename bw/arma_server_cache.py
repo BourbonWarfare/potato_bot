@@ -1,9 +1,11 @@
 import asyncio
-import logging
-import aiohttp
 import datetime
-from contextlib import asynccontextmanager
+import logging
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+import aiohttp
+
 from bw.error import CannotReachBwBackend
 
 logger = logging.getLogger('bw.arma_server_cache')

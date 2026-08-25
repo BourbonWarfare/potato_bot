@@ -1,19 +1,18 @@
 import os
-
+from collections.abc import Callable, Sequence
 from enum import StrEnum
 from pathlib import Path
 from typing import Self
-from collections.abc import Sequence
-from collections.abc import Callable
+
+from dotenv import dotenv_values
 
 from bw.error import (
-    DuplicateConfigKey,
-    ConfigurationKeyNotPresent,
     ConfigIsNotEnv,
     ConfigIsNotKeyValue,
+    ConfigurationKeyNotPresent,
+    DuplicateConfigKey,
     UnknownConfigFileType,
 )
-from dotenv import dotenv_values
 
 
 def enforce_lowercase_keys(func: Callable[..., 'Configuration']):

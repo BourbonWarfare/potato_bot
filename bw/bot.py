@@ -1,11 +1,11 @@
-from typing import Self
-from pathlib import Path
-
 import logging
+from pathlib import Path
+from typing import Self
+
 import discord
 from discord.ext import commands
 
-from bw.commands import community, helpers, mission_making, recruitment, staff, authentication, user
+from bw.commands import authentication, community, helpers, mission_making, recruitment, staff, user
 from bw.version import VERSION, Version
 
 logger = logging.getLogger('bw.potbot')

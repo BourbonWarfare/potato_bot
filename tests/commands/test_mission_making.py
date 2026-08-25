@@ -15,7 +15,6 @@ from tests.fixtures.events import (
 )
 from tests.fixtures.responses import sample_iteration, sample_mission, sample_mission_type
 
-
 FORUM_CHANNEL_ID = 12345
 THREAD_ID = 999
 

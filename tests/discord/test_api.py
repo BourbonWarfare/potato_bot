@@ -12,8 +12,8 @@ from tests.fixtures.discord_objects import (
 )
 from tests.fixtures.responses import (
     SAMPLE_MISSION_UUID,
-    sample_mission,
     sample_iteration,
+    sample_mission,
     sample_mission_type,
 )
 from tests.fixtures.state import in_memory_state

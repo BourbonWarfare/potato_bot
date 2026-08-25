@@ -1,11 +1,13 @@
-import discord
-import logging
 import datetime
+import logging
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
-from bw.settings import GLOBAL_CONFIGURATION as GC
+
+import discord
+
 from bw.error import ConfigurationKeyNotPresent
+from bw.settings import GLOBAL_CONFIGURATION as GC
 
 logger = logging.getLogger('bw')
 

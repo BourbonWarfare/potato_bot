@@ -3,7 +3,7 @@
 import pytest
 
 from bw.events.broker import Broker
-from tests.fixtures.events import make_event, uploaded_event, reviewed_event
+from tests.fixtures.events import make_event, reviewed_event, uploaded_event
 
 
 class HandlerSpy:

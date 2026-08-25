@@ -16,7 +16,6 @@ from tests.fixtures.responses import (
     sample_mission_payload,
 )
 
-
 AUTH_HEADER = {'Authorization': 'Bearer test-token'}
 
 

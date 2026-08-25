@@ -1,34 +1,35 @@
-from bw.commands.utils import date_to_human_string
-from bw.session.types import DiscordSnowflake
-from bw.missions.types import MissionUuid
-from bw.state import State
-from bw.arma.api import ArmaApi
+import datetime
+import io
+import logging
+import re
+from typing import Any
+from uuid import UUID
+
 import aiohttp
 import discord
-import logging
-import io
-import re
-import datetime
+from bs4 import BeautifulSoup
 from discord import app_commands
 from discord.ext import commands
-from bs4 import BeautifulSoup
-from uuid import UUID
-from typing import Any
 
-from bw.settings import GLOBAL_CONFIGURATION
-from bw.environment import ENVIRONMENT
+from bw.arma.api import ArmaApi
+from bw.commands.utils import date_to_human_string
 from bw.embeds import (
+    mission_ended,
+    mission_ended_basic,
     modlist_html,
     modlist_website,
-    upcoming_session,
     safe_start_ended,
-    mission_ended,
     safe_start_ended_basic,
-    mission_ended_basic,
+    upcoming_session,
 )
+from bw.environment import ENVIRONMENT
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
 from bw.interface import User
+from bw.missions.types import MissionUuid
+from bw.session.types import DiscordSnowflake
+from bw.settings import GLOBAL_CONFIGURATION
+from bw.state import State
 from bw.utils import recruits_in_orbats
 
 logger = logging.getLogger('bw.potbot.command')
@@ -83,20 +84,26 @@ class Community(commands.Cog, name='Community'):
             return
 
         logger.debug(f'Fetching XML modlist at "/{modlist_name}"')
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f'{html_url}/{modlist_name}') as response:
-                if response.status != 200:
-                    logger.error(f'Failed to fetch XML modlist: {response.status}')
-                    await interaction.response.send_message(embed=modlist_website(), ephemeral=False)
-                    return
-                xml = await response.text()
-                logger.info('XML modlist fetched successfully')
+        async with aiohttp.ClientSession() as session, session.get(f'{html_url}/{modlist_name}') as response:
+            if response.status != 200:
+                logger.error(f'Failed to fetch XML modlist: {response.status}')
+                await interaction.response.send_message(embed=modlist_website(), ephemeral=False)
+                return
+            xml = await response.text()
+            logger.info('XML modlist fetched successfully')
 
         logger.debug(f'Found modlist "{modlist_name}"={len(xml)}')
         modlist = io.BytesIO(xml.encode('utf-8'))
         file = discord.File(modlist, filename=modlist_name)
 
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
+
+    @app_commands.command(
+        name='tag',
+        description='Set your in-game ARMA tag.',
+    )
+    async def set_arma_tag(self, interaction: discord.Interaction):
+        pass
 
     async def post_session_notification(self, event: ServerSentEvent):
         arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())

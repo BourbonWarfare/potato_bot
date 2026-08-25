@@ -1,20 +1,21 @@
-import discord
-import logging
-import aiohttp
 import io
+import logging
+from collections.abc import Iterable
 from enum import StrEnum
+from typing import Any
+
+import aiohttp
+import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Any
-from collections.abc import Iterable
 
 from bw import embeds
-from bw.error import RefreshFailed, CannotReachBwBackend, CannotReachDiscord
+from bw.commands.utils import arma_servers_autocomplete, arma_servers_autocomplete_with_all, get_session
+from bw.environment import ENVIRONMENT
+from bw.error import CannotReachBwBackend, CannotReachDiscord, RefreshFailed
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
 from bw.interface import User, UserClient
-from bw.commands.utils import get_session, arma_servers_autocomplete, arma_servers_autocomplete_with_all
-from bw.environment import ENVIRONMENT
 from bw.state import State
 
 logger = logging.getLogger('bw.potbot.command')

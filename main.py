@@ -1,8 +1,9 @@
-import bw.log
 import logging.config
-from bw.environment import ENVIRONMENT
+
 import bw.bot
+import bw.log
 from bw.bot import PotatoBot
+from bw.environment import ENVIRONMENT
 
 
 def main():

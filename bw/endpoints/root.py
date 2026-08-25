@@ -1,10 +1,10 @@
-from bw.endpoints.realtime import Realtime
-from bw.endpoints.endpoint import Endpoint
-from bw.endpoints.auth import Auth
-from bw.endpoints.user import User
-from bw.endpoints.group import Group
 from bw.endpoints.arma import ServerOps
+from bw.endpoints.auth import Auth
+from bw.endpoints.endpoint import Endpoint
+from bw.endpoints.group import Group
 from bw.endpoints.missions import Missions
+from bw.endpoints.realtime import Realtime
+from bw.endpoints.user import User
 
 
 class Healthcheck(Endpoint):

@@ -1,9 +1,10 @@
-from sqlalchemy import DateTime
-from sqlalchemy.orm import Mapped, mapped_column
 import datetime
 
+from sqlalchemy import DateTime
+from sqlalchemy.orm import Mapped, mapped_column
+
 from bw.models import Base
-from bw.session.types import DiscordSnowflake, SessionToken, OAuthToken, OAuthRefreshToken
+from bw.session.types import DiscordSnowflake, OAuthRefreshToken, OAuthToken, SessionToken
 
 
 class Session(Base):

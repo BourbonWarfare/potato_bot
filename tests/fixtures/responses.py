@@ -9,7 +9,6 @@ from bw.missions.response import (
     MissionTypeResponse,
 )
 
-
 SAMPLE_MISSION_UUID = uuid.UUID('b3d7e343-d244-45fd-a614-a40e3da5de90')
 SAMPLE_ITERATION_UUID = uuid.UUID('11111111-2222-3333-4444-555555555555')
 SAMPLE_AUTHOR_UUID = uuid.UUID('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')

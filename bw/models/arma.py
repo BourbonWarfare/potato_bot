@@ -1,6 +1,8 @@
-from sqlalchemy import Uuid, BigInteger, Boolean
 from uuid import UUID
+
+from sqlalchemy import BigInteger, Boolean, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
+
 from bw.models import Base
 
 

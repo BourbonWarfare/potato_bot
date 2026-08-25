@@ -1,8 +1,9 @@
+import datetime
 from dataclasses import dataclass
 from typing import Self
+
 from bw.models.session import Session
-from bw.session.types import OAuthToken, OAuthRefreshToken, SessionToken
-import datetime
+from bw.session.types import OAuthRefreshToken, OAuthToken, SessionToken
 
 
 @dataclass

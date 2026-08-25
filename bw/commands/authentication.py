@@ -1,26 +1,27 @@
-import discord
+import asyncio
 import logging
 import secrets
+
 import aiohttp
-import asyncio
+import discord
 from discord import app_commands
 from discord.ext import commands
 
 from bw.embeds import (
-    login_with_discord,
-    logged_in_with_discord,
-    failed_to_login_with_discord,
     already_logged_in,
+    failed_to_login_with_discord,
     failed_to_reach_bw_backend,
     failed_to_reach_discord,
+    logged_in_with_discord,
+    login_with_discord,
 )
-from bw.utils import backoff
+from bw.error import CannotLogin, CannotReachBwBackend, CannotReachDiscord, NoSuchSession
 from bw.interface import Interface
 from bw.session.api import SessionApi
-from bw.session.types import DiscordSnowflake
 from bw.session.oauth import OAuthSession
+from bw.session.types import DiscordSnowflake
 from bw.state import State
-from bw.error import CannotLogin, NoSuchSession, CannotReachBwBackend, CannotReachDiscord
+from bw.utils import backoff
 
 logger = logging.getLogger('bw.potbot.command')
 

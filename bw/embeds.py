@@ -1,12 +1,13 @@
-import itertools
-from bw.utils import orbat_to_string, orbat_diff_to_string
-import discord
 import datetime
 import urllib.parse
-from typing import Any
 from collections.abc import Iterable, Sequence
+from typing import Any
+
+import discord
+
 from bw.environment import ENVIRONMENT
 from bw.missions.response import IterationInformationResponse, MissionInformationResponse, MissionTypeResponse
+from bw.utils import orbat_diff_to_string, orbat_to_string
 
 
 def _running_from_bool(running: bool) -> str:

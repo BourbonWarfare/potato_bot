@@ -1,18 +1,18 @@
-import aiohttp
-import logging
-import json
 import asyncio
-import traceback
+import json
+import logging
 import random
-
-from aiohttp import hdrs
-from collections.abc import Callable, Awaitable
-from discord.ext import tasks
+import traceback
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
-from bw.interface import server_url
+import aiohttp
+from aiohttp import hdrs
+from discord.ext import tasks
+
 from bw.endpoints.root import Root
-from bw.events.decoder import ServerSentEventBuilder, ServerSentEvent
+from bw.events.decoder import ServerSentEvent, ServerSentEventBuilder
+from bw.interface import server_url
 
 logger = logging.getLogger('bw.events')
 
@@ -56,7 +56,7 @@ class Broker:
             try:
                 await handler.handler(event)
             except Exception as e:
-                logger.error(f'Failed to run event handler: {str(e)}')
+                logger.error(f'Failed to run event handler: {e!s}')
                 logger.debug(traceback.format_exc())
 
     async def _get_sse(self, session: aiohttp.ClientSession, tasks: asyncio.TaskGroup):
@@ -93,20 +93,19 @@ class Broker:
 
     @tasks.loop(seconds=15, name='sse loop')
     async def backend_event_handler(self):
-        async with asyncio.TaskGroup() as tasks:
-            async with aiohttp.ClientSession() as session:
-                while True:
-                    try:
-                        await self._get_sse(session, tasks)
-                    except aiohttp.ClientConnectionError as err:
-                        logging.warning(f'Cannot connect to backend: {err}')
-                        await asyncio.sleep(1 + 5 * random.random())
-                    except aiohttp.ServerConnectionError as err:
-                        logging.warning(f'Lost connection to backend: {err}')
-                        await asyncio.sleep(1 + 5 * random.random())
-                    except Exception as err:
-                        logging.warning(f'An error occured while handling SSE stream: {err}')
-                        await asyncio.sleep(1 + 5 * random.random())
+        async with asyncio.TaskGroup() as tasks, aiohttp.ClientSession() as session:
+            while True:
+                try:
+                    await self._get_sse(session, tasks)
+                except aiohttp.ClientConnectionError as err:
+                    logging.warning(f'Cannot connect to backend: {err}')
+                    await asyncio.sleep(1 + 5 * random.random())
+                except aiohttp.ServerConnectionError as err:
+                    logging.warning(f'Lost connection to backend: {err}')
+                    await asyncio.sleep(1 + 5 * random.random())
+                except Exception as err:
+                    logging.warning(f'An error occured while handling SSE stream: {err}')
+                    await asyncio.sleep(1 + 5 * random.random())
 
 
 global_event_broker = Broker()

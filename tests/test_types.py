@@ -16,7 +16,6 @@ from bw.session.types import (
     SessionToken,
 )
 
-
 SAMPLE_UUID_STR = '550e8400-e29b-41d4-a716-446655440000'
 SAMPLE_UUID = uuid.UUID(SAMPLE_UUID_STR)
 
