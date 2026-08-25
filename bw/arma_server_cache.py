@@ -21,7 +21,7 @@ class ArmaServerCache:
         self.refresh_task_ = None
         self.last_refresh_ = None
 
-    async def refresh(self):
+    async def refresh(self) -> list[str]:
         from bw.interface import Interface
 
         try:
@@ -30,9 +30,11 @@ class ArmaServerCache:
             self.last_refresh_ = datetime.datetime.now()
         except (aiohttp.ClientResponseError, CannotReachBwBackend) as e:
             logger.warning(f'Could not get arma servers: {e}')
-            servers = []
+            servers: list[str] = []
         self.servers_ = servers
         self.refresh_task_ = None
+
+        return self.servers_
 
     @property
     def blocking_servers(self) -> list[str]:
