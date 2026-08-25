@@ -4,6 +4,7 @@ import discord
 from discord import ForumChannel, Thread, app_commands
 from discord.ext import commands
 
+from bw.commands.modals.mission_making import MissionUploadModal
 from bw.discord.api import DiscordApi
 from bw.embeds import cannot_upload_no_servers, get_bwmf
 from bw.embeds import iteration_information as iteration_information_embed

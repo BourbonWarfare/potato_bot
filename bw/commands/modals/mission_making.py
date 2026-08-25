@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 import shutil
 import tempfile
@@ -16,6 +17,8 @@ from bw.error import CannotReachBwBackend, CannotReachDiscord, NoServersToUpload
 from bw.interface import User, UserClient
 from bw.session.types import DiscordSnowflake
 from bw.state import State
+
+logger = logging.getLogger('bw.potbot.command')
 
 NOT_BINARIZED = re.compile('mission needs to be binarized to upload')
 NOT_SAVED_WITH_POTATO_REGEX = re.compile('not saved with POTATO')
