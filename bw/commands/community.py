@@ -99,12 +99,14 @@ class Community(commands.Cog, name='Community'):
 
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
 
+    """
     @app_commands.command(
         name='tag',
         description='Set your in-game ARMA tag.',
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
         await interaction.response.send_modal(SetTagModal())
+    """
 
     async def post_session_notification(self, event: ServerSentEvent):
         arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
