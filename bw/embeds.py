@@ -495,7 +495,7 @@ def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
 
     embeds = []
     for mod in mods:
-        name = mod['name']
+        name = mod['title']
         workshop_id = mod['workshop_id']
         preview_url = mod['preview_url']
         bytes = int(mod['file_size_bytes'])
