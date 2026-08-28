@@ -1,9 +1,10 @@
-from bw.environment import ENVIRONMENT
-from bs4 import BeautifulSoup
 import logging
 
 import discord
+from bs4 import BeautifulSoup
 from discord import ui
+
+from bw.environment import ENVIRONMENT
 
 logger = logging.getLogger('bw.potbot.command')
 

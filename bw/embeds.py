@@ -503,9 +503,9 @@ def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
         embed = discord.Embed(
             title=f'{name} has updated.',
             description=f'https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id} ({bytes_to_human(bytes)})',
-            url=preview_url,
             colour=ENVIRONMENT.embed_colour_staff(),
         )
+        embed.set_image(url=preview_url)
 
         embeds.append(embed)
 

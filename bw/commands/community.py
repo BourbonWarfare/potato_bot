@@ -12,7 +12,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
-from bw.commands.modals.community import SetTagModal
 from bw.commands.utils import date_to_human_string
 from bw.embeds import (
     mission_ended,
