@@ -37,6 +37,7 @@ class Staff(commands.Cog, name='Staff Commands'):
         self.bot = bot
         global_event_broker.add_handler(self.arma_server_event_handler, namespace='arma_server', event=None)
         global_event_broker.add_handler(self.cron_event_handler, namespace='cron', event=None)
+        global_event_broker.add_handler(self.monitor_event_handler, namespace='monitor', event=None)
 
     @app_commands.command(
         name='arma',
@@ -406,3 +407,17 @@ class Staff(commands.Cog, name='Staff Commands'):
             logger.info(f'Posting cron run for {event.data["cron"]}')
             for channel in channels_to_post:
                 await channel.send(embed=embeds.cron_run(event.data['cron']))
+
+    async def monitor_event_handler(self, event: ServerSentEvent):
+        if event.event == 'connection':
+            rdp_channel = self.bot.get_channel(ENVIRONMENT.rdp_channel_id())
+            assert isinstance(rdp_channel, discord.TextChannel)
+
+            action = event.data['action']
+            ip = event.data['source_ip']
+            if action == 'disconnect':
+                await rdp_channel.send('Remote Desktop is free')
+                await rdp_channel.edit(name='rdc-🟢', reason='Automatic through RDP disconnect')
+            elif action == 'authentication_success' or action == 'reconnect':
+                await rdp_channel.send(f'Remote Desktop is in use by {ip}')
+                await rdp_channel.edit(name='rdc-🔴', reason='Automatic through RDP connect')
