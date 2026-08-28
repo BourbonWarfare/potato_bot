@@ -481,7 +481,7 @@ def server_event_with_mods(event: str, server: str, mods: Sequence[str], *, cuto
 def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
     def bytes_to_human(bytes: int) -> str:
         byte_threshold = 500
-        kilobyte_threshold = 10**6
+        kilobyte_threshold = 10**3
         megabyte_threshold = kilobyte_threshold * 1000
         gigabyte_threshold = megabyte_threshold * 1000
         if bytes <= byte_threshold:
@@ -502,7 +502,7 @@ def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
 
         embed = discord.Embed(
             title=f'{name} has updated.',
-            description=f'https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id} ({bytes_to_human(bytes)})',
+            description=f'https://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id}\n(**{bytes_to_human(bytes)}**)',
             colour=ENVIRONMENT.embed_colour_staff(),
         )
         embed.set_image(url=preview_url)
