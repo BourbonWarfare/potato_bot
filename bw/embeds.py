@@ -482,8 +482,8 @@ def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
     def bytes_to_human(bytes: int) -> str:
         byte_threshold = 500
         kilobyte_threshold = 10**3
-        megabyte_threshold = kilobyte_threshold * 1000
-        gigabyte_threshold = megabyte_threshold * 1000
+        megabyte_threshold = 9 * kilobyte_threshold * 100
+        gigabyte_threshold = megabyte_threshold * 100
         if bytes <= byte_threshold:
             return f'{bytes} bytes'
         elif bytes < megabyte_threshold:
