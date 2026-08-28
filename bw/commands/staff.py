@@ -424,7 +424,9 @@ class Staff(commands.Cog, name='Staff Commands'):
                 await rdp_channel.send('Remote Desktop is free')
                 if delta_update > DEBOUNCE_THRESHOLD:
                     await rdp_channel.edit(name='rdc-🟢', reason='Automatic through RDP disconnect')
+                    self.last_rdp_name_update = time.time()
             elif action == 'authentication_success':
                 await rdp_channel.send(f'Remote Desktop is in use by {ip}')
                 if delta_update > DEBOUNCE_THRESHOLD:
                     await rdp_channel.edit(name='rdc-🔴', reason='Automatic through RDP connect')
+                    self.last_rdp_name_update = time.time()
