@@ -1,5 +1,6 @@
 import io
 import logging
+import time
 from collections.abc import Iterable
 from enum import StrEnum
 from typing import Any
@@ -35,6 +36,7 @@ class UpdateChoices(StrEnum):
 class Staff(commands.Cog, name='Staff Commands'):
     def __init__(self, bot):
         self.bot = bot
+        self.last_rdp_name_update = time.time()
         global_event_broker.add_handler(self.arma_server_event_handler, namespace='arma_server', event=None)
         global_event_broker.add_handler(self.cron_event_handler, namespace='cron', event=None)
         global_event_broker.add_handler(self.monitor_event_handler, namespace='monitor', event=None)
@@ -413,11 +415,16 @@ class Staff(commands.Cog, name='Staff Commands'):
             rdp_channel = self.bot.get_channel(ENVIRONMENT.rdp_channel_id())
             assert isinstance(rdp_channel, discord.TextChannel)
 
+            delta_update = time.time() - self.last_rdp_name_update
+            DEBOUNCE_THRESHOLD = 5
+
             action = event.data['action']
             ip = event.data['source_ip']
             if action == 'disconnect':
                 await rdp_channel.send('Remote Desktop is free')
-                await rdp_channel.edit(name='rdc-🟢', reason='Automatic through RDP disconnect')
-            elif action == 'authentication_success' or action == 'reconnect':
+                if delta_update > DEBOUNCE_THRESHOLD:
+                    await rdp_channel.edit(name='rdc-🟢', reason='Automatic through RDP disconnect')
+            elif action == 'authentication_success':
                 await rdp_channel.send(f'Remote Desktop is in use by {ip}')
-                await rdp_channel.edit(name='rdc-🔴', reason='Automatic through RDP connect')
+                if delta_update > DEBOUNCE_THRESHOLD:
+                    await rdp_channel.edit(name='rdc-🔴', reason='Automatic through RDP connect')
