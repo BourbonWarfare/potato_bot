@@ -132,9 +132,10 @@ class Interface:
 
     async def arma_server_healthcheck(self, server: str) -> bool:
         try:
-            async with aiohttp.ClientSession() as session, session.get(
-                server_url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())
-            ) as response:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.get(server_url(Root.get().api.v1.server_ops.arma.server.var(server).healthcheck.resolve())) as response,
+            ):
                 return response.status == 200
         except aiohttp.ClientConnectionError as e:
             logger.error(f'Cannot reach BW Backend: {e}')
@@ -245,6 +246,14 @@ class User(Interface):
                 ) as response:
                     response.raise_for_status()
                     return await response.json()
+
+    async def update_arma_mod_by_id(self, workshop_id: int):
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session):
+                async with session.post(
+                    server_url(Root.get().api.v1.server_ops.arma.mod.workshop_id.var(str(workshop_id)).update.resolve())
+                ) as response:
+                    response.raise_for_status()
 
     async def update_arma_server_mods(self, server: str) -> dict:
         async with aiohttp.ClientSession(headers=self.client.auth_header) as session:

@@ -1,6 +1,6 @@
+from bw.commands.modals.staff import UpdateModView
 import io
 import logging
-import time
 from collections.abc import Iterable
 from enum import StrEnum
 from typing import Any
@@ -36,7 +36,6 @@ class UpdateChoices(StrEnum):
 class Staff(commands.Cog, name='Staff Commands'):
     def __init__(self, bot):
         self.bot = bot
-        self.last_rdp_name_update = time.time()
         global_event_broker.add_handler(self.arma_server_event_handler, namespace='arma_server', event=None)
         global_event_broker.add_handler(self.cron_event_handler, namespace='cron', event=None)
         global_event_broker.add_handler(self.monitor_event_handler, namespace='monitor', event=None)
@@ -397,9 +396,9 @@ class Staff(commands.Cog, name='Staff Commands'):
                 await channel.send(embed=embeds.server_event('deploy keys', event.data['server']))
         elif event.event == 'found out of date mods':
             mod_channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
-            to_send = embeds.out_of_date_mods(event.data['mods'])
-            for embed in to_send:
-                await mod_channel.send(embed=embed)
+            to_send = [UpdateModView(channel=mod_channel, mod=mod) for mod in event.data['mods']]
+            for view in to_send:
+                await mod_channel.send(view=view)
 
     async def cron_event_handler(self, event: ServerSentEvent):
         if event.event == 'run':
@@ -413,22 +412,13 @@ class Staff(commands.Cog, name='Staff Commands'):
     async def monitor_event_handler(self, event: ServerSentEvent):
         if event.event == 'connection':
             rdp_channel = self.bot.get_channel(ENVIRONMENT.rdp_channel_id())
-            assert isinstance(rdp_channel, discord.TextChannel)
-
-            delta_update = time.time() - self.last_rdp_name_update
-            DEBOUNCE_THRESHOLD = 5
-
-            logger.debug(f'Debounce: {delta_update} > {DEBOUNCE_THRESHOLD} == {delta_update > DEBOUNCE_THRESHOLD}')
+            assert isinstance(rdp_channel, (discord.TextChannel, discord.VoiceChannel))
 
             action = event.data['action']
             ip = event.data['source_ip']
             if action == 'disconnect':
                 await rdp_channel.send('Remote Desktop is free')
-                if delta_update > DEBOUNCE_THRESHOLD:
-                    await rdp_channel.edit(name='rdc-🟢', reason='Automatic through RDP disconnect')
-                    self.last_rdp_name_update = time.time()
+                await rdp_channel.edit(name='rdc-🟢', reason='Automatic through RDP disconnect')
             elif action == 'authentication_success':
                 await rdp_channel.send(f'Remote Desktop is in use by {ip}')
-                if delta_update > DEBOUNCE_THRESHOLD:
-                    await rdp_channel.edit(name='rdc-🔴', reason='Automatic through RDP connect')
-                    self.last_rdp_name_update = time.time()
+                await rdp_channel.edit(name='rdc-🔴', reason='Automatic through RDP connect')

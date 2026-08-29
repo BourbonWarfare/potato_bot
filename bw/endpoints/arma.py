@@ -49,6 +49,20 @@ class Servers(Endpoint):
     endpoint = 'servers'
 
 
+class UpdateSpecificMod(Endpoint):
+    endpoint = 'update'
+
+
+class WorkshopId(Endpoint):
+    endpoint = VariableEndpoint()
+    update = UpdateSpecificMod()
+
+
+class Mod(Endpoint):
+    endpoint = 'mod'
+    workshop_id = WorkshopId()
+
+
 class Arma(Endpoint):
     endpoint = 'arma'
     server = Server()
