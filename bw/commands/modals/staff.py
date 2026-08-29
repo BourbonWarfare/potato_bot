@@ -56,8 +56,6 @@ class UpdateButton(ui.Button):
             return
         except ResponseError as e:
             await interaction.response.send_message(f'❌ {interaction.user.mention} the mod could not be updated: {e}')
-        else:
-            await interaction.response.send_message('The mod update has begun.')
 
         self.disabled = True
         await interaction.response.edit_message(view=self.parent_view)
