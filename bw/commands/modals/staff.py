@@ -96,7 +96,7 @@ class UpdateModView(ui.LayoutView):
 
         self.description = ui.Container()
 
-        self.update = UpdateButton(workshop_id, channel)
+        self.update = UpdateButton(workshop_id, channel, self)
         self.buttons = ui.ActionRow(self.update)
 
         container = ui.Container(self.text, self.gallery, ui.Separator(), self.buttons)
