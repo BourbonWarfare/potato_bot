@@ -45,6 +45,7 @@ class UpdateButton(ui.Button):
             await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
             return
 
+        logger.info(f'User {interaction.user.id} is updating {self.workshop_id}')
         interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
         try:
             await interface.update_arma_mod_by_id(int(self.workshop_id))
