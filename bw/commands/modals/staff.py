@@ -23,10 +23,11 @@ logger = logging.getLogger('bw.potbot.command')
 
 
 class UpdateButton(ui.Button):
-    def __init__(self, workshop_id: str, channel: discord.TextChannel):
+    def __init__(self, workshop_id: str, channel: discord.TextChannel, parent_view: ui.LayoutView):
         super().__init__(style=discord.ButtonStyle.green, label='Update Mod')
         self.workshop_id = workshop_id
         self.channel = channel
+        self.parent_view = parent_view
 
     async def callback(self, interaction: discord.Interaction):
         logger.debug('Getting BW session')
@@ -58,6 +59,8 @@ class UpdateButton(ui.Button):
         else:
             await interaction.response.send_message('The mod update has begun.')
 
+        self.disabled = True
+        await interaction.response.edit_message(view=self.parent_view)
         await webhook.delete()
 
 
