@@ -487,11 +487,11 @@ def out_of_date_mods(mods: Sequence[dict[str, Any]]) -> list[discord.Embed]:
         if bytes <= byte_threshold:
             return f'{bytes} bytes'
         elif bytes < megabyte_threshold:
-            return f'{bytes / (kilobyte_threshold / 1000):.2f} kilobytes'
+            return f'{bytes / 10**3:.2f} kilobytes'
         elif bytes < gigabyte_threshold:
-            return f'{bytes / (megabyte_threshold / 1000):.2f} megabytes'
+            return f'{bytes / 10**6:.2f} megabytes'
         else:
-            return f'{bytes / (gigabyte_threshold / 1000):.2f} gigabytes'
+            return f'{bytes / 10**9:.2f} gigabytes'
 
     embeds = []
     for mod in mods:
