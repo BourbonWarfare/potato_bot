@@ -418,6 +418,8 @@ class Staff(commands.Cog, name='Staff Commands'):
             delta_update = time.time() - self.last_rdp_name_update
             DEBOUNCE_THRESHOLD = 5
 
+            logger.debug(f'Debounce: {delta_update} > {DEBOUNCE_THRESHOLD} == {delta_update > DEBOUNCE_THRESHOLD}')
+
             action = event.data['action']
             ip = event.data['source_ip']
             if action == 'disconnect':
