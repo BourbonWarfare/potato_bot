@@ -88,10 +88,13 @@ class UpdateModView(ui.LayoutView):
             f'## **{name}** has updated.\nhttps://steamcommunity.com/sharedfiles/filedetails/?id={workshop_id}\n(**{bytes_to_human(bytes)}**)'
         )
 
-        self.preview = ui.Thumbnail(media=preview_url)
+        self.preview = discord.MediaGalleryItem(media=preview_url)
+        self.gallery = ui.MediaGallery(self.preview)
+
+        self.description = ui.Container()
 
         self.update = UpdateButton(workshop_id, channel)
         self.buttons = ui.ActionRow(self.update)
 
-        container = ui.Container(self.text, self.preview, self.buttons)
+        container = ui.Container(self.text, self.gallery, ui.Separator(), self.buttons)
         self.add_item(container)
