@@ -31,18 +31,21 @@ class UpdateButton(ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         logger.debug('Getting BW session')
-        webhook = await self.channel.create_webhook(name=f'update {self.workshop_id}')
+        await interaction.response.defer(ephemeral=False, thinking=True)
+        webhook = interaction.followup
         try:
             bw_session, oauth_session = await get_session(webhook, interaction.user)
         except CannotReachBwBackend as e:
             logger.error(e)
-            await webhook.send('❌ Failed to update mod: the BW server is not responding')
-            await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            await webhook.send(
+                f'❌ {interaction.user.mention} the mod could not be updated.', embed=failed_to_reach_bw_backend(), ephemeral=True
+            )
             return
         except CannotReachDiscord as e:
             logger.error(e)
-            await webhook.send('❌ Failed to update mod: we cannot reach Discord for OAuth')
-            await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
+            await webhook.send(
+                f'❌ {interaction.user.mention} the mod could not be updated.', embed=failed_to_reach_discord(), ephemeral=True
+            )
             return
 
         logger.info(f'User {interaction.user.id} is updating {self.workshop_id}')
@@ -51,16 +54,14 @@ class UpdateButton(ui.Button):
             await interface.update_arma_mod_by_id(int(self.workshop_id))
         except CannotReachBwBackend as e:
             logger.error(f'Failed to update mod on server: {e}')
-            await interaction.response.send_message(
-                f'❌ {interaction.user.mention} the mod could not be updated.', embed=failed_to_reach_bw_backend()
-            )
+            await webhook.send(f'❌ {interaction.user.mention} the mod could not be updated.', embed=failed_to_reach_bw_backend())
             return
         except ResponseError as e:
-            await interaction.response.send_message(f'❌ {interaction.user.mention} the mod could not be updated: {e}')
+            await webhook.send(f'❌ {interaction.user.mention} the mod could not be updated: {e}')
+            return
 
         self.disabled = True
-        await interaction.response.edit_message(view=self.parent_view)
-        await webhook.delete()
+        await interaction.edit_original_response(view=self.parent_view)
 
 
 class UpdateModView(ui.LayoutView):
