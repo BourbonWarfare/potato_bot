@@ -67,6 +67,7 @@ class Arma(Endpoint):
     endpoint = 'arma'
     server = Server()
     servers = Servers()
+    mod = Mod()
 
 
 class ServerOps(Endpoint):
