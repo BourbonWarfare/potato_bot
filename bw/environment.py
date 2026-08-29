@@ -86,6 +86,10 @@ class Environment:
     def rdp_channel_id(self, key: str) -> int:
         return GC[key]
 
+    @config_fetch('cron_channel_id', int)
+    def cron_channel_id(self, key: str) -> int:
+        return GC[key]
+
     @config_fetch('backend_address', str, require=False)
     def backend_address(self, key: str) -> str:
         return GC.get(key, 'localhost')

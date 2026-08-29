@@ -403,7 +403,7 @@ class Staff(commands.Cog, name='Staff Commands'):
     async def cron_event_handler(self, event: ServerSentEvent):
         if event.event == 'run':
             channels_to_post = [
-                self.bot.get_channel(ENVIRONMENT.command_channel_id()),
+                self.bot.get_channel(ENVIRONMENT.cron_channel_id()),
             ]
             logger.info(f'Posting cron run for {event.data["cron"]}')
             for channel in channels_to_post:
