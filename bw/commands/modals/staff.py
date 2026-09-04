@@ -1,11 +1,4 @@
-import datetime
 import logging
-import re
-import shutil
-import tempfile
-import time
-from pathlib import Path
-from zoneinfo import ZoneInfo
 from typing import Any
 
 import discord
@@ -13,11 +6,8 @@ from discord import ui
 
 from bw.commands.utils import get_session
 from bw.embeds import failed_to_reach_bw_backend, failed_to_reach_discord
-from bw.environment import ENVIRONMENT
-from bw.error import CannotReachBwBackend, CannotReachDiscord, NoServersToUploadTo, ResponseError
+from bw.error import CannotReachBwBackend, CannotReachDiscord, ResponseError
 from bw.interface import User, UserClient
-from bw.session.types import DiscordSnowflake
-from bw.state import State
 
 logger = logging.getLogger('bw.potbot.command')
 

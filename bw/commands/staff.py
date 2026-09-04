@@ -1,4 +1,3 @@
-from bw.commands.modals.staff import UpdateModView
 import io
 import logging
 from collections.abc import Iterable
@@ -11,6 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
+from bw.commands.modals.staff import UpdateModView
 from bw.commands.utils import arma_servers_autocomplete, arma_servers_autocomplete_with_all, get_session
 from bw.environment import ENVIRONMENT
 from bw.error import CannotReachBwBackend, CannotReachDiscord, RefreshFailed

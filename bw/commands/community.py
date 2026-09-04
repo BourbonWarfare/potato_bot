@@ -1,23 +1,22 @@
-from bw.commands.modals.community import SetTagModal
 import datetime
 import io
 import logging
 import re
 from typing import Any
 from uuid import UUID
-from bw.error import CannotReachBwBackend, CannotReachDiscord
-from bw.embeds import failed_to_reach_bw_backend, failed_to_reach_discord
-from bw.commands.utils import get_session
 
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord import app_commands, TextChannel
+from discord import app_commands
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
-from bw.commands.utils import date_to_human_string
+from bw.commands.modals.community import SetTagModal
+from bw.commands.utils import date_to_human_string, get_session
 from bw.embeds import (
+    failed_to_reach_bw_backend,
+    failed_to_reach_discord,
     mission_ended,
     mission_ended_basic,
     modlist_html,
@@ -27,6 +26,7 @@ from bw.embeds import (
     upcoming_session,
 )
 from bw.environment import ENVIRONMENT
+from bw.error import CannotReachBwBackend, CannotReachDiscord
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
 from bw.interface import User

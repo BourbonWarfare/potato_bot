@@ -1,16 +1,14 @@
-import aiohttp
-from bw.interface import User, UserClient
-from bw.session.oauth import BwSession, OAuthSession
-from bw.error import CannotReachBwBackend, CannotReachDiscord
-from bw.embeds import failed_to_reach_bw_backend, failed_to_reach_discord
-from bw.commands.utils import get_session
 import logging
 
+import aiohttp
 import discord
-from bs4 import BeautifulSoup
 from discord import ui
 
-from bw.environment import ENVIRONMENT
+from bw.commands.utils import get_session
+from bw.embeds import failed_to_reach_bw_backend, failed_to_reach_discord
+from bw.error import CannotReachBwBackend, CannotReachDiscord
+from bw.interface import User, UserClient
+from bw.session.oauth import BwSession, OAuthSession
 
 logger = logging.getLogger('bw.potbot.command')
 

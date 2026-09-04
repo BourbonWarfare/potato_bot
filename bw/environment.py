@@ -2,7 +2,6 @@ import datetime
 import logging
 from collections.abc import Callable
 from functools import wraps
-from pathlib import Path
 from typing import Any
 
 import discord
