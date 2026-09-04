@@ -13,7 +13,7 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
     profile_name = ui.Label(
         text='Profile Name',
         description='The Arma 3 profile name (must be exact)',
-        component=ui.TextInput(label='Can be found at'),
+        component=ui.TextInput(),
     )
     nickname = ui.Label(
         text='Nickname',
