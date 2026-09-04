@@ -100,7 +100,7 @@ class Community(commands.Cog, name='Community'):
         await interaction.response.send_message(embed=modlist_html(), file=file, ephemeral=False)
 
     @app_commands.command(
-        name='tag',
+        name='squad',
         description='Set your in-game ARMA tag.',
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
