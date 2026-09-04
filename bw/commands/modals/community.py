@@ -47,11 +47,11 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
         try:
             squad_tag = await interface.get_squad_tag()
         except aiohttp.ClientResponseError:
-            squad_tag = {'profile-name': '', 'steam-id': '', 'nickname': '', 'remark': ''}
+            squad_tag = {'profile_name': '', 'steam_id': '', 'nickname': '', 'remark': ''}
 
-        modal.profile_name.component.default = squad_tag['profile-name']
+        modal.profile_name.component.default = squad_tag['profile_name']
         modal.nickname.component.default = squad_tag['nickname']
-        modal.steam_id.component.default = squad_tag['steam-id']
+        modal.steam_id.component.default = squad_tag['steam_id']
         modal.remark.component.default = squad_tag['remark']
 
         return modal
