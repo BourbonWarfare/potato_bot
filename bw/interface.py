@@ -371,4 +371,3 @@ class User(Interface):
                     server_url(Root.get().api.v1.user.remark.resolve()), headers=client.auth_header, data=payload
                 ) as response:
                     response.raise_for_status()
-                    return await response.json()

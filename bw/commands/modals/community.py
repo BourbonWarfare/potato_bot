@@ -46,10 +46,7 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
         interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
         try:
             squad_tag = await interface.get_squad_tag()
-        except aiohttp.ClientResponseError as err:
-            if err.status != 404:
-                raise
-
+        except aiohttp.ClientResponseError:
             squad_tag = {'profile-name': '', 'steam-id': '', 'nickname': '', 'remark': ''}
 
         modal.profile_name.component.default = squad_tag['profile-name']
