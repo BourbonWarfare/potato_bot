@@ -305,7 +305,7 @@ class Staff(commands.Cog, name='Staff Commands'):
                 await interaction.followup.send(embed=embed)
 
     @app_commands.command(
-        name='rpt',
+        name='serverrpt',
         description='Retrieve RPT file for a server.',
     )
     @app_commands.autocomplete(server=arma_servers_autocomplete)
