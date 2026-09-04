@@ -8,7 +8,7 @@ from uuid import UUID
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord import app_commands
+from discord import app_commands, VoiceChannel, TextChannel, Thread
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
@@ -107,16 +107,20 @@ class Community(commands.Cog, name='Community'):
         description='Set your in-game ARMA tag.',
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True, thinking=True)
+        assert isinstance(interaction.channel, (TextChannel, Thread))
+        if isinstance(interaction.channel, Thread):
+            followup = interaction.channel
+        else:
+            followup = await interaction.channel.create_webhook(name='get session hook')
         try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+            bw_session, oauth_session = await get_session(followup, interaction.user)
         except CannotReachBwBackend as e:
             logger.error(e)
-            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
             return
         except CannotReachDiscord as e:
             logger.error(e)
-            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
             return
         await interaction.response.send_modal(await SetTagModal.new(bw_session, oauth_session))
 
