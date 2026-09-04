@@ -113,10 +113,6 @@ class Environment:
     def discord_oauth_redirect_uri(self) -> str:
         raise NotImplementedError()
 
-    @config_fetch('squad_xml_filepath')
-    def squad_xml_filepath(self, key: str) -> Path:
-        return Path(GC[key])
-
     def db_connection(self) -> str:
         db_driver = GC.require('db_driver').get()
         assert isinstance(db_driver, str)

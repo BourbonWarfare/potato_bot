@@ -10,7 +10,7 @@ logger = logging.getLogger('bw.potbot.command')
 
 
 class SetTagModal(ui.Modal, title='Set your Arma tag'):
-    name = ui.Label(
+    profile_name = ui.Label(
         text='Profile Name',
         description='The Arma 3 display name (must be exact)',
         component=ui.TextInput(label='Can be found at'),
@@ -18,7 +18,7 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
     nickname = ui.Label(
         text='Nickname',
         description='What name you want displayed in your squad entry',
-        component=ui.TextInput(label='Only if you want something displayed other than your Arma profile name'),
+        component=ui.TextInput(label='Only if you want something displayed other than your Arma profile name', required=False),
     )
     steam_id = ui.Label(
         text='Steam ID',
@@ -32,16 +32,14 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        assert isinstance(self.name.component, ui.TextInput)
+        assert isinstance(self.profile_name.component, ui.TextInput)
         assert isinstance(self.nickname.component, ui.TextInput)
         assert isinstance(self.steam_id.component, ui.TextInput)
         assert isinstance(self.remark.component, ui.TextInput)
 
-        name = self.name.component.value
+        profile_name = self.profile_name.component.value
         nickname = self.nickname.component.value
         steam_id = self.steam_id.component.value
         remark = self.remark.component.value
 
-        logger.info(f'Setting tag for {name} ({steam_id})')
-        with open(ENVIRONMENT.squad_xml_filepath()) as file:
-            soup = BeautifulSoup(file.read())
+        logger.info(f'Setting tag for {profile_name} {f"({nickname})" if nickname else ""} ({steam_id})')
