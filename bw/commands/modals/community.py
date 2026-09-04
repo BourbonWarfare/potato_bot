@@ -12,18 +12,18 @@ logger = logging.getLogger('bw.potbot.command')
 class SetTagModal(ui.Modal, title='Set your Arma tag'):
     profile_name = ui.Label(
         text='Profile Name',
-        description='The Arma 3 display name (must be exact)',
+        description='The Arma 3 profile name (must be exact)',
         component=ui.TextInput(label='Can be found at'),
     )
     nickname = ui.Label(
         text='Nickname',
-        description='What name you want displayed in your squad entry',
-        component=ui.TextInput(label='Only if you want something displayed other than your Arma profile name', required=False),
+        description='Nickname in your entry',
+        component=ui.TextInput(required=False),
     )
     steam_id = ui.Label(
         text='Steam ID',
-        description='Your Steam64 ID.',
-        component=ui.TextInput(label='Can be found at https://steamid.io/'),
+        description='Your Steam64 ID (https://steamid.io/).',
+        component=ui.TextInput(),
     )
     remark = ui.Label(
         text='Remark',
