@@ -37,3 +37,4 @@ class User(Endpoint):
     endpoint = 'user'
     role = Role()
     create = UserCreate()
+    remark = Remark()
