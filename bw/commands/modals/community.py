@@ -1,3 +1,9 @@
+import aiohttp
+from bw.interface import User, UserClient
+from bw.session.oauth import BwSession, OAuthSession
+from bw.error import CannotReachBwBackend, CannotReachDiscord
+from bw.embeds import failed_to_reach_bw_backend, failed_to_reach_discord
+from bw.commands.utils import get_session
 import logging
 
 import discord
@@ -31,6 +37,30 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
         component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
 
+    @classmethod
+    async def new(cls, bw_session: BwSession, oauth_session: OAuthSession):
+        modal = cls()
+        assert isinstance(modal.profile_name.component, ui.TextInput)
+        assert isinstance(modal.nickname.component, ui.TextInput)
+        assert isinstance(modal.steam_id.component, ui.TextInput)
+        assert isinstance(modal.remark.component, ui.TextInput)
+
+        interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
+        try:
+            squad_tag = await interface.get_squad_tag()
+        except aiohttp.ClientResponseError as err:
+            if err.status != 404:
+                raise
+
+            squad_tag = {'profile-name': '', 'steam-id': '', 'nickname': '', 'remark': ''}
+
+        modal.profile_name.component.default = squad_tag['profile-name']
+        modal.nickname.component.default = squad_tag['nickname']
+        modal.steam_id.component.default = squad_tag['steam-id']
+        modal.remark.component.default = squad_tag['remark']
+
+        return modal
+
     async def on_submit(self, interaction: discord.Interaction):
         assert isinstance(self.profile_name.component, ui.TextInput)
         assert isinstance(self.nickname.component, ui.TextInput)
@@ -43,3 +73,20 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
         remark = self.remark.component.value
 
         logger.info(f'Setting tag for {profile_name} {f"({nickname})" if nickname else ""} ({steam_id})')
+        await interaction.response.defer(ephemeral=True, thinking=True)
+
+        logger.debug('Getting BW session')
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            return
+
+        interface = User(UserClient(bw_session=bw_session, oauth_session=oauth_session))
+        await interface.set_squad_tag(profile_name, nickname, steam_id, remark)
+        await interaction.followup.send('Successfully updated squad XML', ephemeral=True)

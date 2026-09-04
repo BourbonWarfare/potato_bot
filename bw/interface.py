@@ -352,3 +352,23 @@ class User(Interface):
                     payload['creation_date'] = datetime.datetime.fromisoformat(payload['creation_date'])
 
                     return MissionInformationResponse(**payload, mission_type=MissionTypeResponse(**tag))
+
+    async def get_squad_tag(self) -> dict[str, Any]:
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session) as client:
+                async with session.get(
+                    server_url(Root.get().api.v1.user.remark.resolve()),
+                    headers=client.auth_header,
+                ) as response:
+                    response.raise_for_status()
+                    return await response.json()
+
+    async def set_squad_tag(self, profile_name: str, nickname: str | None, steam_id: str, remark: str | None):
+        payload = {'profile-name': profile_name, 'nickname': nickname, 'steam-id': steam_id, 'remark': remark}
+        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
+            async with self.client.backend_session(session=session) as client:
+                async with session.post(
+                    server_url(Root.get().api.v1.user.remark.resolve()), headers=client.auth_header, data=payload
+                ) as response:
+                    response.raise_for_status()
+                    return await response.json()

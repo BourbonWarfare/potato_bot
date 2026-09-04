@@ -5,11 +5,14 @@ import logging
 import re
 from typing import Any
 from uuid import UUID
+from bw.error import CannotReachBwBackend, CannotReachDiscord
+from bw.embeds import failed_to_reach_bw_backend, failed_to_reach_discord
+from bw.commands.utils import get_session
 
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord import app_commands
+from discord import app_commands, TextChannel
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
@@ -104,7 +107,18 @@ class Community(commands.Cog, name='Community'):
         description='Set your in-game ARMA tag.',
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(SetTagModal())
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        try:
+            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            return
+        except CannotReachDiscord as e:
+            logger.error(e)
+            await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
+            return
+        await interaction.response.send_modal(await SetTagModal.new(bw_session, oauth_session))
 
     async def post_session_notification(self, event: ServerSentEvent):
         arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())

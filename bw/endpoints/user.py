@@ -24,6 +24,15 @@ class UserCreate(Endpoint):
     bot = Bot()
 
 
+class AllRemark(Endpoint):
+    endpoint = 'all'
+
+
+class Remark(Endpoint):
+    endpoint = 'remark'
+    all = AllRemark()
+
+
 class User(Endpoint):
     endpoint = 'user'
     role = Role()
