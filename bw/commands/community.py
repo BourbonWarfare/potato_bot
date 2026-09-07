@@ -8,7 +8,7 @@ from uuid import UUID
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord import app_commands, VoiceChannel, TextChannel, Thread
+from discord import app_commands, TextChannel, Thread
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
