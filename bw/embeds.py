@@ -191,7 +191,7 @@ def failed_to_login_with_discord() -> discord.Embed:
 
 
 def successful_arma_server_operation(
-    user: discord.User, operation: str, server: str, server_running: bool, hcs_running: Iterable[bool]
+    user: discord.abc.User, operation: str, server: str, server_running: bool, hcs_running: Iterable[bool]
 ) -> discord.Embed:
     embed = discord.Embed(
         title='Success!',
@@ -204,7 +204,7 @@ def successful_arma_server_operation(
     return embed
 
 
-def arma_server_not_found(user: discord.User, server: str) -> discord.Embed:
+def arma_server_not_found(user: discord.abc.User, server: str) -> discord.Embed:
     return discord.Embed(
         title='What server are you talking about?',
         description=f'{user.mention} has tried to operate on server {server}, but "{server}" does not exist!',
@@ -212,7 +212,7 @@ def arma_server_not_found(user: discord.User, server: str) -> discord.Embed:
     )
 
 
-def arma_server_unresponsive(user: discord.User, server: str) -> discord.Embed:
+def arma_server_unresponsive(user: discord.abc.User, server: str) -> discord.Embed:
     return discord.Embed(
         title='ARMA server Unresponsive',
         description=f'{user.mention} has tried to operate on server {server}, but "{server}" is not responsive!',
@@ -220,7 +220,7 @@ def arma_server_unresponsive(user: discord.User, server: str) -> discord.Embed:
     )
 
 
-def failed_arma_server_operation(user: discord.User, operation: str, server: str) -> discord.Embed:
+def failed_arma_server_operation(user: discord.abc.User, operation: str, server: str) -> discord.Embed:
     return discord.Embed(
         title='Failure :(',
         description=f'{user.mention} tried "{operation}" but it has failed on server {server}',
@@ -229,7 +229,7 @@ def failed_arma_server_operation(user: discord.User, operation: str, server: str
 
 
 def couldnt_get_arma_server_status(
-    user: discord.User, server: str, server_running: bool, hcs_running: list[bool]
+    user: discord.abc.User, server: str, server_running: bool, hcs_running: list[bool]
 ) -> discord.Embed:
     embed = discord.Embed(
         title='Failed!',

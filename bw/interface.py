@@ -26,7 +26,7 @@ logger = logging.getLogger('bw.interface')
 
 
 def server_url(path: str) -> str:
-    address = 'localhost'
+    address = ENVIRONMENT.backend_address()
     port = ENVIRONMENT.backend_port()
     return f'http://{address}:{port}{path}'
 
@@ -34,7 +34,13 @@ def server_url(path: str) -> str:
 class BaseClient(ABC):
     @asynccontextmanager
     async def backend_session(self, session: aiohttp.ClientSession | None = None):
-        yield
+        yield self
+
+    async def ensure_session(self, session: aiohttp.ClientSession | None = None) -> None:
+        return None
+
+    async def refresh_session(self, session: aiohttp.ClientSession | None = None) -> None:
+        return None
 
     @property
     def auth_header(self) -> dict[str, str]:
@@ -49,8 +55,12 @@ class ApiClient(BaseClient):
         self.bot_token = ENVIRONMENT.backend_bot_token()
         self.session = None
 
+    async def ensure_session(self, session: aiohttp.ClientSession | None = None) -> None:
+        if not self.session or self.session.is_expired():
+            await self.refresh_session(session)
+
     @backoff(delay=0.5, retries=5)
-    async def refresh_session(self, session: None | aiohttp.ClientSession = None):
+    async def refresh_session(self, session: None | aiohttp.ClientSession = None) -> None:
         async def refresh(session: aiohttp.ClientSession):
             async with session.post(
                 server_url(Root.get().api.v1.auth.login.bot.resolve()), json={'bot_token': self.bot_token}
@@ -69,8 +79,7 @@ class ApiClient(BaseClient):
 
     @asynccontextmanager
     async def backend_session(self, session: aiohttp.ClientSession | None = None):
-        if not self.session or self.session.is_expired():
-            await self.refresh_session(session)
+        await self.ensure_session(session)
         yield self
 
     @property
@@ -86,8 +95,12 @@ class UserClient(BaseClient):
         self.bw_session = bw_session
         self.discord_session = oauth_session
 
+    async def ensure_session(self, session: aiohttp.ClientSession | None = None) -> None:
+        if self.bw_session.is_expired() or self.discord_session.is_expired():
+            await self.refresh_session()
+
     @backoff(delay=0.5, retries=5)
-    async def refresh_session(self):
+    async def refresh_session(self, session: aiohttp.ClientSession | None = None) -> None:
         from bw.session.api import SessionApi
         from bw.state import State
 
@@ -96,20 +109,12 @@ class UserClient(BaseClient):
 
     @asynccontextmanager
     async def backend_session(self, session: aiohttp.ClientSession | None = None):
-        if self.bw_session.is_expired() or self.discord_session.is_expired():
-            await self.refresh_session()
-
+        await self.ensure_session(session)
         try:
             yield self
-        except aiohttp.ClientResponseError as e:
-            if e.status == 401:
-                logger.warning('Session expired after we already started the request. Refreshing...')
-                await self.refresh_session()
-            else:
-                raise e
         except aiohttp.ClientConnectionError as e:
             logger.error(f'Cannot reach BW Backend: {e}')
-            raise CannotReachBwBackend()
+            raise CannotReachBwBackend() from e
 
     @property
     def auth_header(self) -> dict[str, str]:
@@ -178,196 +183,172 @@ class User(Interface):
         self.client = client
         super().__init__()
 
+    async def _request(
+        self,
+        method: str,
+        url: str,
+        *,
+        parser,
+        retry_unauthorized: bool = True,
+        response_error: bool = False,
+        **kwargs,
+    ):
+        await self.client.ensure_session()
+        headers = {**self.client.auth_header, **kwargs.pop('headers', {})}
+        try:
+            async with aiohttp.ClientSession(headers=headers) as session:
+                request = getattr(session, method)
+                async with request(url, headers=headers, **kwargs) as response:
+                    try:
+                        err_body = await response.text() if response_error else ''
+                        response.raise_for_status()
+                    except aiohttp.ClientResponseError as e:
+                        if e.status == 401 and retry_unauthorized:
+                            logger.warning('Session expired during request. Refreshing and retrying once...')
+                            await self.client.refresh_session()
+                            return await self._request(
+                                method,
+                                url,
+                                parser=parser,
+                                retry_unauthorized=False,
+                                response_error=response_error,
+                                **kwargs,
+                            )
+                        if response_error:
+                            raise ResponseError(err_body, e) from e
+                        raise
+                    return await parser(response)
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f'Cannot reach BW Backend: {e}')
+            raise CannotReachBwBackend() from e
+
+    async def _json(self, method: str, url: str, **kwargs):
+        async def parser(response):
+            return await response.json()
+
+        return await self._request(method, url, parser=parser, **kwargs)
+
+    async def _text(self, method: str, url: str, **kwargs) -> str:
+        async def parser(response):
+            return await response.text()
+
+        return await self._request(method, url, parser=parser, **kwargs)
+
+    async def _empty(self, method: str, url: str, **kwargs) -> None:
+        async def parser(_response):
+            return None
+
+        return await self._request(method, url, parser=parser, **kwargs)
+
     async def get_groups(self) -> dict:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.get(server_url(Root.get().api.v1.group.list.resolve())) as response:
-                    response.raise_for_status()
-                    return await response.json()
+        return await self._json('get', server_url(Root.get().api.v1.group.list.resolve()))
 
     async def join_group(self, group: str):
         payload = {'group_name': group}
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.post(server_url(Root.get().api.v1.group.join.resolve()), json=payload) as response:
-                    try:
-                        err_body = await response.text()
-                        response.raise_for_status()
-                    except aiohttp.ClientResponseError as e:
-                        raise ResponseError(err_body, e)
+        await self._empty('post', server_url(Root.get().api.v1.group.join.resolve()), json=payload, response_error=True)
 
     async def get_arma_server_rpt(self, server: str) -> tuple[str, str]:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.get(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).rpt.resolve())
-                ) as response:
-                    response.raise_for_status()
-                    disposition = response.headers.get('content-disposition', '')
-                    filenames = [line.strip() for line in disposition.split(';') if 'filename' in line]
-                    if filenames:
-                        filename = filenames[0].split('=')[1].strip('"')
-                    else:
-                        filename = ''
-                    return (await response.text(), filename)
+        async def parser(response):
+            disposition = response.headers.get('content-disposition', '')
+            filenames = [line.strip() for line in disposition.split(';') if 'filename' in line]
+            filename = filenames[0].split('=')[1].strip('"') if filenames else ''
+            return (await response.text(), filename)
+
+        return await self._request(
+            'get', server_url(Root.get().api.v1.server_ops.arma.server.var(server).rpt.resolve()), parser=parser
+        )
 
     async def start_arma_server(self, server: str) -> dict:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.post(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve())
-                ) as response:
-                    response.raise_for_status()
-                    return await response.json()
+        return await self._json('post', server_url(Root.get().api.v1.server_ops.arma.server.var(server).start.resolve()))
 
     async def stop_arma_server(self, server: str) -> dict:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.post(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve())
-                ) as response:
-                    response.raise_for_status()
-                    return await response.json()
+        return await self._json('post', server_url(Root.get().api.v1.server_ops.arma.server.var(server).stop.resolve()))
 
     async def restart_arma_server(self, server: str) -> dict:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.post(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve())
-                ) as response:
-                    response.raise_for_status()
-                    return await response.json()
+        return await self._json('post', server_url(Root.get().api.v1.server_ops.arma.server.var(server).restart.resolve()))
 
     async def update_arma_server(self, server: str) -> dict:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.post(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve())
-                ) as response:
-                    response.raise_for_status()
-                    return await response.json()
+        return await self._json('post', server_url(Root.get().api.v1.server_ops.arma.server.var(server).update.resolve()))
 
     async def update_arma_mod_by_id(self, workshop_id: int):
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session):
-                async with session.post(
-                    server_url(Root.get().api.v1.server_ops.arma.mod.workshop_id.var(str(workshop_id)).update.resolve())
-                ) as response:
-                    response.raise_for_status()
+        await self._empty(
+            'post', server_url(Root.get().api.v1.server_ops.arma.mod.workshop_id.var(str(workshop_id)).update.resolve())
+        )
 
     async def update_arma_server_mods(self, server: str) -> dict:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.post(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()),
-                    headers=client.auth_header,
-                ) as response:
-                    response.raise_for_status()
-                    affected_servers = {}
-                    updated_mods = []
-                    async for line in response.content:
-                        if not line.strip():
-                            continue
-                        loaded_json = json.loads(line)
-                        if 'affected_servers' in loaded_json:
-                            affected_servers = loaded_json
-                        else:
-                            updated_mods.append(loaded_json)
-                    return {'affected_servers': affected_servers, 'updated_mods': updated_mods}
+        async def parser(response):
+            affected_servers = {}
+            updated_mods = []
+            async for line in response.content:
+                if not line.strip():
+                    continue
+                loaded_json = json.loads(line)
+                if 'affected_servers' in loaded_json:
+                    affected_servers = loaded_json
+                else:
+                    updated_mods.append(loaded_json)
+            return {'affected_servers': affected_servers, 'updated_mods': updated_mods}
+
+        return await self._request(
+            'post', server_url(Root.get().api.v1.server_ops.arma.server.var(server).update_mods.resolve()), parser=parser
+        )
 
     async def get_arma_server_status(self, server: str) -> dict:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.get(
-                    server_url(Root.get().api.v1.server_ops.arma.server.var(server).status.resolve()),
-                    headers=client.auth_header,
-                ) as response:
-                    response.raise_for_status()
-                    return await response.json()
+        return await self._json('get', server_url(Root.get().api.v1.server_ops.arma.server.var(server).status.resolve()))
 
     async def upload_mission(self, mission_path: Path, server: str, changelog: dict[str, str]) -> MissionUploadResponse:
         payload = {'pbo_path': str(mission_path), 'changelog': changelog}
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.post(
-                    server_url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
-                    headers=client.auth_header,
-                    json=payload,
-                ) as response:
-                    try:
-                        err_body = await response.text()
-                        response.raise_for_status()
-                    except aiohttp.ClientResponseError as e:
-                        raise ResponseError(err_body, e)
-                    return MissionUploadResponse(**await response.json())
+
+        async def parser(response):
+            return MissionUploadResponse(**await response.json())
+
+        return await self._request(
+            'post',
+            server_url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
+            parser=parser,
+            json=payload,
+            response_error=True,
+        )
 
     async def force_upload_mission(self, mission_path: Path, server: str) -> None:
         payload = {'pbo_path': str(mission_path), 'changelog': {}, 'play_in_session': False}
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.post(
-                    server_url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
-                    headers=client.auth_header,
-                    json=payload,
-                ) as response:
-                    try:
-                        err_body = await response.text()
-                        response.raise_for_status()
-                    except aiohttp.ClientResponseError as e:
-                        raise ResponseError(err_body, e)
+        await self._empty(
+            'post',
+            server_url(Root.get().api.v1.missions.upload.server.var(server).resolve()),
+            json=payload,
+            response_error=True,
+        )
 
     async def iteration_information(self, iteration_uuid: IterationUuid) -> IterationInformationResponse:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.get(
-                    server_url(Root.get().api.v1.missions.iteration.iteration_id.var(str(iteration_uuid)).resolve()),
-                    headers=client.auth_header,
-                ) as response:
-                    response.raise_for_status()
-                    payload: dict[str, Any] = await response.json()
-                    mission: dict[str, Any] = payload.pop('mission')
-                    tag: dict[str, Any] = mission.pop('mission_type')
+        payload: dict[str, Any] = await self._json(
+            'get', server_url(Root.get().api.v1.missions.iteration.iteration_id.var(str(iteration_uuid)).resolve())
+        )
+        mission: dict[str, Any] = payload.pop('mission')
+        tag: dict[str, Any] = mission.pop('mission_type')
 
-                    mission['uuid'] = uuid.UUID(hex=mission['uuid'])
-                    mission['creation_date'] = datetime.datetime.fromisoformat(mission['creation_date'])
-                    mission['author_uuid'] = uuid.UUID(hex=mission['author_uuid'])
+        mission['uuid'] = uuid.UUID(hex=mission['uuid'])
+        mission['creation_date'] = datetime.datetime.fromisoformat(mission['creation_date'])
+        mission['author_uuid'] = uuid.UUID(hex=mission['author_uuid'])
 
-                    return IterationInformationResponse(
-                        **payload, mission=MissionInformationResponse(**mission, mission_type=MissionTypeResponse(**tag))
-                    )
+        return IterationInformationResponse(
+            **payload, mission=MissionInformationResponse(**mission, mission_type=MissionTypeResponse(**tag))
+        )
 
     async def mission_information(self, mission_uuid: MissionUuid) -> MissionInformationResponse:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.get(
-                    server_url(Root.get().api.v1.missions.mission.mission_id.var(str(mission_uuid)).resolve()),
-                    headers=client.auth_header,
-                ) as response:
-                    response.raise_for_status()
-                    payload: dict[str, Any] = await response.json()
-                    tag: dict[str, Any] = payload.pop('mission_type')
+        payload: dict[str, Any] = await self._json(
+            'get', server_url(Root.get().api.v1.missions.mission.mission_id.var(str(mission_uuid)).resolve())
+        )
+        tag: dict[str, Any] = payload.pop('mission_type')
 
-                    payload['uuid'] = uuid.UUID(hex=payload['uuid'])
-                    payload['author_uuid'] = uuid.UUID(hex=payload['author_uuid'])
-                    payload['creation_date'] = datetime.datetime.fromisoformat(payload['creation_date'])
+        payload['uuid'] = uuid.UUID(hex=payload['uuid'])
+        payload['author_uuid'] = uuid.UUID(hex=payload['author_uuid'])
+        payload['creation_date'] = datetime.datetime.fromisoformat(payload['creation_date'])
 
-                    return MissionInformationResponse(**payload, mission_type=MissionTypeResponse(**tag))
+        return MissionInformationResponse(**payload, mission_type=MissionTypeResponse(**tag))
 
     async def get_squad_tag(self) -> dict[str, Any]:
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.get(
-                    server_url(Root.get().api.v1.user.remark.resolve()),
-                    headers=client.auth_header,
-                ) as response:
-                    response.raise_for_status()
-                    return await response.json()
+        return await self._json('get', server_url(Root.get().api.v1.user.remark.resolve()))
 
     async def set_squad_tag(self, profile_name: str, nickname: str | None, steam_id: str, remark: str | None):
         payload = {'profile-name': profile_name, 'nickname': nickname, 'steam-id': steam_id, 'remark': remark}
-        async with aiohttp.ClientSession(headers=self.client.auth_header) as session:
-            async with self.client.backend_session(session=session) as client:
-                async with session.post(
-                    server_url(Root.get().api.v1.user.remark.resolve()), headers=client.auth_header, data=payload
-                ) as response:
-                    response.raise_for_status()
+        await self._empty('post', server_url(Root.get().api.v1.user.remark.resolve()), data=payload)

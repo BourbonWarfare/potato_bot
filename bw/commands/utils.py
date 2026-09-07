@@ -6,7 +6,17 @@ import discord
 from discord import app_commands
 
 from bw.commands.authentication import Authentication
-from bw.error import BwSessionExpired, CannotLogin, DiscordSessionExpired, NoSuchSession, RefreshFailed
+from bw.embeds import failed_to_reach_bw_backend, failed_to_reach_discord
+from bw.error import (
+    BwSessionExpired,
+    CannotLogin,
+    CannotReachBwBackend,
+    CannotReachDiscord,
+    DiscordSessionExpired,
+    NoSuchSession,
+    RefreshFailed,
+)
+from bw.interface import User, UserClient
 from bw.session.api import SessionApi
 from bw.session.oauth import BwSession, OAuthSession
 from bw.session.types import DiscordSnowflake
@@ -60,6 +70,21 @@ async def get_session(
             bw_session, oauth_session = await show_login()
 
     return bw_session, oauth_session
+
+
+async def user_interface_from_interaction(interaction: discord.Interaction) -> User:
+    bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
+    return User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
+
+
+async def send_session_failure_response(
+    interaction: discord.Interaction, error: CannotReachBwBackend | CannotReachDiscord
+) -> None:
+    logger.error(error)
+    if isinstance(error, CannotReachBwBackend):
+        await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+    else:
+        await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
 
 
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:

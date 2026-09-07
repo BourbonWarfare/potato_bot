@@ -10,13 +10,18 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
+from bw.commands.discord_utils import require_rdp_channel, require_text_channel
 from bw.commands.modals.staff import UpdateModView
-from bw.commands.utils import arma_servers_autocomplete, arma_servers_autocomplete_with_all, get_session
+from bw.commands.utils import (
+    arma_servers_autocomplete,
+    arma_servers_autocomplete_with_all,
+    send_session_failure_response,
+    user_interface_from_interaction,
+)
 from bw.environment import ENVIRONMENT
 from bw.error import CannotReachBwBackend, CannotReachDiscord, RefreshFailed
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
-from bw.interface import User, UserClient
 from bw.state import State
 
 logger = logging.getLogger('bw.potbot.command')
@@ -31,6 +36,21 @@ class ArmaCommand(StrEnum):
 class UpdateChoices(StrEnum):
     MODS = 'Mods'
     SERVER = 'Server'
+
+
+def server_operation_error_embed(
+    error: aiohttp.ClientResponseError,
+    user: discord.abc.User,
+    operation: str,
+    server: str,
+) -> discord.Embed:
+    if error.status in {401, 403}:
+        return embeds.not_permitted()
+    if error.status == 404:
+        return embeds.arma_server_not_found(user, server)
+    if error.status >= 500:
+        return embeds.server_management_failure(error.message)
+    return embeds.failed_arma_server_operation(user, operation, server)
 
 
 class Staff(commands.Cog, name='Staff Commands'):
@@ -57,17 +77,10 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         await interaction.response.defer()
         try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         async def perform(option: str, server: str) -> dict:
             if option == ArmaCommand.START:
@@ -82,14 +95,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             response = await perform(option=option, server=server)
         except aiohttp.ClientResponseError as e:
             logger.warning(f'User {interaction.user} failed to operate on server: {e}')
-            if e.status == 401 or e.status == 403:
-                embed = embeds.not_permitted()
-            elif e.status == 404:
-                embed = embeds.arma_server_not_found(interaction.user, server)
-            elif e.status >= 500:
-                embed = embeds.server_management_failure(e.message)
-            else:
-                embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+            embed = server_operation_error_embed(e, interaction.user, option, server)
         except RefreshFailed as e:
             logger.error(str(e))
             raise
@@ -120,17 +126,10 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         await interaction.response.defer()
         try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         if server == 'all':
             servers = [server for server in await State.state.arma_server_cache.refresh()]
@@ -218,17 +217,10 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         await interaction.response.defer()
         try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         async def perform(option: UpdateChoices, server: str) -> dict:
             if option == UpdateChoices.MODS:
@@ -242,14 +234,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             response = await perform(option=update_option, server=server)
         except aiohttp.ClientResponseError as e:
             logger.warning(f'User {interaction.user} failed to update server: {e}')
-            if e.status == 401 or e.status == 403:
-                embed = embeds.not_permitted()
-            elif e.status == 404:
-                embed = embeds.arma_server_not_found(interaction.user, server)
-            elif e.status >= 500:
-                embed = embeds.server_management_failure(e.message)
-            else:
-                embed = embeds.failed_arma_server_operation(interaction.user, update_option, server)
+            embed = server_operation_error_embed(e, interaction.user, update_option, server)
         except RefreshFailed as e:
             logger.warning(f'{e}. Reattempting whole method...')
             raise
@@ -315,17 +300,10 @@ class Staff(commands.Cog, name='Staff Commands'):
 
         await interaction.response.defer()
         try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         embed = None
         try:
@@ -358,7 +336,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
     async def arma_server_event_handler(self, event: ServerSentEvent):
         channels_to_post = [
-            self.bot.get_channel(ENVIRONMENT.command_channel_id()),
+            require_text_channel(self.bot, ENVIRONMENT.command_channel_id(), 'command_channel_id'),
         ]
         if event.event == 'started':
             result: dict[str, Any] = event.data.get('result', {})
@@ -395,7 +373,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             for channel in channels_to_post:
                 await channel.send(embed=embeds.server_event('deploy keys', event.data['server']))
         elif event.event == 'found out of date mods':
-            mod_channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
+            mod_channel = require_text_channel(self.bot, ENVIRONMENT.tech_channel_id(), 'tech_channel_id')
             to_send = [UpdateModView(channel=mod_channel, mod=mod) for mod in event.data['mods']]
             for view in to_send:
                 await mod_channel.send(view=view)
@@ -403,7 +381,7 @@ class Staff(commands.Cog, name='Staff Commands'):
     async def cron_event_handler(self, event: ServerSentEvent):
         if event.event == 'run':
             channels_to_post = [
-                self.bot.get_channel(ENVIRONMENT.cron_channel_id()),
+                require_text_channel(self.bot, ENVIRONMENT.cron_channel_id(), 'cron_channel_id'),
             ]
             logger.info(f'Posting cron run for {event.data["cron"]}')
             for channel in channels_to_post:
@@ -411,8 +389,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
     async def monitor_event_handler(self, event: ServerSentEvent):
         if event.event == 'connection':
-            rdp_channel = self.bot.get_channel(ENVIRONMENT.rdp_channel_id())
-            assert isinstance(rdp_channel, (discord.TextChannel, discord.VoiceChannel))
+            rdp_channel = require_rdp_channel(self.bot, ENVIRONMENT.rdp_channel_id(), 'rdp_channel_id')
 
             action = event.data['action']
             ip = event.data['source_ip']

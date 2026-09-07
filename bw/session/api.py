@@ -104,8 +104,8 @@ class SessionApi:
             raise CannotLogin(str(e)) from e
 
         bw_session = BwSession(
-            token=result.get('session_token'),
-            expire_time=datetime.datetime.fromisoformat(result.get('expire_time')),
+            token=result['session_token'],
+            expire_time=datetime.datetime.fromisoformat(result['expire_time']),
         )
 
         with state.Session.begin() as session:

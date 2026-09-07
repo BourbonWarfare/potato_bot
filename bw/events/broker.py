@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import random
-import traceback
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
@@ -15,6 +14,24 @@ from bw.events.decoder import ServerSentEvent, ServerSentEventBuilder
 from bw.interface import server_url
 
 logger = logging.getLogger('bw.events')
+
+
+def apply_sse_line(builder: ServerSentEventBuilder, line: str) -> ServerSentEventBuilder:
+    if line.startswith(':') or ':' not in line:
+        logger.debug('Ignoring SSE line without a field: %r', line)
+        return builder
+
+    prefix, following = line.split(':', 1)
+    value = following.strip()
+    if prefix == 'id':
+        builder.with_id(value)
+    elif prefix == 'event':
+        builder.with_event(value)
+    elif prefix == 'data':
+        builder.with_data(json.loads(value))
+    else:
+        logger.debug('Ignoring unsupported SSE field %r', prefix)
+    return builder
 
 
 @dataclass
@@ -55,9 +72,8 @@ class Broker:
 
             try:
                 await handler.handler(event)
-            except Exception as e:
-                logger.error(f'Failed to run event handler: {e!s}')
-                logger.debug(traceback.format_exc())
+            except Exception:
+                logger.exception('Failed to run event handler')
 
     async def _get_sse(self, session: aiohttp.ClientSession, tasks: asyncio.TaskGroup):
         timeout = aiohttp.ClientTimeout(total=None, sock_read=None)
@@ -83,13 +99,7 @@ class Broker:
                     latest_event = ServerSentEventBuilder()
                     continue
 
-                prefix, following = line.split(':', 1)
-                if prefix == 'id':
-                    latest_event.with_id(following.strip())
-                elif prefix == 'event':
-                    latest_event.with_event(following.strip())
-                elif prefix == 'data':
-                    latest_event.with_data(json.loads(following.strip()))
+                apply_sse_line(latest_event, line)
 
     @tasks.loop(seconds=15, name='sse loop')
     async def backend_event_handler(self):

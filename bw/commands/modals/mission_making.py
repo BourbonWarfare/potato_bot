@@ -62,6 +62,17 @@ ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
 )
 
 
+def human_upload_error(body: str) -> str:
+    for pattern, human_reason in ERROR_TO_HUMAN:
+        if pattern.search(body):
+            return human_reason
+    return f'Message from server: {body}'
+
+
+def upload_error_allows_force(body: str) -> bool:
+    return any(pattern.search(body) for pattern in ALLOW_TO_UPLOAD_FORCE)
+
+
 class ForceUploadButton(ui.Button):
     def __init__(self, server: str, uploaded_file: Path, thread: discord.Thread):
         super().__init__(style=discord.ButtonStyle.danger, label='Continue Upload')
@@ -104,15 +115,14 @@ class ForceUploadButton(ui.Button):
             elif e.exception.status == 422:
                 await self.thread.send('The mission could not be processed.')
             if e.body:
-                information = f'Message from server: {e.body}'
-                for pattern, human_reason in ERROR_TO_HUMAN:
-                    if pattern.search(e.body):
-                        information = human_reason
-                await self.thread.send(information)
+                await self.thread.send(human_upload_error(e.body))
         else:
             await interaction.response.send_message(
                 'Mission has been uploaded to the server.\n## This will **not** be played in session'
             )
+        finally:
+            logger.info(f'Cleaning up forced upload directory {self.uploaded_file.parent}')
+            shutil.rmtree(self.uploaded_file.parent, ignore_errors=True)
 
 
 class UploadOverwriteView(ui.LayoutView):
@@ -140,7 +150,7 @@ class UploadOverwriteView(ui.LayoutView):
 
     async def on_timeout(self):
         logger.info(f'Cleaning up directory {self.copied_directory} (view expired)')
-        shutil.rmtree(self.copied_directory)
+        shutil.rmtree(self.copied_directory, ignore_errors=True)
 
 
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
@@ -189,22 +199,27 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
 
     async def on_submit(self, interaction: discord.Interaction):
         to_check: list[ui.Label] = []
+        server_selector: ui.Select | None = None
         for child in self.walk_children():
             if isinstance(child, ui.Label):
                 to_check.append(child)
         for label in to_check:
             if isinstance(label.component, ui.Select) and label.component.custom_id == 'server_selector':
-                server = label.component
+                server_selector = label.component
                 break
 
         assert isinstance(self.mission_file.component, ui.FileUpload)
         assert len(self.mission_file.component.values) == 1
         assert isinstance(self.description.component, ui.TextInput)
         assert isinstance(self.potential_issues.component, ui.TextInput)
-        assert isinstance(server, ui.Select)
+        if server_selector is None:
+            await interaction.response.send_message(
+                'Mission cannot be uploaded: no destination server was selected.', ephemeral=True
+            )
+            return
         assert isinstance(interaction.channel, discord.TextChannel | discord.Thread)
 
-        server = server.values[0]
+        server = server_selector.values[0]
         description = self.description.component.value
         potential_issues = self.potential_issues.component.value
 
@@ -235,6 +250,7 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                 'Your wrote too much in the potential issues, mission cannot be uploaded.'
                 f'({len(potential_issues)} / {max_char_length})'
             )
+            return
 
         logger.debug('Getting BW session')
         try:
@@ -285,25 +301,18 @@ class MissionUploadModal(ui.Modal, title='Upload a Mission'):
                     elif e.exception.status == 422:
                         await thread.send('The mission could not be processed.')
                     if e.body:
-                        information = f'Message from server: {e.body}'
-                        for pattern, human_reason in ERROR_TO_HUMAN:
-                            if pattern.search(e.body):
-                                information = human_reason
-                        await thread.send(information)
+                        await thread.send(human_upload_error(e.body))
 
-                        for pattern in ALLOW_TO_UPLOAD_FORCE:
-                            logger.debug(f'Checking "{pattern}" against "{e.body}"')
-                            if pattern.search(e.body):
-                                logger.info('Error can allow a forced uploaded')
-                                await thread.send(
-                                    view=UploadOverwriteView(
-                                        server=server,
-                                        uploaded_file=temp_file,
-                                        owner=DiscordSnowflake(interaction.user.id),
-                                        thread=thread,
-                                    )
+                        if upload_error_allows_force(e.body):
+                            logger.info('Error can allow a forced upload')
+                            await thread.send(
+                                view=UploadOverwriteView(
+                                    server=server,
+                                    uploaded_file=temp_file,
+                                    owner=DiscordSnowflake(interaction.user.id),
+                                    thread=thread,
                                 )
-                                break
+                            )
 
                     return
         await thread.send(f'Mission downloaded in {time.time() - download_t0:.2f} second(s)')
