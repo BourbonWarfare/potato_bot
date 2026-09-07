@@ -10,7 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
-from bw.commands.discord_utils import require_rdp_channel, require_text_channel
+from bw.commands.discord_utils import require_rdp_channel, require_messageable_channel
 from bw.commands.modals.staff import UpdateModView
 from bw.commands.utils import (
     arma_servers_autocomplete,
@@ -336,7 +336,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
     async def arma_server_event_handler(self, event: ServerSentEvent):
         channels_to_post = [
-            require_text_channel(self.bot, ENVIRONMENT.command_channel_id(), 'command_channel_id'),
+            require_messageable_channel(self.bot, ENVIRONMENT.command_channel_id(), 'command_channel_id'),
         ]
         if event.event == 'started':
             result: dict[str, Any] = event.data.get('result', {})
@@ -373,15 +373,15 @@ class Staff(commands.Cog, name='Staff Commands'):
             for channel in channels_to_post:
                 await channel.send(embed=embeds.server_event('deploy keys', event.data['server']))
         elif event.event == 'found out of date mods':
-            mod_channel = require_text_channel(self.bot, ENVIRONMENT.tech_channel_id(), 'tech_channel_id')
-            to_send = [UpdateModView(channel=mod_channel, mod=mod) for mod in event.data['mods']]
+            mod_channel = require_messageable_channel(self.bot, ENVIRONMENT.tech_channel_id(), 'tech_channel_id')
+            to_send = [UpdateModView(mod=mod) for mod in event.data['mods']]
             for view in to_send:
                 await mod_channel.send(view=view)
 
     async def cron_event_handler(self, event: ServerSentEvent):
         if event.event == 'run':
             channels_to_post = [
-                require_text_channel(self.bot, ENVIRONMENT.cron_channel_id(), 'cron_channel_id'),
+                require_messageable_channel(self.bot, ENVIRONMENT.cron_channel_id(), 'cron_channel_id'),
             ]
             logger.info(f'Posting cron run for {event.data["cron"]}')
             for channel in channels_to_post:

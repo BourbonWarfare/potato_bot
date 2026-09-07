@@ -30,9 +30,9 @@ def require_text_channel(bot: commands.Bot | discord.Client, channel_id: int, na
 
 def require_messageable_channel(
     bot: commands.Bot | discord.Client, channel_id: int, name: str
-) -> discord.TextChannel | discord.Thread:
+) -> discord.TextChannel | discord.Thread | discord.VoiceChannel:
     channel = bot.get_channel(channel_id)
-    if not isinstance(channel, (discord.TextChannel, discord.Thread)):
+    if not isinstance(channel, (discord.TextChannel, discord.Thread, discord.VoiceChannel)):
         raise RuntimeError(f'Missing configured messageable channel {name} ({channel_id})')
     return channel
 

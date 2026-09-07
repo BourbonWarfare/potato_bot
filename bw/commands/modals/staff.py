@@ -13,10 +13,9 @@ logger = logging.getLogger('bw.potbot.command')
 
 
 class UpdateButton(ui.Button):
-    def __init__(self, workshop_id: str, channel: discord.TextChannel, parent_view: ui.LayoutView):
+    def __init__(self, workshop_id: str, parent_view: ui.LayoutView):
         super().__init__(style=discord.ButtonStyle.green, label='Update Mod')
         self.workshop_id = workshop_id
-        self.channel = channel
         self.parent_view = parent_view
 
     async def callback(self, interaction: discord.Interaction):
@@ -55,7 +54,7 @@ class UpdateButton(ui.Button):
 
 
 class UpdateModView(ui.LayoutView):
-    def __init__(self, *, channel: discord.TextChannel, mod: dict[str, Any]):
+    def __init__(self, *, mod: dict[str, Any]):
         super().__init__()
 
         def bytes_to_human(bytes: int) -> str:
@@ -86,7 +85,7 @@ class UpdateModView(ui.LayoutView):
 
         self.description = ui.Container()
 
-        self.update = UpdateButton(workshop_id, channel, self)
+        self.update = UpdateButton(workshop_id, self)
         self.buttons = ui.ActionRow(self.update)
 
         container = ui.Container(self.text, self.gallery, ui.Separator(), self.buttons)
