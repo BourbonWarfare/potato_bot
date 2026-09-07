@@ -14,6 +14,7 @@ from discord.ext import commands
 from bw.arma.api import ArmaApi
 from bw.commands.modals.community import SetTagModal
 from bw.commands.utils import date_to_human_string, get_session
+from bw.commands.webhooks import temporary_webhook
 from bw.embeds import (
     failed_to_reach_bw_backend,
     failed_to_reach_discord,
@@ -108,20 +109,17 @@ class Community(commands.Cog, name='Community'):
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
         assert isinstance(interaction.channel, (TextChannel, Thread))
-        if isinstance(interaction.channel, Thread):
-            followup = interaction.channel
-        else:
-            followup = await interaction.channel.create_webhook(name='get session hook')
-        try:
-            bw_session, oauth_session = await get_session(followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
-            return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
-            return
+        async with temporary_webhook(interaction.channel, name='get session hook') as followup:
+            try:
+                bw_session, oauth_session = await get_session(followup, interaction.user)
+            except CannotReachBwBackend as e:
+                logger.error(e)
+                await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
+                return
+            except CannotReachDiscord as e:
+                logger.error(e)
+                await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
+                return
         await interaction.response.send_modal(await SetTagModal.new(bw_session, oauth_session))
 
     async def post_session_notification(self, event: ServerSentEvent):
