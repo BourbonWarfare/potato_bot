@@ -12,12 +12,11 @@ from discord.ext import commands
 from bw import embeds
 from bw.commands.discord_utils import require_rdp_channel, require_text_channel
 from bw.commands.modals.staff import UpdateModView
-from bw.commands.utils import arma_servers_autocomplete, arma_servers_autocomplete_with_all, get_session
+from bw.commands.utils import arma_servers_autocomplete, arma_servers_autocomplete_with_all, user_interface_from_interaction
 from bw.environment import ENVIRONMENT
-from bw.error import CannotReachBwBackend, CannotReachDiscord, RefreshFailed
+from bw.error import CannotReachBwBackend, RefreshFailed
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
-from bw.interface import User, UserClient
 from bw.state import State
 
 logger = logging.getLogger('bw.potbot.command')
@@ -57,18 +56,9 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
 
         await interaction.response.defer()
-        try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+        interface = await user_interface_from_interaction(interaction)
+        if interface is None:
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         async def perform(option: str, server: str) -> dict:
             if option == ArmaCommand.START:
@@ -120,18 +110,9 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is checking the status of "{server}"')
 
         await interaction.response.defer()
-        try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+        interface = await user_interface_from_interaction(interaction)
+        if interface is None:
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         if server == 'all':
             servers = [server for server in await State.state.arma_server_cache.refresh()]
@@ -218,18 +199,9 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is trying to update {update_option} on "{server}"')
 
         await interaction.response.defer()
-        try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+        interface = await user_interface_from_interaction(interaction)
+        if interface is None:
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         async def perform(option: UpdateChoices, server: str) -> dict:
             if option == UpdateChoices.MODS:
@@ -315,18 +287,9 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is trying to get RPT for "{server}"')
 
         await interaction.response.defer()
-        try:
-            bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-        except CannotReachBwBackend as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_bw_backend(), ephemeral=True)
+        interface = await user_interface_from_interaction(interaction)
+        if interface is None:
             return
-        except CannotReachDiscord as e:
-            logger.error(e)
-            await interaction.followup.send(embed=embeds.failed_to_reach_discord(), ephemeral=True)
-            return
-
-        interface = User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
 
         embed = None
         try:
