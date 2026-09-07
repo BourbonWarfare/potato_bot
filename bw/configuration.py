@@ -102,14 +102,16 @@ class Configuration(dict):
                     continue
 
                 if '=' in line:
-                    key, value = (s.strip() for s in line.split('='))
+                    key, value = (s.strip() for s in line.split('=', 1))
+                    key = key.lower()
                     if key in config:
                         raise DuplicateConfigKey(key=key)
                     config[key] = value
                 else:
-                    if line in config:
-                        raise DuplicateConfigKey(key=line)
-                    config[line] = ''
+                    key = line.lower()
+                    if key in config:
+                        raise DuplicateConfigKey(key=key)
+                    config[key] = ''
         config.file = configuration_file
         config.file_type = ConfigType.KEY_VALUE
         return config
