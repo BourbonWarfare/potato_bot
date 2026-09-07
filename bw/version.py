@@ -12,22 +12,17 @@ class Version:
 
     @classmethod
     def from_string(cls, string: str) -> 'Version':
-        components = string.split('.')
-        if len(components) == 3:
-            return Version(
-                int(components[0]),
-                int(components[1]),
-                int(components[2]),
-            )
-        elif len(components) == 4:
-            return Version(
-                int(components[0]),
-                int(components[1]),
-                int(components[2]),
-                components[3],
-            )
-        else:
+        version, separator, extra = string.partition('-')
+        components = version.split('.')
+        if len(components) != 3:
             return Version(0, 0, 0, 'INVALID')
+
+        try:
+            major, minor, patch = (int(component) for component in components)
+        except ValueError:
+            return Version(0, 0, 0, 'INVALID')
+
+        return Version(major, minor, patch, extra if separator else None)
 
     def __str__(self) -> str:
         if self._extra is None:

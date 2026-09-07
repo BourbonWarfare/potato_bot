@@ -136,7 +136,7 @@ def orbat_diff_to_string(starting_orbat: dict[str, Any], final_orbat: dict[str, 
         existing_group_strs: list[str] = []
         for starting_group, final_group in side_existing_groups:
             starting_leader = starting_group['leader']
-            final_leader = starting_group['leader']
+            final_leader = final_group['leader']
 
             member_delta = len(final_group['members']) - len(starting_group['members'])
             if member_delta < 0:
