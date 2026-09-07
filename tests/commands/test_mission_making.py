@@ -111,8 +111,8 @@ async def test__mission_event_handler__uploaded__delegates_thread_lookup_to_disc
     await cog.mission_event_handler(uploaded_event)
 
     mock_discord_api.get_or_create_mission_thread.assert_awaited_once()
-    _, _, mission_arg = mock_discord_api.get_or_create_mission_thread.call_args.args
-    assert mission_arg is sample_iteration.mission
+    _, _, iteration_arg = mock_discord_api.get_or_create_mission_thread.call_args.args
+    assert iteration_arg is sample_iteration
 
 
 @pytest.mark.asyncio
