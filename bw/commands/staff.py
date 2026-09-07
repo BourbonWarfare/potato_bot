@@ -33,6 +33,21 @@ class UpdateChoices(StrEnum):
     SERVER = 'Server'
 
 
+def server_operation_error_embed(
+    error: aiohttp.ClientResponseError,
+    user: discord.abc.User,
+    operation: str,
+    server: str,
+) -> discord.Embed:
+    if error.status in {401, 403}:
+        return embeds.not_permitted()
+    if error.status == 404:
+        return embeds.arma_server_not_found(user, server)
+    if error.status >= 500:
+        return embeds.server_management_failure(error.message)
+    return embeds.failed_arma_server_operation(user, operation, server)
+
+
 class Staff(commands.Cog, name='Staff Commands'):
     def __init__(self, bot):
         self.bot = bot
@@ -73,14 +88,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             response = await perform(option=option, server=server)
         except aiohttp.ClientResponseError as e:
             logger.warning(f'User {interaction.user} failed to operate on server: {e}')
-            if e.status == 401 or e.status == 403:
-                embed = embeds.not_permitted()
-            elif e.status == 404:
-                embed = embeds.arma_server_not_found(interaction.user, server)
-            elif e.status >= 500:
-                embed = embeds.server_management_failure(e.message)
-            else:
-                embed = embeds.failed_arma_server_operation(interaction.user, option, server)
+            embed = server_operation_error_embed(e, interaction.user, option, server)
         except RefreshFailed as e:
             logger.error(str(e))
             raise
@@ -215,14 +223,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             response = await perform(option=update_option, server=server)
         except aiohttp.ClientResponseError as e:
             logger.warning(f'User {interaction.user} failed to update server: {e}')
-            if e.status == 401 or e.status == 403:
-                embed = embeds.not_permitted()
-            elif e.status == 404:
-                embed = embeds.arma_server_not_found(interaction.user, server)
-            elif e.status >= 500:
-                embed = embeds.server_management_failure(e.message)
-            else:
-                embed = embeds.failed_arma_server_operation(interaction.user, update_option, server)
+            embed = server_operation_error_embed(e, interaction.user, update_option, server)
         except RefreshFailed as e:
             logger.warning(f'{e}. Reattempting whole method...')
             raise
