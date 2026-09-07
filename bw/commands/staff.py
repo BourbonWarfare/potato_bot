@@ -10,6 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
+from bw.commands.discord_utils import require_rdp_channel, require_text_channel
 from bw.commands.modals.staff import UpdateModView
 from bw.commands.utils import arma_servers_autocomplete, arma_servers_autocomplete_with_all, get_session
 from bw.environment import ENVIRONMENT
@@ -358,7 +359,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
     async def arma_server_event_handler(self, event: ServerSentEvent):
         channels_to_post = [
-            self.bot.get_channel(ENVIRONMENT.command_channel_id()),
+            require_text_channel(self.bot, ENVIRONMENT.command_channel_id(), 'command_channel_id'),
         ]
         if event.event == 'started':
             result: dict[str, Any] = event.data.get('result', {})
@@ -395,7 +396,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             for channel in channels_to_post:
                 await channel.send(embed=embeds.server_event('deploy keys', event.data['server']))
         elif event.event == 'found out of date mods':
-            mod_channel = self.bot.get_channel(ENVIRONMENT.tech_channel_id())
+            mod_channel = require_text_channel(self.bot, ENVIRONMENT.tech_channel_id(), 'tech_channel_id')
             to_send = [UpdateModView(channel=mod_channel, mod=mod) for mod in event.data['mods']]
             for view in to_send:
                 await mod_channel.send(view=view)
@@ -403,7 +404,7 @@ class Staff(commands.Cog, name='Staff Commands'):
     async def cron_event_handler(self, event: ServerSentEvent):
         if event.event == 'run':
             channels_to_post = [
-                self.bot.get_channel(ENVIRONMENT.cron_channel_id()),
+                require_text_channel(self.bot, ENVIRONMENT.cron_channel_id(), 'cron_channel_id'),
             ]
             logger.info(f'Posting cron run for {event.data["cron"]}')
             for channel in channels_to_post:
@@ -411,8 +412,7 @@ class Staff(commands.Cog, name='Staff Commands'):
 
     async def monitor_event_handler(self, event: ServerSentEvent):
         if event.event == 'connection':
-            rdp_channel = self.bot.get_channel(ENVIRONMENT.rdp_channel_id())
-            assert isinstance(rdp_channel, (discord.TextChannel, discord.VoiceChannel))
+            rdp_channel = require_rdp_channel(self.bot, ENVIRONMENT.rdp_channel_id(), 'rdp_channel_id')
 
             action = event.data['action']
             ip = event.data['source_ip']

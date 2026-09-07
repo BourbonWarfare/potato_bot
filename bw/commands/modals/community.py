@@ -1,4 +1,5 @@
 import logging
+from typing import Any, cast
 
 import aiohttp
 import discord
@@ -49,10 +50,10 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
         except aiohttp.ClientResponseError:
             squad_tag = {'profile_name': '', 'steam_id': '', 'nickname': '', 'remark': ''}
 
-        modal.profile_name.component.default = squad_tag['profile_name']
-        modal.nickname.component.default = squad_tag['nickname']
-        modal.steam_id.component.default = squad_tag['steam_id']
-        modal.remark.component.default = squad_tag['remark']
+        cast(Any, modal.profile_name.component).default = str(squad_tag.get('profile_name', ''))
+        cast(Any, modal.nickname.component).default = str(squad_tag.get('nickname', ''))
+        cast(Any, modal.steam_id.component).default = str(squad_tag.get('steam_id', ''))
+        cast(Any, modal.remark.component).default = str(squad_tag.get('remark', ''))
 
         return modal
 

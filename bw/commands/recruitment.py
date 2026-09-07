@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bw.commands.discord_utils import require_guild, require_member, require_role, require_text_channel
 from bw.embeds import call_orientator, get_generic_handbook, get_member_handbook, get_recruit_handbook, not_a_recruit
 from bw.environment import ENVIRONMENT
 from bw.utils import strip_emoji
@@ -40,7 +41,8 @@ class Recruitment(commands.Cog, name='Recruitment'):
 
     @app_commands.command(name='orientation', description='Request an orientation')
     async def orientation(self, interaction: discord.Interaction):
-        member = interaction.user
+        member = require_member(interaction)
+        guild = require_guild(interaction)
         if member.get_role(ENVIRONMENT.recruit_role()) is not None:
             logger.info(f'{member} requested an orientation.')
             await interaction.response.send_message(embed=call_orientator())
@@ -48,16 +50,17 @@ class Recruitment(commands.Cog, name='Recruitment'):
             if member.get_role(ENVIRONMENT.awaiting_orientation_role()) is None:
                 logger.info(f'Adding awaiting orientation role to {member}.')
                 try:
-                    await member.add_roles(
-                        interaction.guild.get_role(ENVIRONMENT.awaiting_orientation_role()), reason='Requested an orientation.'
+                    awaiting_orientation_role = require_role(
+                        guild, ENVIRONMENT.awaiting_orientation_role(), 'awaiting_orientation_role_id'
                     )
+                    await member.add_roles(awaiting_orientation_role, reason='Requested an orientation.')
                 except discord.Forbidden as e:
                     logger.warning(f'Cannot add role: {e}')
             else:
                 logger.info(f'{member} already has the awaiting orientation role.')
 
-            channel = self.bot.get_channel(ENVIRONMENT.recruitment_channel())
-            role = interaction.guild.get_role(ENVIRONMENT.orientor_role())
+            channel = require_text_channel(self.bot, ENVIRONMENT.recruitment_channel(), 'recruitment_channel_id')
+            role = require_role(guild, ENVIRONMENT.orientor_role(), 'orientation_role_id')
             logger.debug(f'{role.mention}, {member.nick}, {member.global_name}')
             logger.debug(f'{channel}, {channel.name}, {channel.id}, {channel.type}')
             try:

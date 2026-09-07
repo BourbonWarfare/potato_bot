@@ -13,6 +13,7 @@ from discord.ext import commands
 
 from bw.arma.api import ArmaApi
 from bw.commands.modals.community import SetTagModal
+from bw.commands.discord_utils import require_text_channel
 from bw.commands.utils import date_to_human_string, get_session
 from bw.commands.webhooks import temporary_webhook
 from bw.embeds import (
@@ -123,7 +124,7 @@ class Community(commands.Cog, name='Community'):
         await interaction.response.send_modal(await SetTagModal.new(bw_session, oauth_session))
 
     async def post_session_notification(self, event: ServerSentEvent):
-        arma_channel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
+        arma_channel = require_text_channel(self.bot, ENVIRONMENT.arma_channel_id(), 'arma_channel_id')
         guild = arma_channel.guild
         roles_to_ping = [guild.get_role(ENVIRONMENT.member_role()), guild.get_role(ENVIRONMENT.recruit_role())]
         roles_to_ping = [role for role in roles_to_ping if role]
@@ -148,8 +149,8 @@ class Community(commands.Cog, name='Community'):
 
     async def post_safe_start_ended(self, event: ServerSentEvent):
         channels_to_post = [
-            self.bot.get_channel(ENVIRONMENT.arma_channel_id()),
-            self.bot.get_channel(ENVIRONMENT.command_channel_id()),
+            require_text_channel(self.bot, ENVIRONMENT.arma_channel_id(), 'arma_channel_id'),
+            require_text_channel(self.bot, ENVIRONMENT.command_channel_id(), 'command_channel_id'),
         ]
 
         mission_id = UUID(hex=event.data['mission'])
@@ -172,12 +173,12 @@ class Community(commands.Cog, name='Community'):
 
     async def post_mission_end(self, event: ServerSentEvent):
         channels_to_post = [
-            self.bot.get_channel(ENVIRONMENT.arma_channel_id()),
-            self.bot.get_channel(ENVIRONMENT.command_channel_id()),
+            require_text_channel(self.bot, ENVIRONMENT.arma_channel_id(), 'arma_channel_id'),
+            require_text_channel(self.bot, ENVIRONMENT.command_channel_id(), 'command_channel_id'),
         ]
 
         async def notify_mission_end(message: str):
-            arma_channel: discord.TextChannel = self.bot.get_channel(ENVIRONMENT.arma_channel_id())
+            arma_channel = require_text_channel(self.bot, ENVIRONMENT.arma_channel_id(), 'arma_channel_id')
             notify_message: discord.Message = await arma_channel.fetch_message(
                 int(ArmaApi().session_notification_message(State.state, session_id))
             )
@@ -188,7 +189,7 @@ class Community(commands.Cog, name='Community'):
             await arma_channel.send(f'{message} {" ".join(reacted)}')
 
         async def post_recruits(mission_type: str | None):
-            channel = self.bot.get_channel(ENVIRONMENT.command_channel_id())
+            channel = require_text_channel(self.bot, ENVIRONMENT.command_channel_id(), 'command_channel_id')
             if mission_type:
                 await channel.send(f'{date_to_human_string(datetime.datetime.today())} {mission_type}')
             else:
