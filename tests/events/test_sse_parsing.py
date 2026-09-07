@@ -19,15 +19,16 @@ def test__apply_sse_line__ignores_lines_without_separator():
     result = apply_sse_line(builder, 'not valid sse')
 
     assert result is builder
-    assert builder.finish().event is None
+    assert builder.finish().event == ''
 
 
 def test__apply_sse_line__loads_json_data():
     builder = ServerSentEventBuilder()
 
-    apply_sse_line(builder, 'event: uploaded')
+    apply_sse_line(builder, 'event: mission:uploaded')
     apply_sse_line(builder, 'data: {"mission": "abc"}')
 
     event = builder.finish()
+    assert event.namespace == 'mission'
     assert event.event == 'uploaded'
     assert event.data == {'mission': 'abc'}
