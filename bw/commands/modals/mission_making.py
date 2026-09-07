@@ -150,7 +150,7 @@ class UploadOverwriteView(ui.LayoutView):
 
     async def on_timeout(self):
         logger.info(f'Cleaning up directory {self.copied_directory} (view expired)')
-        shutil.rmtree(self.copied_directory)
+        shutil.rmtree(self.copied_directory, ignore_errors=True)
 
 
 class MissionUploadModal(ui.Modal, title='Upload a Mission'):
