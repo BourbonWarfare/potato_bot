@@ -45,9 +45,10 @@ def test__configuration__load_kv_ignores_comments_and_blank_lines_and_lowercases
     assert config.file_type == ConfigType.KEY_VALUE
 
 
-def test__configuration__load_kv_duplicate_key_raises(config_file):
+@pytest.mark.parametrize('content', ['key=value\nkey=other\n', 'KEY=value\nkey=other\n'])
+def test__configuration__load_kv_duplicate_key_raises(config_file, content):
     with pytest.raises(DuplicateConfigKey):
-        Configuration.load_kv(config_file('conf.kv', 'key=value\nkey=other\n'))
+        Configuration.load_kv(config_file('conf.kv', content))
 
 
 def test__configuration__load_rejects_unknown_suffix(config_file):
