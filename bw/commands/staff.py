@@ -12,9 +12,14 @@ from discord.ext import commands
 from bw import embeds
 from bw.commands.discord_utils import require_rdp_channel, require_text_channel
 from bw.commands.modals.staff import UpdateModView
-from bw.commands.utils import arma_servers_autocomplete, arma_servers_autocomplete_with_all, user_interface_from_interaction
+from bw.commands.utils import (
+    arma_servers_autocomplete,
+    arma_servers_autocomplete_with_all,
+    send_session_failure_response,
+    user_interface_from_interaction,
+)
 from bw.environment import ENVIRONMENT
-from bw.error import CannotReachBwBackend, RefreshFailed
+from bw.error import CannotReachBwBackend, CannotReachDiscord, RefreshFailed
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
 from bw.state import State
@@ -71,8 +76,10 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is performing "{option}" on "{server}"')
 
         await interaction.response.defer()
-        interface = await user_interface_from_interaction(interaction)
-        if interface is None:
+        try:
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
 
         async def perform(option: str, server: str) -> dict:
@@ -118,8 +125,10 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is checking the status of "{server}"')
 
         await interaction.response.defer()
-        interface = await user_interface_from_interaction(interaction)
-        if interface is None:
+        try:
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
 
         if server == 'all':
@@ -207,8 +216,10 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is trying to update {update_option} on "{server}"')
 
         await interaction.response.defer()
-        interface = await user_interface_from_interaction(interaction)
-        if interface is None:
+        try:
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
 
         async def perform(option: UpdateChoices, server: str) -> dict:
@@ -288,8 +299,10 @@ class Staff(commands.Cog, name='Staff Commands'):
         logger.info(f'{interaction.user} is trying to get RPT for "{server}"')
 
         await interaction.response.defer()
-        interface = await user_interface_from_interaction(interaction)
-        if interface is None:
+        try:
+            interface = await user_interface_from_interaction(interaction)
+        except (CannotReachBwBackend, CannotReachDiscord) as e:
+            await send_session_failure_response(interaction, e)
             return
 
         embed = None

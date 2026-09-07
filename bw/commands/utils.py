@@ -72,18 +72,19 @@ async def get_session(
     return bw_session, oauth_session
 
 
-async def user_interface_from_interaction(interaction: discord.Interaction) -> User | None:
-    try:
-        bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
-    except CannotReachBwBackend as e:
-        logger.error(e)
-        await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
-        return None
-    except CannotReachDiscord as e:
-        logger.error(e)
-        await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
-        return None
+async def user_interface_from_interaction(interaction: discord.Interaction) -> User:
+    bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
     return User(UserClient(oauth_session=oauth_session, bw_session=bw_session))
+
+
+async def send_session_failure_response(
+    interaction: discord.Interaction, error: CannotReachBwBackend | CannotReachDiscord
+) -> None:
+    logger.error(error)
+    if isinstance(error, CannotReachBwBackend):
+        await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
+    else:
+        await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
 
 
 async def arma_servers_autocomplete(_, current: str) -> list[app_commands.Choice[str]]:
