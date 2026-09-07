@@ -6,7 +6,9 @@ def test__human_upload_error__uses_server_body_when_no_known_pattern_matches():
 
 
 def test__human_upload_error__turns_known_backend_error_into_member_friendly_text():
-    assert human_upload_error('mission needs to be binarized to upload') == 'Missions need to be binarized to be uploaded to the server'
+    assert human_upload_error('mission needs to be binarized to upload') == (
+        'Missions need to be binarized to be uploaded to the server'
+    )
 
 
 def test__upload_error_allows_force__only_for_expected_validation_errors():
