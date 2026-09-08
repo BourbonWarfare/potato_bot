@@ -22,17 +22,17 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
     )
     nickname = ui.Label(
         text='Nickname',
-        description='Nickname in your entry',
+        description='An alternate name to display alongside your profile name (Optional)',
         component=ui.TextInput(required=False),
     )
     steam_id = ui.Label(
         text='Steam ID',
-        description='Your Steam64 ID (https://steamid.io/).',
+        description='Your Steam64 ID ([https://steamid.io](https://steamid.io/)).',
         component=ui.TextInput(),
     )
     remark = ui.Label(
         text='Remark',
-        description='A quote or remark displayed on your squad entry',
+        description='A quote or excerpt displayed on your squad entry (Optional)',
         component=ui.TextInput(style=discord.TextStyle.paragraph, required=False),
     )
 
