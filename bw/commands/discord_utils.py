@@ -1,3 +1,5 @@
+from typing import TypeGuard, cast
+
 import discord
 from discord.ext import commands
 
@@ -28,13 +30,21 @@ def require_text_channel(bot: commands.Bot | discord.Client, channel_id: int, na
     return channel
 
 
+def is_messageable(channel: object) -> TypeGuard[discord.TextChannel | discord.Thread | discord.VoiceChannel]:
+    return isinstance(channel, (discord.TextChannel, discord.Thread, discord.VoiceChannel))
+
+
+# Backwards-compatible alias for the common misspelling.
+is_messagable = is_messageable
+
+
 def require_messageable_channel(
     bot: commands.Bot | discord.Client, channel_id: int, name: str
 ) -> discord.TextChannel | discord.Thread | discord.VoiceChannel:
     channel = bot.get_channel(channel_id)
-    if not isinstance(channel, (discord.TextChannel, discord.Thread, discord.VoiceChannel)):
+    if not is_messageable(channel):
         raise RuntimeError(f'Missing configured messageable channel {name} ({channel_id})')
-    return channel
+    return cast(discord.TextChannel | discord.Thread | discord.VoiceChannel, channel)
 
 
 def require_rdp_channel(

@@ -8,11 +8,11 @@ from uuid import UUID
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord import TextChannel, Thread, app_commands, ui
+from discord import app_commands, ui
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
-from bw.commands.discord_utils import require_text_channel
+from bw.commands.discord_utils import is_messageable, require_text_channel
 from bw.commands.modals.community import SetTagModal
 from bw.commands.utils import date_to_human_string, get_session
 from bw.embeds import (
@@ -137,7 +137,9 @@ class Community(commands.Cog, name='Community'):
         description='Set your in-game ARMA tag.',
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
-        assert isinstance(interaction.channel, (TextChannel, Thread))
+        if not is_messageable(interaction.channel):
+            raise RuntimeError('The squad command must be used in a messageable channel')
+
         try:
             bw_session, oauth_session = require_existing_session(interaction.user)
         except NoSuchSession:
