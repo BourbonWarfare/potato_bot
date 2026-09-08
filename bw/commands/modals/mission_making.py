@@ -23,10 +23,12 @@ logger = logging.getLogger('bw.potbot.command')
 NOT_BINARIZED = re.compile('mission needs to be binarized to upload')
 NOT_SAVED_WITH_POTATO_REGEX = re.compile('not saved with POTATO')
 NO_CUSTOM_ATTRIBUTES = re.compile('missing CustomAttributes')
+TOO_LARGE = re.compile('mission is too large')
 
-ALLOW_TO_UPLOAD_FORCE: tuple[re.Pattern, ...] = (NOT_BINARIZED, NOT_SAVED_WITH_POTATO_REGEX, NO_CUSTOM_ATTRIBUTES)
+ALLOW_TO_UPLOAD_FORCE: tuple[re.Pattern, ...] = (NOT_BINARIZED, NOT_SAVED_WITH_POTATO_REGEX, NO_CUSTOM_ATTRIBUTES, TOO_LARGE)
 
 ERROR_TO_HUMAN: tuple[tuple[re.Pattern, str], ...] = (
+    (TOO_LARGE, 'Your mission has exceeded the size allowed by the server (5 megabytes maximum)'),
     (NOT_BINARIZED, 'Missions need to be binarized to be uploaded to the server'),
     (re.compile('missing mission type'), 'You have not selected a mission type in the Mission Testing Attributes'),
     (

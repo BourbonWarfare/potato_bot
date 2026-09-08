@@ -8,12 +8,12 @@ from uuid import UUID
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord import app_commands, TextChannel, Thread
+from discord import TextChannel, Thread, app_commands
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
-from bw.commands.modals.community import SetTagModal
 from bw.commands.discord_utils import require_text_channel
+from bw.commands.modals.community import SetTagModal
 from bw.commands.utils import date_to_human_string, get_session
 from bw.commands.webhooks import temporary_webhook
 from bw.embeds import (

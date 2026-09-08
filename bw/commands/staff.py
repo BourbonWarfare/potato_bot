@@ -10,7 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bw import embeds
-from bw.commands.discord_utils import require_rdp_channel, require_messageable_channel
+from bw.commands.discord_utils import require_messageable_channel, require_rdp_channel
 from bw.commands.modals.staff import UpdateModView
 from bw.commands.utils import (
     arma_servers_autocomplete,
