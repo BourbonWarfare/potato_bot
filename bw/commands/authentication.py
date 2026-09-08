@@ -65,9 +65,14 @@ class Authentication(commands.Cog, name='Authentication'):
     async def internal_login_oauth(self, followup: discord.Webhook | discord.Thread, user_id: DiscordSnowflake) -> OAuthSession:
         logger.info(f'Attempting new login for {user_id}')
         state = secrets.token_urlsafe(64)[:32]
+        if isinstance(followup, discord.Webhook):
+            use_ephemeral = followup.type == discord.WebhookType.application
+        else:
+            use_ephemeral = False
+
         logger.info('sending login link')
         if isinstance(followup, discord.Webhook):
-            await followup.send(embed=login_with_discord(state), ephemeral=True)
+            await followup.send(embed=login_with_discord(state), ephemeral=use_ephemeral)
         else:
             await followup.send(embed=login_with_discord(state))
 
