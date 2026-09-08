@@ -27,7 +27,7 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
     )
     steam_id = ui.Label(
         text='Steam ID',
-        description='Your Steam64 ID ([https://steamid.io](https://steamid.io/)).',
+        description='Your Steam64 ID (https://steamid.io).',
         component=ui.TextInput(),
     )
     remark = ui.Label(
