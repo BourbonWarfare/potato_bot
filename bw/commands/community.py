@@ -8,14 +8,13 @@ from uuid import UUID
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord import TextChannel, Thread, app_commands
+from discord import TextChannel, Thread, app_commands, ui
 from discord.ext import commands
 
 from bw.arma.api import ArmaApi
 from bw.commands.discord_utils import require_text_channel
 from bw.commands.modals.community import SetTagModal
 from bw.commands.utils import date_to_human_string, get_session
-from bw.commands.webhooks import temporary_webhook
 from bw.embeds import (
     failed_to_reach_bw_backend,
     failed_to_reach_discord,
@@ -28,17 +27,46 @@ from bw.embeds import (
     upcoming_session,
 )
 from bw.environment import ENVIRONMENT
-from bw.error import CannotReachBwBackend, CannotReachDiscord
+from bw.error import CannotReachBwBackend, CannotReachDiscord, NoSuchSession
 from bw.events.broker import global_event_broker
 from bw.events.decoder import ServerSentEvent
 from bw.interface import User
 from bw.missions.types import MissionUuid
+from bw.session.api import SessionApi
+from bw.session.oauth import BwSession, OAuthSession
 from bw.session.types import DiscordSnowflake
 from bw.settings import GLOBAL_CONFIGURATION
 from bw.state import State
 from bw.utils import recruits_in_orbats
 
 logger = logging.getLogger('bw.potbot.command')
+
+
+class OpenSetTagModalView(ui.View):
+    def __init__(self, modal: SetTagModal, owner: int):
+        super().__init__(timeout=300)
+        self.modal = modal
+        self.owner = owner
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user.id == self.owner
+
+    @ui.button(label='Open ARMA Tag Form')
+    async def open_modal(self, interaction: discord.Interaction, _: ui.Button):
+        await interaction.response.send_modal(self.modal)
+
+
+def require_existing_session(user: discord.User | discord.Member) -> tuple[BwSession, OAuthSession]:
+    user_id = DiscordSnowflake(user.id)
+    oauth_session = SessionApi().get_discord_session_from_discord_id(State.state, user_id)
+    if oauth_session.is_expired():
+        raise NoSuchSession()
+
+    bw_session = SessionApi().get_bw_session_from_discord_id(State.state, user_id)
+    if bw_session.is_expired():
+        raise NoSuchSession()
+
+    return bw_session, oauth_session
 
 
 class Community(commands.Cog, name='Community'):
@@ -110,17 +138,33 @@ class Community(commands.Cog, name='Community'):
     )
     async def set_arma_tag(self, interaction: discord.Interaction):
         assert isinstance(interaction.channel, (TextChannel, Thread))
-        async with temporary_webhook(interaction.channel, name='get session hook') as followup:
+        try:
+            bw_session, oauth_session = require_existing_session(interaction.user)
+        except NoSuchSession:
+            await interaction.response.defer(ephemeral=True, thinking=True)
             try:
-                bw_session, oauth_session = await get_session(followup, interaction.user)
+                bw_session, oauth_session = await get_session(interaction.followup, interaction.user)
             except CannotReachBwBackend as e:
                 logger.error(e)
-                await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
+                await interaction.followup.send(embed=failed_to_reach_bw_backend(), ephemeral=True)
                 return
             except CannotReachDiscord as e:
                 logger.error(e)
-                await interaction.response.send_message(embed=failed_to_reach_discord(), ephemeral=True)
+                await interaction.followup.send(embed=failed_to_reach_discord(), ephemeral=True)
                 return
+
+            modal = await SetTagModal.new(bw_session, oauth_session)
+            await interaction.followup.send(
+                'You are logged in. Click below to edit your ARMA tag.',
+                view=OpenSetTagModalView(modal, owner=interaction.user.id),
+                ephemeral=True,
+            )
+            return
+        except CannotReachBwBackend as e:
+            logger.error(e)
+            await interaction.response.send_message(embed=failed_to_reach_bw_backend(), ephemeral=True)
+            return
+
         await interaction.response.send_modal(await SetTagModal.new(bw_session, oauth_session))
 
     async def post_session_notification(self, event: ServerSentEvent):
