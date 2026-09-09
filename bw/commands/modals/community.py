@@ -71,6 +71,12 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
 
         if not steam_id.isnumeric() or '-' in steam_id:
             raise ValueError('Steam ID does not look like a Steam64 ID')
+        if len(nickname) > 60:
+            nickname = nickname[:60]
+        if len(profile_name) > 60:
+            profile_name = profile_name[:60]
+        if len(remark) > 120:
+            remark = remark[:120]
 
         logger.info(f'Setting tag for {profile_name} {f"({nickname})" if nickname else ""} ({steam_id})')
         await interaction.response.defer(ephemeral=True, thinking=True)
