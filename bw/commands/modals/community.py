@@ -1,3 +1,4 @@
+from multiprocessing import Value
 import logging
 from typing import Any, cast
 
@@ -67,6 +68,9 @@ class SetTagModal(ui.Modal, title='Set your Arma tag'):
         nickname = self.nickname.component.value
         steam_id = self.steam_id.component.value
         remark = self.remark.component.value
+
+        if not steam_id.isnumeric() or '-' in steam_id:
+            raise ValueError('Steam ID does not look like a Steam64 ID')
 
         logger.info(f'Setting tag for {profile_name} {f"({nickname})" if nickname else ""} ({steam_id})')
         await interaction.response.defer(ephemeral=True, thinking=True)
