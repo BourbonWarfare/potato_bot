@@ -376,7 +376,7 @@ class Staff(commands.Cog, name='Staff Commands'):
             mod_channel = require_messageable_channel(self.bot, ENVIRONMENT.tech_channel_id(), 'tech_channel_id')
             to_send = [UpdateModView(mod=mod) for mod in event.data['mods']]
             for view in to_send:
-                await mod_channel.send(view=view)
+                view.message = await mod_channel.send(view=view)
 
     async def cron_event_handler(self, event: ServerSentEvent):
         if event.event == 'run':

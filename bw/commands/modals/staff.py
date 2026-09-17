@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, cast
 
 import discord
 from discord import ui
@@ -56,6 +56,7 @@ class UpdateButton(ui.Button):
 class UpdateModView(ui.LayoutView):
     def __init__(self, *, mod: dict[str, Any]):
         super().__init__(timeout=60 * 60)
+        self.message: discord.Message | None = None
 
         def bytes_to_human(bytes: int) -> str:
             byte_threshold = 500
@@ -90,3 +91,16 @@ class UpdateModView(ui.LayoutView):
 
         container = ui.Container(self.text, self.gallery, ui.Separator(), self.buttons)
         self.add_item(container)
+
+    async def on_timeout(self):
+        for item in self.walk_children():
+            if hasattr(item, 'disabled'):
+                cast(Any, item).disabled = True
+
+        if self.message is None:
+            return
+
+        try:
+            await self.message.edit(view=self)
+        except discord.DiscordException:
+            logger.warning('Failed to disable timed-out update mod view', exc_info=True)
