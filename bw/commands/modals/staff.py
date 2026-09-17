@@ -20,7 +20,11 @@ class UpdateButton(ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         logger.debug('Getting BW session')
-        await interaction.response.defer(ephemeral=False, thinking=True)
+        # Component interactions should defer as a message update, not as a
+        # separate "thinking" response. Using thinking=True creates a new
+        # followup/original response, so editing it later reposts the view
+        # instead of updating the message that contained the clicked button.
+        await interaction.response.defer(thinking=False)
         webhook = interaction.followup
         try:
             bw_session, oauth_session = await get_session(webhook, interaction.user)
