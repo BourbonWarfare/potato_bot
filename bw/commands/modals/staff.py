@@ -14,7 +14,7 @@ logger = logging.getLogger('bw.potbot.command')
 
 class UpdateButton(ui.Button):
     def __init__(self, workshop_id: str, parent_view: ui.LayoutView):
-        super().__init__(style=discord.ButtonStyle.green, label='Update Mod')
+        super().__init__(style=discord.ButtonStyle.green, label='Update Mod', custom_id=f'update_mod{workshop_id}')
         self.workshop_id = workshop_id
         self.parent_view = parent_view
 
@@ -55,7 +55,7 @@ class UpdateButton(ui.Button):
 
 class UpdateModView(ui.LayoutView):
     def __init__(self, *, mod: dict[str, Any]):
-        super().__init__()
+        super().__init__(timeout=60 * 60)
 
         def bytes_to_human(bytes: int) -> str:
             byte_threshold = 500
