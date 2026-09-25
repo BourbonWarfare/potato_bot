@@ -145,7 +145,7 @@ class Test(Environment):
         return False
 
     def discord_oauth_redirect_uri(self):
-        return 'https://staging.bourbonwarfare.com/auth/login/discord'
+        return 'https://staging.bourbonwarfare.com/auth/login/discord/bot'
 
 
 class Production(Environment):
@@ -153,7 +153,7 @@ class Production(Environment):
         return False
 
     def discord_oauth_redirect_uri(self):
-        return 'https://hub.bourbonwarfare.com/auth/login/discord'
+        return 'https://hub.bourbonwarfare.com/auth/login/discord/bot'
 
 
 if GC.get('environment', 'local') == 'prod':
